@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import HeroCharacter from '../components/HeroCharacter';
-import Calendar from '../components/Calendar';
+import HeroMotionWrapper from '../components/HeroMotionWrapper';
+import PlanningSection from '../components/PlanningSection';
+import ContactSection from '../components/ContactSection';
+import ScrollCharacter from '../components/ScrollCharacter';
 import Pricing from '../components/Pricing';
 import ScrollReveal from '../components/ScrollReveal';
 import ThemeToggle from '../components/ThemeToggle';
@@ -78,9 +81,10 @@ export default function Landing() {
   const showMe = logoState === 'me' || logoState === 'all';
 
   return (
-    <div className="min-h-screen bg-pink-bg dark:bg-[#111111] bg-french-pattern transition-colors duration-500">
+    <div className="min-h-screen bg-transparent transition-colors duration-500 relative">
+      <ScrollCharacter />
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+        <div className="w-full pl-2 pr-4 sm:pl-4 sm:pr-6 py-4 flex justify-between items-center">
           <div className="flex flex-col gap-0.5" dir="ltr">
             <span className="logo-sequence text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-1 min-w-[160px]">
               <span className={`logo-part font-bold text-text dark:text-[#f5f5f5] transition-opacity duration-300 ${showFrench ? 'opacity-100' : 'opacity-0'}`}>French</span>
@@ -94,7 +98,7 @@ export default function Landing() {
             <ThemeToggle className="rounded-full" />
             <Link
               to={getDashboardLink()}
-              className="px-6 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow shadow-pink-soft font-medium text-sm"
+              className="px-6 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-sm"
             >
               {user ? t('nav.dashboard') : t('nav.login')}
             </Link>
@@ -126,24 +130,30 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                to={getDashboardLink()}
-                className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow text-center font-medium card-hover"
-              >
+<Link
+              to={getDashboardLink()}
+              className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium"
+            >
                 {user ? t('nav.dashboard') : t('hero.getStarted')}
               </Link>
               <a
                 href="mailto:frenchwithus.noreply@gmail.com"
-                className="px-6 py-3 border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 rounded-xl hover:bg-pink-soft/50 dark:hover:bg-white/10 transition-all duration-300 text-center font-medium"
+                className="px-6 py-3 border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 rounded-xl hover:bg-pink-soft/50 dark:hover:bg-white/10 transition-all duration-300 btn-hover text-center font-medium"
               >
                 {t('hero.contactUs')}
               </a>
             </div>
           </ScrollReveal>
           <ScrollReveal className="flex-1 flex justify-center lg:justify-end">
-            <HeroCharacter />
+            <HeroMotionWrapper>
+              <HeroCharacter />
+            </HeroMotionWrapper>
           </ScrollReveal>
         </section>
+
+        <div className="py-8 lg:py-12" aria-hidden="true">
+          <div className="section-divider" />
+        </div>
 
         {/* Approach Section */}
         <section className="w-full py-16 lg:py-24">
@@ -158,57 +168,61 @@ export default function Landing() {
             </h2>
             </ScrollReveal>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <ScrollReveal className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500">
+              <ScrollReveal className="approach-card bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500 flex flex-col h-full">
                 <div className="absolute top-4 right-4 w-10 h-10 bg-pink-soft dark:bg-white/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
                 <h3 className="font-semibold text-text dark:text-[#f5f5f5] text-lg mb-3 pr-12">{t('approach.french.title')}</h3>
-                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4">{t('approach.french.desc')}</p>
-                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline">
+                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4 flex-1">{t('approach.french.desc')}</p>
+                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline mt-auto">
                   {t('approach.french.link')}
                 </Link>
               </ScrollReveal>
-              <ScrollReveal className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500">
+              <ScrollReveal className="approach-card bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500 flex flex-col h-full">
                 <div className="absolute top-4 right-4 w-10 h-10 bg-pink-soft dark:bg-white/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0V8m0 4h4m-4 0H8" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
                 <h3 className="font-semibold text-text dark:text-[#f5f5f5] text-lg mb-3 pr-12">{t('approach.oral.title')}</h3>
-                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4">{t('approach.oral.desc')}</p>
-                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline">
+                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4 flex-1">{t('approach.oral.desc')}</p>
+                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline mt-auto">
                   {t('approach.oral.link')}
                 </Link>
               </ScrollReveal>
-              <ScrollReveal className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500">
+              <ScrollReveal className="approach-card bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500 flex flex-col h-full">
                 <div className="absolute top-4 right-4 w-10 h-10 bg-pink-soft dark:bg-white/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </div>
                 <h3 className="font-semibold text-text dark:text-[#f5f5f5] text-lg mb-3 pr-12">{t('approach.grammar.title')}</h3>
-                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4">{t('approach.grammar.desc')}</p>
-                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline">
+                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4 flex-1">{t('approach.grammar.desc')}</p>
+                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline mt-auto">
                   {t('approach.grammar.link')}
                 </Link>
               </ScrollReveal>
-              <ScrollReveal className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500">
+              <ScrollReveal className="approach-card bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500 flex flex-col h-full">
                 <div className="absolute top-4 right-4 w-10 h-10 bg-pink-soft dark:bg-white/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <h3 className="font-semibold text-text dark:text-[#f5f5f5] text-lg mb-3 pr-12">{t('approach.culture.title')}</h3>
-                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4">{t('approach.culture.desc')}</p>
-                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline">
+                <p className="text-text/80 dark:text-[#f5f5f5]/80 text-sm mb-4 flex-1">{t('approach.culture.desc')}</p>
+                <Link to={getDashboardLink()} className="text-pink-primary dark:text-pink-400 font-medium text-sm hover:underline mt-auto">
                   {t('approach.culture.link')}
                 </Link>
               </ScrollReveal>
             </div>
           </div>
         </section>
+
+        <div className="py-8 lg:py-12" aria-hidden="true">
+          <div className="section-divider section-divider--tall" />
+        </div>
 
         {/* Apprendre & Pratiquer Section */}
         <section className="w-full py-16 lg:py-24">
@@ -290,22 +304,34 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Calendar / Planning */}
-        <section className="mb-20">
+        <div className="py-8 lg:py-12" aria-hidden="true">
+          <div className="section-divider" />
+        </div>
+
+        {/* Planning (Planification, Cours à venir, Mon parcours) */}
+        <section>
           <ScrollReveal>
-            <h2 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('calendar.title')}</h2>
+            <h2 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('planning.title')}</h2>
           </ScrollReveal>
           <ScrollReveal>
-            <Calendar
-            events={getSampleEvents(t)}
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-            viewMode="mois"
-          />
+            <PlanningSection
+              events={getSampleEvents(t)}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              viewMode="mois"
+            />
           </ScrollReveal>
         </section>
 
+        <div className="py-8 lg:py-12" aria-hidden="true">
+          <div className="section-divider" />
+        </div>
+
         <Pricing />
+
+        <div className="py-8 lg:py-12" aria-hidden="true">
+          <div className="section-divider section-divider--tall" />
+        </div>
 
         {/* Testimonials */}
         <section className="mb-16">
@@ -338,9 +364,51 @@ export default function Landing() {
           </div>
         </section>
 
-        <div className="text-center text-text/60 dark:text-[#f5f5f5]/60 text-sm">
-          {t('footer.email')}
+        <div className="py-8 lg:py-12" aria-hidden="true">
+          <div className="section-divider" />
         </div>
+
+        <ContactSection />
+
+        <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-16 pt-12 pb-8">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
+              <div dir="ltr" className="flex flex-col gap-1">
+                <span className="font-semibold text-text dark:text-[#f5f5f5] text-lg">
+                  {t('footer.brand')}
+                </span>
+                <span className="text-sm text-text/60 dark:text-[#f5f5f5]/60">
+                  {t('footer.tagline')}
+                </span>
+              </div>
+              <nav className="flex flex-wrap items-center gap-6 text-sm">
+                <a
+                  href="#pricing"
+                  className="text-text/70 dark:text-[#f5f5f5]/70 hover:text-pink-primary dark:hover:text-pink-400 transition-colors"
+                >
+                  {t('footer.pricing')}
+                </a>
+                <a
+                  href="#contact"
+                  className="text-text/70 dark:text-[#f5f5f5]/70 hover:text-pink-primary dark:hover:text-pink-400 transition-colors"
+                >
+                  {t('footer.contact')}
+                </a>
+              </nav>
+            </div>
+            <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <a
+                href={`mailto:${t('footer.email')}`}
+                className="text-sm text-text/60 dark:text-[#f5f5f5]/60 hover:text-pink-primary dark:hover:text-pink-400 transition-colors"
+              >
+                {t('footer.email')}
+              </a>
+              <span className="text-sm text-text/50 dark:text-[#f5f5f5]/50">
+                {t('footer.copyright', { year: new Date().getFullYear() })}
+              </span>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );

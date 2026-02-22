@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import AnimatedBackground from './components/AnimatedBackground';
+import FloatingLetters from './components/FloatingLetters';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import AdminLayout from './layouts/AdminLayout';
@@ -9,7 +11,7 @@ import StudentLayout from './layouts/StudentLayout';
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-pink-bg dark:bg-[#111111] text-text dark:text-[#f5f5f5]">Loading...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent text-text dark:text-[#f5f5f5]">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
   return children;
@@ -53,7 +55,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="transition-all duration-500">
+        <AnimatedBackground />
+        <FloatingLetters />
+        <div className="relative z-10 transition-all duration-500">
           <AppRoutes />
         </div>
       </AuthProvider>

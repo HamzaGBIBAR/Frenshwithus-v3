@@ -17,6 +17,8 @@ model User {
 
   // Professor: courses they teach
   coursesAsProfessor Course[] @relation("ProfessorCourses")
+  // Professor: weekly availability slots
+  availability ProfessorAvailability[]
   // Student: courses they attend
   coursesAsStudent   Course[] @relation("StudentCourses")
   // Professor: students assigned to them
@@ -27,6 +29,16 @@ model User {
   payments          Payment[]
   messagesSent      Message[] @relation("SentMessages")
   messagesReceived  Message[] @relation("ReceivedMessages")
+}
+
+model ProfessorAvailability {
+  id        String @id @default(cuid())
+  professorId String
+  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun
+  startTime String // HH:mm
+  endTime   String // HH:mm
+
+  professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
 }
 
 model Course {

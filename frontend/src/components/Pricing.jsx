@@ -48,7 +48,7 @@ export default function Pricing() {
   };
 
   return (
-    <section className="w-full py-16 lg:py-24" ref={ref}>
+    <section id="pricing" className="w-full py-16 lg:py-24" ref={ref}>
       <div className="max-w-6xl mx-auto px-6">
         <h2
           className={`text-2xl lg:text-3xl font-bold text-text dark:text-[#f5f5f5] text-center mb-3 transition-all duration-500 ${
@@ -160,7 +160,7 @@ export default function Pricing() {
 
               <Link
                 to={getCtaLink()}
-                className={`block w-full py-2.5 rounded-xl text-center font-medium transition-all duration-300 ${
+                className={`block w-full py-2.5 rounded-xl text-center font-medium transition-all duration-300 btn-hover ${
                   plan.highlight
                     ? 'bg-white dark:bg-[#f5f5f5] text-pink-dark dark:text-[#111111] border-2 border-white dark:border-[#f5f5f5] hover:bg-pink-soft dark:hover:bg-white/90 hover:border-pink-soft'
                     : 'bg-pink-primary dark:bg-pink-400 text-white hover:bg-pink-dark dark:hover:bg-pink-500 btn-glow'

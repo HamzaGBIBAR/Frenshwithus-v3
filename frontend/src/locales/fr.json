@@ -51,6 +51,37 @@
     "subtitle": "Groupes de parole",
     "tags": ["Pratique orale", "Groupes internationaux", "Accent", "Prononciation"]
   },
+  "planning": {
+    "title": "Planning des cours",
+    "tabs": {
+      "schedule": "Planification",
+      "live": "Cours en direct",
+      "upcoming": "Cours à venir",
+      "path": "Mon parcours"
+    },
+    "live": {
+      "subtitle": "Cours en direct",
+      "lessonTitle": "Leçon de français - Bonjour et présentations",
+      "progress": "{{current}}/{{total}}",
+      "word": "Bonjour",
+      "pronunciation": "Prononciation : {{phonetic}}",
+      "phonetic": "bon-jour",
+      "showMeaning": "Afficher la signification",
+      "meaning": "Formule de salutation utilisée pour dire « hello » ou « good day ».",
+      "teacher": "Prof. Marie",
+      "chatPlaceholder": "Écrivez votre message…",
+      "joinLesson": "Rejoindre un cours",
+      "steps": {
+        "1": { "word": "Bonjour", "phonetic": "bon-jour", "meaning": "Formule de salutation utilisée pour dire « hello » ou « good day ».", "vocab": "maison", "vocabMeaning": "house / home" },
+        "2": { "word": "Merci", "phonetic": "mair-see", "meaning": "Mot de politesse pour exprimer sa gratitude.", "vocab": "livre", "vocabMeaning": "book" },
+        "3": { "word": "Au revoir", "phonetic": "oh ruh-vwar", "meaning": "Formule de départ pour dire « goodbye ».", "vocab": null, "vocabMeaning": null }
+      }
+    },
+    "upcomingTitle": "Prochains cours",
+    "upcomingEmpty": "Aucun cours planifié. Réservez une séance gratuite pour commencer !",
+    "pathTitle": "Votre progression",
+    "pathDesc": "Suivez votre avancement dans l'apprentissage du français."
+  },
   "calendar": {
     "title": "Planning des cours",
     "today": "Aujourd'hui",
@@ -111,8 +142,23 @@
       { "quote": "Enfin une plateforme qui combine qualité et flexibilité. Les cours en ligne sont aussi efficaces qu'en présentiel.", "name": "Nicolas F.", "role": "Expatrié", "rating": 5 }
     ]
   },
+  "contact": {
+    "title": "Restons en contact",
+    "subtitle": "Une équipe à votre écoute pour vous accompagner dans votre apprentissage.",
+    "email": "Email",
+    "phone": "Téléphone",
+    "instagram": "Instagram",
+    "linkedin": "LinkedIn",
+    "cta": "Écrivez-nous"
+  },
   "footer": {
-    "email": "frenchwithus.noreply@gmail.com"
+    "brand": "French with Me",
+    "tagline": "Apprentissage du français",
+    "contact": "Contact",
+    "about": "À propos",
+    "pricing": "Tarifs",
+    "email": "frenchwithus.noreply@gmail.com",
+    "copyright": "© {{year}} French with Me. Tous droits réservés."
   },
   "login": {
     "title": "Connexion",
@@ -122,5 +168,129 @@
     "submitting": "Connexion en cours...",
     "backHome": "Retour à l'accueil",
     "errorDefault": "Échec de la connexion"
+  },
+  "dashboard": {
+    "admin": {
+      "title": "Dashboard",
+      "totalRevenue": "Total des revenus",
+      "upcomingCourses": "Prochains cours",
+      "recentCourses": "Cours récents",
+      "viewAll": "Voir tout",
+      "professor": "Professeur",
+      "student": "Élève",
+      "date": "Date",
+      "time": "Heure",
+      "started": "Démarré",
+      "yes": "Oui",
+      "no": "Non",
+      "link": "Lien"
+    },
+    "adminCourses": {
+      "title": "Cours de la semaine",
+      "createCourse": "Créer un cours",
+      "createDesc": "Créez les cours de la semaine et assignez un professeur à chaque cours.",
+      "selectProfessor": "Sélectionner un professeur",
+      "selectStudent": "Sélectionner un élève",
+      "select": "Sélectionner",
+      "noAvailability": "Aucune disponibilité",
+      "date": "Date",
+      "time": "Heure",
+      "meetingLink": "Lien de réunion (optionnel)",
+      "create": "Créer le cours",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer ce cours ?",
+      "errorCreate": "Erreur lors de la création"
+    },
+    "adminStudents": {
+      "title": "Élèves",
+      "createStudent": "Créer un élève",
+      "editStudent": "Modifier l'élève",
+      "name": "Nom",
+      "email": "Email",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Nouveau mot de passe (laisser vide pour garder)",
+      "assignProfessor": "Assigner à un professeur",
+      "none": "Aucun",
+      "create": "Créer",
+      "update": "Modifier",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer cet élève ?",
+      "edit": "Modifier",
+      "actions": "Actions",
+      "errorDefault": "Erreur"
+    },
+    "adminProfessors": {
+      "title": "Professeurs",
+      "createProfessor": "Créer un professeur",
+      "editProfessor": "Modifier le professeur",
+      "deleteConfirm": "Supprimer ce professeur ?"
+    },
+    "adminPayments": {
+      "title": "Paiements",
+      "student": "Élève",
+      "amount": "Montant",
+      "status": "Statut",
+      "addPayment": "Ajouter un paiement",
+      "markPaid": "Marquer payé",
+      "markUnpaid": "Marquer non payé",
+      "paid": "Payé",
+      "unpaid": "Non payé"
+    },
+    "professor": {
+      "days": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
+      "title": "Planning",
+      "myAvailability": "Ma disponibilité par semaine",
+      "availabilityDesc": "Indiquez vos créneaux disponibles. L'admin créera les cours et vous les assignera.",
+      "day": "Jour",
+      "from": "De",
+      "to": "À",
+      "add": "Ajouter",
+      "remove": "Supprimer",
+      "coursesThisWeek": "{{count}} cours cette semaine",
+      "slotsAvailable": "{{count}} créneaux de dispo.",
+      "viewCurrentWeek": "Voir la semaine actuelle",
+      "myCourses": "Mes cours",
+      "myAvailabilityShort": "Ma dispo.",
+      "otherProfs": "Autres profs",
+      "hide": "(masquer)",
+      "show": "(afficher)",
+      "month": "Mois",
+      "week": "Semaine",
+      "dayView": "Jour",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "noClasses": "Aucun cours",
+      "me": "(moi)",
+      "course": "Cours",
+      "editLink": "Modifier le lien",
+      "addLink": "Ajouter lien",
+      "recordingUrl": "URL enregistrement",
+      "editRecording": "Modifier enregistrement",
+      "addRecording": "Ajouter enregistrement",
+      "startCourse": "Démarrer le cours",
+      "live": "En direct",
+      "upcoming": "À venir",
+      "completed": "Terminé",
+      "dayViewSoon": "Vue Jour (bientôt disponible)"
+    },
+    "student": {
+      "title": "Mes cours",
+      "coursesThisWeek": "{{count}} cours cette semaine",
+      "upcoming": "{{count}} à venir",
+      "planning": "Planning",
+      "payments": "Paiements",
+      "noPayment": "Aucun paiement",
+      "noUpcoming": "Aucun cours à venir",
+      "noPast": "Aucun cours passé",
+      "getLink": "Obtenir le lien",
+      "join": "Rejoindre",
+      "viewRecording": "Voir l'enregistrement",
+      "noRecording": "Pas encore d'enregistrement",
+      "upcomingCourses": "Prochains cours",
+      "pastCourses": "Cours passés",
+      "frenchCourse": "Cours de français",
+      "at": "à"
+    }
   }
 }

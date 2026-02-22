@@ -5,8 +5,9 @@ import ProfessorCourses from '../pages/professor/Courses';
 import ProfessorMessages from '../pages/professor/Messages';
 
 const navItems = [
-  { to: '/professor', label: 'Dashboard', end: true },
-  { to: '/professor/courses', label: 'Courses' },
+  { to: '/', label: 'Accueil', end: true },
+  { to: '/professor', label: 'Tableau de bord', end: true },
+  { to: '/professor/courses', label: 'Planning' },
   { to: '/professor/messages', label: 'Messages' },
 ];
 
@@ -14,7 +15,7 @@ export default function ProfessorLayout() {
   return (
     <div className="flex min-h-screen">
       <Sidebar items={navItems} />
-      <main className="flex-1 p-6 overflow-auto bg-pink-bg dark:bg-[#111111] bg-french-pattern min-h-screen transition-colors duration-500">
+      <main className="flex-1 p-6 overflow-auto bg-transparent min-h-screen transition-colors duration-500">
         <Routes>
           <Route index element={<ProfessorDashboard />} />
           <Route path="courses" element={<ProfessorCourses />} />

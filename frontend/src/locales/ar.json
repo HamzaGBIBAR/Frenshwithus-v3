@@ -51,6 +51,37 @@
     "subtitle": "مجموعات المحادثة",
     "tags": ["التدرب الشفهي", "مجموعات دولية", "اللكنة", "النطق"]
   },
+  "planning": {
+    "title": "جدول الدروس",
+    "tabs": {
+      "schedule": "التخطيط",
+      "live": "درس مباشر",
+      "upcoming": "الدروس القادمة",
+      "path": "مساري"
+    },
+    "upcomingTitle": "الدروس القادمة",
+    "upcomingEmpty": "لا توجد دروس مجدولة. احجز جلسة مجانية للبدء!",
+    "pathTitle": "تقدمك",
+    "pathDesc": "تتبع تقدمك في تعلم الفرنسية.",
+    "live": {
+      "subtitle": "درس مباشر",
+      "lessonTitle": "درس فرنسي - التحيات والتعارف",
+      "progress": "{{current}}/{{total}}",
+      "word": "Bonjour",
+      "pronunciation": "النطق: {{phonetic}}",
+      "phonetic": "بون-جور",
+      "showMeaning": "إظهار المعنى",
+      "meaning": "تحية تُستخدم لقول « مرحباً » أو « يوم سعيد ».",
+      "teacher": "الأستاذة ماري",
+      "chatPlaceholder": "اكتب رسالتك…",
+      "joinLesson": "الانضمام للدرس",
+      "steps": {
+        "1": { "word": "Bonjour", "phonetic": "بون-جور", "meaning": "تحية تُستخدم لقول « مرحباً » أو « يوم سعيد ».", "vocab": "maison", "vocabMeaning": "house / home" },
+        "2": { "word": "Merci", "phonetic": "مير-سي", "meaning": "كلمة أدب للتعبير عن الامتنان.", "vocab": "livre", "vocabMeaning": "book" },
+        "3": { "word": "Au revoir", "phonetic": "أو روفوار", "meaning": "عبارة وداع لقول « مع السلامة ».", "vocab": null, "vocabMeaning": null }
+      }
+    }
+  },
   "calendar": {
     "title": "جدول الدروس",
     "today": "اليوم",
@@ -111,8 +142,23 @@
       { "quote": "أخيراً منصة تجمع الجودة والمرونة. الدروس عبر الإنترنت بنفس فعالية الحضورية.", "name": "Nicolas F.", "role": "مغترب", "rating": 5 }
     ]
   },
+  "contact": {
+    "title": "ابق على تواصل",
+    "subtitle": "فريق جاهز لدعمك في رحلة تعلمك.",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "instagram": "إنستغرام",
+    "linkedin": "لينكد إن",
+    "cta": "تواصل معنا"
+  },
   "footer": {
-    "email": "frenchwithus.noreply@gmail.com"
+    "brand": "French with Me",
+    "tagline": "تعلم الفرنسية",
+    "contact": "اتصل بنا",
+    "about": "من نحن",
+    "pricing": "الأسعار",
+    "email": "frenchwithus.noreply@gmail.com",
+    "copyright": "© {{year}} French with Me. جميع الحقوق محفوظة."
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -122,5 +168,129 @@
     "submitting": "جاري تسجيل الدخول...",
     "backHome": "العودة للرئيسية",
     "errorDefault": "فشل تسجيل الدخول"
+  },
+  "dashboard": {
+    "admin": {
+      "title": "لوحة التحكم",
+      "totalRevenue": "إجمالي الإيرادات",
+      "upcomingCourses": "الدروس القادمة",
+      "recentCourses": "الدروس الأخيرة",
+      "viewAll": "عرض الكل",
+      "professor": "الأستاذ",
+      "student": "الطالب",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "started": "بدأ",
+      "yes": "نعم",
+      "no": "لا",
+      "link": "الرابط"
+    },
+    "adminCourses": {
+      "title": "دروس الأسبوع",
+      "createCourse": "إنشاء درس",
+      "createDesc": "أنشئ دروس الأسبوع واختر أستاذاً لكل درس.",
+      "selectProfessor": "اختر أستاذاً",
+      "selectStudent": "اختر طالباً",
+      "select": "اختر",
+      "noAvailability": "لا توجد متاحة",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "meetingLink": "رابط الاجتماع (اختياري)",
+      "create": "إنشاء الدرس",
+      "delete": "حذف",
+      "deleteConfirm": "حذف هذا الدرس؟",
+      "errorCreate": "خطأ عند الإنشاء"
+    },
+    "adminStudents": {
+      "title": "الطلاب",
+      "createStudent": "إضافة طالب",
+      "editStudent": "تعديل الطالب",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "كلمة مرور جديدة (اترك فارغاً للإبقاء)",
+      "assignProfessor": "تعيين أستاذ",
+      "none": "لا",
+      "create": "إنشاء",
+      "update": "تحديث",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "deleteConfirm": "حذف هذا الطالب؟",
+      "edit": "تعديل",
+      "actions": "إجراءات",
+      "errorDefault": "خطأ"
+    },
+    "adminProfessors": {
+      "title": "الأساتذة",
+      "createProfessor": "إضافة أستاذ",
+      "editProfessor": "تعديل الأستاذ",
+      "deleteConfirm": "حذف هذا الأستاذ؟"
+    },
+    "adminPayments": {
+      "title": "المدفوعات",
+      "student": "الطالب",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "addPayment": "إضافة دفعة",
+      "markPaid": "تحديد كمُدفوع",
+      "markUnpaid": "تحديد كغير مدفوع",
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع"
+    },
+    "professor": {
+      "days": ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
+      "title": "الجدول",
+      "myAvailability": "توقيتي الأسبوعي",
+      "availabilityDesc": "حدد أوقاتك المتاحة. المدير سينشئ الدروس ويعينك لها.",
+      "day": "اليوم",
+      "from": "من",
+      "to": "إلى",
+      "add": "إضافة",
+      "remove": "حذف",
+      "coursesThisWeek": "{{count}} دروس هذا الأسبوع",
+      "slotsAvailable": "{{count}} أوقات متاحة",
+      "viewCurrentWeek": "عرض الأسبوع الحالي",
+      "myCourses": "دروسي",
+      "myAvailabilityShort": "توقيتي",
+      "otherProfs": "أساتذة آخرون",
+      "hide": "(إخفاء)",
+      "show": "(إظهار)",
+      "month": "شهر",
+      "week": "أسبوع",
+      "dayView": "يوم",
+      "previous": "السابق",
+      "next": "التالي",
+      "noClasses": "لا توجد دروس",
+      "me": "(أنا)",
+      "course": "درس",
+      "editLink": "تعديل الرابط",
+      "addLink": "إضافة رابط",
+      "recordingUrl": "رابط التسجيل",
+      "editRecording": "تعديل التسجيل",
+      "addRecording": "إضافة تسجيل",
+      "startCourse": "بدء الدرس",
+      "live": "مباشر",
+      "upcoming": "قادم",
+      "completed": "منتهي",
+      "dayViewSoon": "عرض اليوم (قريباً)"
+    },
+    "student": {
+      "title": "دروسي",
+      "coursesThisWeek": "{{count}} دروس هذا الأسبوع",
+      "upcoming": "{{count}} قادمة",
+      "planning": "الجدول",
+      "payments": "المدفوعات",
+      "noPayment": "لا توجد مدفوعات",
+      "noUpcoming": "لا توجد دروس قادمة",
+      "noPast": "لا توجد دروس سابقة",
+      "getLink": "الحصول على الرابط",
+      "join": "انضم",
+      "viewRecording": "عرض التسجيل",
+      "noRecording": "لا يوجد تسجيل بعد",
+      "upcomingCourses": "الدروس القادمة",
+      "pastCourses": "الدروس السابقة",
+      "frenchCourse": "درس فرنسي",
+      "at": "في"
+    }
   }
 }

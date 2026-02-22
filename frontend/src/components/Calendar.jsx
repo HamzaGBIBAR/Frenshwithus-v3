@@ -25,7 +25,7 @@ function getMonthWeeks(year, month) {
   return weeks;
 }
 
-export default function Calendar({ events = [], selectedDate, onSelectDate, viewMode = 'mois', onViewModeChange }) {
+export default function Calendar({ events = [], selectedDate, onSelectDate, viewMode = 'mois', onViewModeChange, embedded }) {
   const { t } = useTranslation();
   const days = t('calendar.days', { returnObjects: true });
   const months = t('calendar.months', { returnObjects: true });
@@ -40,8 +40,8 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
     [current.year, current.month]
   );
 
-  const today = new Date().toISOString().slice(0, 10);
-  const toDateStr = (d) => d.toISOString().slice(0, 10);
+  const toDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const today = toDateStr(new Date());
   const isCurrentMonth = (date) => date.getMonth() === current.month;
 
   const prevMonth = () => {
@@ -69,10 +69,21 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
     return events.filter((e) => e.date === ds);
   };
 
+  const getEventStyle = (evt) => {
+    const type = evt.type || 'course';
+    if (type === 'my-availability') return 'bg-emerald-500/90 dark:bg-emerald-500/90 text-white';
+    if (type === 'other-availability') return 'bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200';
+    return 'bg-pink-primary/90 dark:bg-pink-400/90 text-white';
+  };
+
   if (viewMode !== 'mois') return null;
 
+  const wrapperClass = embedded
+    ? ''
+    : 'bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-colors duration-500';
+
   return (
-    <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-colors duration-500">
+    <div className={wrapperClass}>
       <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center justify-between sm:justify-start gap-4">
           <button
@@ -100,26 +111,28 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
             {t('calendar.today')}
           </button>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onViewModeChange?.('mois')}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-primary dark:bg-pink-400 text-white"
-          >
-            {t('calendar.month')}
-          </button>
-          <button
-            onClick={() => onViewModeChange?.('semaine')}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition"
-          >
-            {t('calendar.week')}
-          </button>
-          <button
-            onClick={() => onViewModeChange?.('jour')}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition"
-          >
-            {t('calendar.day')}
-          </button>
-        </div>
+        {!embedded && onViewModeChange && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => onViewModeChange('mois')}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-primary dark:bg-pink-400 text-white"
+            >
+              {t('calendar.month')}
+            </button>
+            <button
+              onClick={() => onViewModeChange('semaine')}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition"
+            >
+              {t('calendar.week')}
+            </button>
+            <button
+              onClick={() => onViewModeChange('jour')}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition"
+            >
+              {t('calendar.day')}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)]">
@@ -147,7 +160,7 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                   <div
                     key={dateKey}
                     onClick={() => onSelectDate?.(dateKey)}
-                    className={`min-h-[100px] sm:min-h-[120px] p-2 rounded-xl border transition cursor-pointer
+                    className={`min-h-[110px] sm:min-h-[130px] p-3 rounded-xl border transition cursor-pointer
                       ${isOtherMonth ? 'bg-pink-soft/20 dark:bg-white/5 text-text/50 dark:text-[#f5f5f5]/50' : 'bg-white dark:bg-[#111111]'}
                       ${isToday ? 'ring-2 ring-pink-primary/30 dark:ring-pink-400/30' : ''}
                       ${isSelected ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : 'border-pink-soft/50 dark:border-white/10 hover:bg-pink-soft/40 dark:hover:bg-white/5'}
@@ -158,7 +171,7 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                       {dayEvents.slice(0, 3).map((evt) => (
                         <div
                           key={evt.id}
-                          className="text-xs rounded-xl px-2 py-1 bg-pink-primary/90 text-white truncate hover:bg-pink-primary transition"
+                          className={`text-xs rounded-xl px-2 py-1 truncate transition ${getEventStyle(evt)}`}
                           title={`${evt.title} - ${evt.time}`}
                         >
                           <span className="font-medium">{evt.time}</span> {evt.title}
@@ -208,7 +221,7 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                         dayEvents.map((evt) => (
                           <div
                             key={evt.id}
-                            className="rounded-xl px-3 py-2 bg-pink-primary/90 dark:bg-pink-400/90 text-white text-sm"
+                            className={`rounded-xl px-3 py-2 text-sm ${getEventStyle(evt)}`}
                           >
                             <span className="font-medium">{evt.time}</span> {evt.title}
                           </div>

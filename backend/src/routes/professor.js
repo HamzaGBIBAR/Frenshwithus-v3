@@ -18,20 +18,41 @@ router.get('/courses', async (req, res) => {
   res.json(courses);
 });
 
-// Create course
-router.post('/courses', async (req, res) => {
-  const { studentId, date, time, meetingLink } = req.body;
-  const course = await prisma.course.create({
-    data: {
-      professorId: req.user.id,
-      studentId,
-      date,
-      time,
-      meetingLink: meetingLink || null,
-    },
-    include: { student: { select: { id: true, name: true } } },
+// My weekly availability
+router.get('/availability', async (req, res) => {
+  const slots = await prisma.professorAvailability.findMany({
+    where: { professorId: req.user.id },
+    orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
   });
-  res.json(course);
+  res.json(slots);
+});
+
+router.post('/availability', async (req, res) => {
+  const { dayOfWeek, startTime, endTime } = req.body;
+  const slot = await prisma.professorAvailability.create({
+    data: { professorId: req.user.id, dayOfWeek, startTime, endTime },
+  });
+  res.json(slot);
+});
+
+router.delete('/availability/:id', async (req, res) => {
+  await prisma.professorAvailability.delete({
+    where: { id: req.params.id, professorId: req.user.id },
+  });
+  res.json({ ok: true });
+});
+
+// All professors' availability (for planning overview - profs can see everyone's slots)
+router.get('/planning/availability-all', async (req, res) => {
+  const professors = await prisma.user.findMany({
+    where: { role: 'PROFESSOR' },
+    select: {
+      id: true,
+      name: true,
+      availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+    },
+  });
+  res.json(professors);
 });
 
 // Update meeting link

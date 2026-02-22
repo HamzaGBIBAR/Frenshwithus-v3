@@ -142,6 +142,63 @@ router.get('/courses', async (req, res) => {
   res.json(courses);
 });
 
+// Create course (admin assigns professor and student)
+router.post('/courses', async (req, res) => {
+  const { professorId, studentId, date, time, meetingLink } = req.body;
+  const course = await prisma.course.create({
+    data: {
+      professorId,
+      studentId,
+      date,
+      time,
+      meetingLink: meetingLink || null,
+    },
+    include: {
+      professor: { select: { id: true, name: true } },
+      student: { select: { id: true, name: true } },
+    },
+  });
+  res.json(course);
+});
+
+// Update course (e.g. change professor)
+router.put('/courses/:id', async (req, res) => {
+  const { professorId, studentId, date, time, meetingLink } = req.body;
+  const data = {};
+  if (professorId !== undefined) data.professorId = professorId;
+  if (studentId !== undefined) data.studentId = studentId;
+  if (date !== undefined) data.date = date;
+  if (time !== undefined) data.time = time;
+  if (meetingLink !== undefined) data.meetingLink = meetingLink;
+  const course = await prisma.course.update({
+    where: { id: req.params.id },
+    data,
+    include: {
+      professor: { select: { id: true, name: true } },
+      student: { select: { id: true, name: true } },
+    },
+  });
+  res.json(course);
+});
+
+router.delete('/courses/:id', async (req, res) => {
+  await prisma.course.delete({ where: { id: req.params.id } });
+  res.json({ ok: true });
+});
+
+// Get professors with their availability (for admin when creating courses)
+router.get('/professors/availability', async (req, res) => {
+  const professors = await prisma.user.findMany({
+    where: { role: 'PROFESSOR' },
+    select: {
+      id: true,
+      name: true,
+      availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+    },
+  });
+  res.json(professors);
+});
+
 // Revenue total
 router.get('/revenue', async (req, res) => {
   const paid = await prisma.payment.aggregate({

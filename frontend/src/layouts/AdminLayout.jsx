@@ -18,7 +18,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen">
       <Sidebar items={navItems} />
-      <main className="flex-1 p-6 overflow-auto bg-pink-bg dark:bg-[#111111] bg-french-pattern min-h-screen transition-colors duration-500">
+      <main className="flex-1 p-6 overflow-auto bg-transparent min-h-screen transition-colors duration-500">
         <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="professors" element={<Professors />} />

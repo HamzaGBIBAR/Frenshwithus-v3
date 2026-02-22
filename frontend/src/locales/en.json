@@ -51,6 +51,37 @@
     "subtitle": "Speaking groups",
     "tags": ["Oral practice", "International groups", "Accent", "Pronunciation"]
   },
+  "planning": {
+    "title": "Course schedule",
+    "tabs": {
+      "schedule": "Planning",
+      "live": "Live lesson",
+      "upcoming": "Upcoming lessons",
+      "path": "My path"
+    },
+    "upcomingTitle": "Next lessons",
+    "upcomingEmpty": "No lessons scheduled. Book a free session to get started!",
+    "pathTitle": "Your progress",
+    "pathDesc": "Track your progress in learning French.",
+    "live": {
+      "subtitle": "Live lesson",
+      "lessonTitle": "French lesson - Greetings and introductions",
+      "progress": "{{current}}/{{total}}",
+      "word": "Bonjour",
+      "pronunciation": "Pronunciation: {{phonetic}}",
+      "phonetic": "bon-jour",
+      "showMeaning": "Show meaning",
+      "meaning": "Greeting used to say « hello » or « good day ».",
+      "teacher": "Prof. Marie",
+      "chatPlaceholder": "Type your message…",
+      "joinLesson": "Join a lesson",
+      "steps": {
+        "1": { "word": "Bonjour", "phonetic": "bon-jour", "meaning": "Greeting used to say « hello » or « good day ».", "vocab": "maison", "vocabMeaning": "house / home" },
+        "2": { "word": "Merci", "phonetic": "mair-see", "meaning": "Politeness word to express gratitude.", "vocab": "livre", "vocabMeaning": "book" },
+        "3": { "word": "Au revoir", "phonetic": "oh ruh-vwar", "meaning": "Farewell phrase to say « goodbye ».", "vocab": null, "vocabMeaning": null }
+      }
+    }
+  },
   "calendar": {
     "title": "Course schedule",
     "today": "Today",
@@ -111,8 +142,23 @@
       { "quote": "Finally a platform that combines quality and flexibility. Online lessons are as effective as in-person.", "name": "Nicolas F.", "role": "Expat", "rating": 5 }
     ]
   },
+  "contact": {
+    "title": "Stay in touch",
+    "subtitle": "A team ready to support you on your learning journey.",
+    "email": "Email",
+    "phone": "Phone",
+    "instagram": "Instagram",
+    "linkedin": "LinkedIn",
+    "cta": "Get in touch"
+  },
   "footer": {
-    "email": "frenchwithus.noreply@gmail.com"
+    "brand": "French with Me",
+    "tagline": "French learning",
+    "contact": "Contact",
+    "about": "About",
+    "pricing": "Pricing",
+    "email": "frenchwithus.noreply@gmail.com",
+    "copyright": "© {{year}} French with Me. All rights reserved."
   },
   "login": {
     "title": "Login",
@@ -122,5 +168,129 @@
     "submitting": "Logging in...",
     "backHome": "Back to home",
     "errorDefault": "Login failed"
+  },
+  "dashboard": {
+    "admin": {
+      "title": "Dashboard",
+      "totalRevenue": "Total Revenue",
+      "upcomingCourses": "Upcoming Courses",
+      "recentCourses": "Recent Courses",
+      "viewAll": "View all",
+      "professor": "Professor",
+      "student": "Student",
+      "date": "Date",
+      "time": "Time",
+      "started": "Started",
+      "yes": "Yes",
+      "no": "No",
+      "link": "Link"
+    },
+    "adminCourses": {
+      "title": "Weekly Courses",
+      "createCourse": "Create Course",
+      "createDesc": "Create weekly courses and assign a professor to each course.",
+      "selectProfessor": "Select a professor",
+      "selectStudent": "Select a student",
+      "select": "Select",
+      "noAvailability": "No availability",
+      "date": "Date",
+      "time": "Time",
+      "meetingLink": "Meeting link (optional)",
+      "create": "Create Course",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this course?",
+      "errorCreate": "Error creating course"
+    },
+    "adminStudents": {
+      "title": "Students",
+      "createStudent": "Create Student",
+      "editStudent": "Edit Student",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "New password (leave blank to keep)",
+      "assignProfessor": "Assign to Professor",
+      "none": "None",
+      "create": "Create",
+      "update": "Update",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this student?",
+      "edit": "Edit",
+      "actions": "Actions",
+      "errorDefault": "Error"
+    },
+    "adminProfessors": {
+      "title": "Professors",
+      "createProfessor": "Create Professor",
+      "editProfessor": "Edit Professor",
+      "deleteConfirm": "Delete this professor?"
+    },
+    "adminPayments": {
+      "title": "Payments",
+      "student": "Student",
+      "amount": "Amount",
+      "status": "Status",
+      "addPayment": "Add Payment",
+      "markPaid": "Mark paid",
+      "markUnpaid": "Mark unpaid",
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "professor": {
+      "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "title": "Schedule",
+      "myAvailability": "My Weekly Availability",
+      "availabilityDesc": "Indicate your available slots. The admin will create courses and assign them to you.",
+      "day": "Day",
+      "from": "From",
+      "to": "To",
+      "add": "Add",
+      "remove": "Remove",
+      "coursesThisWeek": "{{count}} courses this week",
+      "slotsAvailable": "{{count}} available slots",
+      "viewCurrentWeek": "View current week",
+      "myCourses": "My courses",
+      "myAvailabilityShort": "My availability",
+      "otherProfs": "Other professors",
+      "hide": "(hide)",
+      "show": "(show)",
+      "month": "Month",
+      "week": "Week",
+      "dayView": "Day",
+      "previous": "Previous",
+      "next": "Next",
+      "noClasses": "No classes",
+      "me": "(me)",
+      "course": "Course",
+      "editLink": "Edit link",
+      "addLink": "Add link",
+      "recordingUrl": "Recording URL",
+      "editRecording": "Edit recording",
+      "addRecording": "Add recording",
+      "startCourse": "Start course",
+      "live": "Live",
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "dayViewSoon": "Day view (coming soon)"
+    },
+    "student": {
+      "title": "My courses",
+      "coursesThisWeek": "{{count}} courses this week",
+      "upcoming": "{{count}} upcoming",
+      "planning": "Schedule",
+      "payments": "Payments",
+      "noPayment": "No payments",
+      "noUpcoming": "No upcoming courses",
+      "noPast": "No past courses",
+      "getLink": "Get link",
+      "join": "Join",
+      "viewRecording": "View recording",
+      "noRecording": "No recording yet",
+      "upcomingCourses": "Upcoming courses",
+      "pastCourses": "Past courses",
+      "frenchCourse": "French course",
+      "at": "at"
+    }
   }
 }

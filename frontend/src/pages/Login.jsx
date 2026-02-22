@@ -23,8 +23,7 @@ export default function Login() {
       const { data } = await api.post('/auth/login', { email, password });
       login(data);
       if (data.user.role === 'ADMIN') navigate('/admin');
-      else if (data.user.role === 'PROFESSOR') navigate('/professor');
-      else navigate('/student');
+      else navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {
@@ -33,7 +32,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-bg dark:bg-[#111111] bg-french-pattern px-4 transition-colors duration-500 relative">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 transition-colors duration-500 relative">
       <div className="absolute top-6 end-6 flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
