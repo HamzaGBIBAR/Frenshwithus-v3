@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "login": "Login",
+    "dashboard": "Dashboard",
+    "tagline": "French learning"
+  },
+  "hero": {
+    "title": "French",
+    "with": "with",
+    "me": "Me",
+    "subtitle": "Quality French lessons with experienced professors. Simple, effective, and personal.",
+    "getStarted": "Get Started",
+    "contactUs": "Contact us",
+    "rating": "4.2 / 5",
+    "students": "73 students",
+    "countries": "5 countries"
+  },
+  "approach": {
+    "line1": "A complete,",
+    "line2": "simple and",
+    "line3": "welcoming approach.",
+    "french": {
+      "title": "French learning",
+      "desc": "Learn French in a clear, progressive and interactive way.",
+      "link": "View details →"
+    },
+    "oral": {
+      "title": "Oral expression",
+      "desc": "Develop your speaking fluency through guided conversations.",
+      "link": "View details →"
+    },
+    "grammar": {
+      "title": "Grammar & writing",
+      "desc": "Master the essentials with practical exercises.",
+      "link": "View details →"
+    },
+    "culture": {
+      "title": "Cultural immersion",
+      "desc": "Discover Francophone culture through engaging content.",
+      "link": "View details →"
+    }
+  },
+  "learn": {
+    "badge": "Faster progression",
+    "title": "Learn!",
+    "subtitle": "Individual lessons",
+    "tags": ["Grammar", "Vocabulary", "Pronunciation", "Reading", "Listening comprehension"]
+  },
+  "practice": {
+    "title": "Practice!",
+    "subtitle": "Speaking groups",
+    "tags": ["Oral practice", "International groups", "Accent", "Pronunciation"]
+  },
+  "calendar": {
+    "title": "Course schedule",
+    "today": "Today",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "noClasses": "No classes",
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "events": {
+      "french": "French lesson",
+      "conversation": "Conversation",
+      "writing": "Writing workshop",
+      "reading": "Guided reading"
+    }
+  },
+  "pricing": {
+    "title": "Simple Pricing",
+    "subtitle": "Each pack is designed to optimize your learning experience.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "toggleHint": "Pay 10 months, get 2 free",
+    "popular": "Popular!",
+    "freeSession": "Free session",
+    "plans": {
+      "individuel": {
+        "title": "Individual Pack",
+        "subtitle": "1-on-1 lessons",
+        "unit": "/ hour",
+        "unitAnnual": "/ hour",
+        "features": ["Personalized lessons", "Custom program", "Total flexibility"]
+      },
+      "groups": {
+        "title": "Groups Pack",
+        "subtitle": "Groups (max 6 students)",
+        "unit": "/ month",
+        "unitAnnual": "/ year",
+        "features": ["72 sessions / year", "1 hour per session", "12 months validity", "Group oral practice"]
+      },
+      "preparation": {
+        "title": "Preparation Pack",
+        "subtitle": "Exam diplomas",
+        "unit": " (B1→B2)",
+        "unitAnnual": " (B1→B2)",
+        "features": ["20h of lessons", "B1 → B2 included", "C1: 25h for 440€", "Personalized follow-up"]
+      }
+    }
+  },
+  "testimonials": {
+    "title": "What our students say",
+    "subtitle": "Join hundreds of satisfied learners",
+    "items": [
+      { "quote": "The one-on-one sessions really helped me improve my pronunciation. Teachers listen and adapt the pace. Highly recommend!", "name": "Marie L.", "role": "Beginner student", "rating": 5 },
+      { "quote": "Flexible scheduling and patient professors. Perfect for busy professionals. I progressed in just 3 months.", "name": "Thomas D.", "role": "Engineer", "rating": 5 },
+      { "quote": "I went from zero to conversational in just a few months. Amazing experience. The method is really effective.", "name": "Sophie M.", "role": "Student", "rating": 5 },
+      { "quote": "Speaking groups gave me confidence. We practice in a supportive atmosphere. A real plus for oral skills!", "name": "Lucas B.", "role": "Intermediate student", "rating": 5 },
+      { "quote": "Passed B2 on the first try thanks to personalized support. Teachers know the exams inside out.", "name": "Emma R.", "role": "Exam preparation", "rating": 5 },
+      { "quote": "Finally a platform that combines quality and flexibility. Online lessons are as effective as in-person.", "name": "Nicolas F.", "role": "Expat", "rating": 5 }
+    ]
+  },
+  "footer": {
+    "email": "frenchwithus.noreply@gmail.com"
+  },
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Login",
+    "submitting": "Logging in...",
+    "backHome": "Back to home",
+    "errorDefault": "Login failed"
+  }
+}

@@ -1,0 +1,51 @@
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
+
+export default function Sidebar({ items }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  return (
+    <aside className="w-56 min-h-screen bg-white dark:bg-[#1a1a1a] border-r border-pink-soft/50 dark:border-white/10 flex flex-col shadow-pink-soft dark:shadow-lg transition-colors duration-500">
+      <div className="p-5 border-b border-pink-soft/50 dark:border-white/10">
+        <span className="font-semibold text-text dark:text-[#f5f5f5]">French With Us</span>
+        <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mt-1">{user?.name}</p>
+      </div>
+      <nav className="flex-1 p-4 space-y-1">
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `block px-4 py-2.5 rounded-xl transition-all duration-200 ${
+                isActive
+                  ? 'bg-pink-soft/80 dark:bg-white/10 text-pink-dark dark:text-pink-400 font-medium border-l-4 border-pink-primary dark:border-pink-400'
+                  : 'text-text/70 dark:text-[#f5f5f5]/70 hover:bg-pink-soft/40 dark:hover:bg-white/5 hover:text-text dark:hover:text-[#f5f5f5]'
+              }`
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="p-4 border-t border-pink-soft/50 dark:border-white/10 space-y-2">
+        <LanguageSwitcher className="w-full justify-center" />
+        <ThemeToggle className="w-full justify-center" />
+        <button
+          onClick={handleLogout}
+          className="w-full px-4 py-2.5 text-left rounded-xl hover:bg-pink-soft/40 dark:hover:bg-white/5 text-text/70 dark:text-[#f5f5f5]/70 hover:text-pink-dark dark:hover:text-pink-400 transition"
+        >
+          Logout
+        </button>
+      </div>
+    </aside>
+  );
+}

@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "login": "登录",
+    "dashboard": "控制面板",
+    "tagline": "法语学习"
+  },
+  "hero": {
+    "title": "French",
+    "with": "with",
+    "me": "Me",
+    "subtitle": "由经验丰富的教师提供优质法语课程。简单、有效、个性化。",
+    "getStarted": "开始",
+    "contactUs": "联系我们",
+    "rating": "4.2 / 5",
+    "students": "73 名学生",
+    "countries": "5 个国家"
+  },
+  "approach": {
+    "line1": "全面、简单",
+    "line2": "且友好的",
+    "line3": "学习方法。",
+    "french": {
+      "title": "法语学习",
+      "desc": "以清晰、循序渐进和互动的方式学习法语。",
+      "link": "查看详情 →"
+    },
+    "oral": {
+      "title": "口语表达",
+      "desc": "通过引导式对话提高口语流利度。",
+      "link": "查看详情 →"
+    },
+    "grammar": {
+      "title": "语法与写作",
+      "desc": "通过实践练习掌握基础知识。",
+      "link": "查看详情 →"
+    },
+    "culture": {
+      "title": "文化沉浸",
+      "desc": "通过生动内容探索法语区文化。",
+      "link": "查看详情 →"
+    }
+  },
+  "learn": {
+    "badge": "更快进步",
+    "title": "学习！",
+    "subtitle": "一对一课程",
+    "tags": ["语法", "词汇", "发音", "阅读", "听力理解"]
+  },
+  "practice": {
+    "title": "练习！",
+    "subtitle": "口语小组",
+    "tags": ["口语练习", "国际小组", "口音", "发音"]
+  },
+  "calendar": {
+    "title": "课程安排",
+    "today": "今天",
+    "month": "月",
+    "week": "周",
+    "day": "日",
+    "noClasses": "无课程",
+    "days": ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+    "months": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+    "events": {
+      "french": "法语课",
+      "conversation": "对话练习",
+      "writing": "写作工作坊",
+      "reading": "导读"
+    }
+  },
+  "pricing": {
+    "title": "简单定价",
+    "subtitle": "每个套餐旨在优化您的学习体验。",
+    "monthly": "月付",
+    "annual": "年付",
+    "toggleHint": "付10个月，享2个月免费",
+    "popular": "热门！",
+    "freeSession": "免费试听",
+    "plans": {
+      "individuel": {
+        "title": "一对一套餐",
+        "subtitle": "一对一课程",
+        "unit": "/ 小时",
+        "unitAnnual": "/ 小时",
+        "features": ["个性化课程", "定制计划", "完全灵活"]
+      },
+      "groups": {
+        "title": "小组套餐",
+        "subtitle": "小组（最多6人）",
+        "unit": "/ 月",
+        "unitAnnual": "/ 年",
+        "features": ["72节课/年", "每节1小时", "12个月有效", "小组口语练习"]
+      },
+      "preparation": {
+        "title": "备考套餐",
+        "subtitle": "考试文凭",
+        "unit": " (B1→B2)",
+        "unitAnnual": " (B1→B2)",
+        "features": ["20小时课程", "含B1→B2", "C1：25小时440€", "个性化辅导"]
+      }
+    }
+  },
+  "testimonials": {
+    "title": "学生评价",
+    "subtitle": "加入数百名满意的学员",
+    "items": [
+      { "quote": "一对一课程真的帮助我提高了发音。老师会倾听并调整节奏。强烈推荐！", "name": "Marie L.", "role": "初级学员", "rating": 5 },
+      { "quote": "灵活的时间安排和耐心的老师。非常适合忙碌的职场人士。仅3个月我就进步了很多。", "name": "Thomas D.", "role": "工程师", "rating": 5 },
+      { "quote": "几个月内从零基础到能对话。不可思议的体验。方法真的很有效。", "name": "Sophie M.", "role": "学生", "rating": 5 },
+      { "quote": "口语小组给了我信心。我们在支持性的氛围中练习。对口语能力帮助很大！", "name": "Lucas B.", "role": "中级学员", "rating": 5 },
+      { "quote": "多亏了个性化辅导，第一次就通过了B2。老师对考试了如指掌。", "name": "Emma R.", "role": "备考学员", "rating": 5 },
+      { "quote": "终于有一个兼顾质量和灵活性的平台。在线课程和面对面一样有效。", "name": "Nicolas F.", "role": "海外侨民", "rating": 5 }
+    ]
+  },
+  "footer": {
+    "email": "frenchwithus.noreply@gmail.com"
+  },
+  "login": {
+    "title": "登录",
+    "email": "邮箱",
+    "password": "密码",
+    "submit": "登录",
+    "submitting": "登录中...",
+    "backHome": "返回首页",
+    "errorDefault": "登录失败"
+  }
+}

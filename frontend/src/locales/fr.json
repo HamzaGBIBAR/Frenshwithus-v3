@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "login": "Connexion",
+    "dashboard": "Tableau de bord",
+    "tagline": "Apprentissage du français"
+  },
+  "hero": {
+    "title": "French",
+    "with": "with",
+    "me": "Me",
+    "subtitle": "Des cours de français de qualité avec des professeurs expérimentés. Simple, efficace et personnalisé.",
+    "getStarted": "Commencer",
+    "contactUs": "Nous contacter",
+    "rating": "4.2 / 5",
+    "students": "73 élèves",
+    "countries": "5 pays"
+  },
+  "approach": {
+    "line1": "Une approche",
+    "line2": "complète, simple et",
+    "line3": "accueillante.",
+    "french": {
+      "title": "Apprentissage du français",
+      "desc": "Apprenez le français de manière claire, progressive et interactive.",
+      "link": "Voir les détails →"
+    },
+    "oral": {
+      "title": "Expression orale",
+      "desc": "Développez votre aisance à l'oral grâce à des conversations guidées.",
+      "link": "Voir les détails →"
+    },
+    "grammar": {
+      "title": "Grammaire & écriture",
+      "desc": "Maîtrisez les bases essentielles avec des exercices pratiques.",
+      "link": "Voir les détails →"
+    },
+    "culture": {
+      "title": "Immersion culturelle",
+      "desc": "Découvrez la culture francophone à travers des contenus vivants.",
+      "link": "Voir les détails →"
+    }
+  },
+  "learn": {
+    "badge": "Progression plus rapide",
+    "title": "Apprendre !",
+    "subtitle": "Cours individuels",
+    "tags": ["Grammaire", "Vocabulaire", "Prononciation", "Lecture", "Compréhension orale"]
+  },
+  "practice": {
+    "title": "Pratiquer !",
+    "subtitle": "Groupes de parole",
+    "tags": ["Pratique orale", "Groupes internationaux", "Accent", "Prononciation"]
+  },
+  "calendar": {
+    "title": "Planning des cours",
+    "today": "Aujourd'hui",
+    "month": "Mois",
+    "week": "Semaine",
+    "day": "Jour",
+    "noClasses": "Aucun cours",
+    "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+    "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+    "events": {
+      "french": "Cours de français",
+      "conversation": "Conversation",
+      "writing": "Atelier d'écriture",
+      "reading": "Lecture guidée"
+    }
+  },
+  "pricing": {
+    "title": "Tarification Simple",
+    "subtitle": "Chaque pack est conçu pour optimiser votre expérience d'apprentissage.",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "toggleHint": "Payez 10 mois, profitez de 2 offerts",
+    "popular": "Populaire !",
+    "freeSession": "Séance gratuite",
+    "plans": {
+      "individuel": {
+        "title": "Pack Individuel",
+        "subtitle": "Cours 1 à 1",
+        "unit": "/ heure",
+        "unitAnnual": "/ heure",
+        "features": ["Cours personnalisé", "Programme sur mesure", "Flexibilité totale"]
+      },
+      "groups": {
+        "title": "Pack Groupes",
+        "subtitle": "Groupes (max 6 élèves)",
+        "unit": "/ mois",
+        "unitAnnual": "/ an",
+        "features": ["72 séances / an", "1 heure par séance", "Validité 12 mois", "Pratique orale en groupe"]
+      },
+      "preparation": {
+        "title": "Pack Préparation",
+        "subtitle": "Examens diplômes",
+        "unit": " (B1→B2)",
+        "unitAnnual": " (B1→B2)",
+        "features": ["20h de cours", "B1 → B2 inclus", "C1 : 25h pour 440€", "Suivi personnalisé"]
+      }
+    }
+  },
+  "testimonials": {
+    "title": "Ce que disent nos élèves",
+    "subtitle": "Rejoignez des centaines d'élèves satisfaits",
+    "items": [
+      { "quote": "Les cours individuels m'ont vraiment aidé à améliorer ma prononciation. Les professeurs sont à l'écoute et adaptent le rythme. Je recommande vivement !", "name": "Marie L.", "role": "Élève débutante", "rating": 5 },
+      { "quote": "Horaires flexibles et professeurs patients. Parfait pour les professionnels occupés. J'ai progressé en seulement 3 mois.", "name": "Thomas D.", "role": "Ingénieur", "rating": 5 },
+      { "quote": "Je suis passé de zéro à conversationnel en quelques mois. Expérience incroyable. La méthode est vraiment efficace.", "name": "Sophie M.", "role": "Étudiante", "rating": 5 },
+      { "quote": "Les groupes de parole m'ont donné confiance. On pratique dans une ambiance bienveillante. Un vrai plus pour l'oral !", "name": "Lucas B.", "role": "Élève intermédiaire", "rating": 5 },
+      { "quote": "Préparation B2 réussie du premier coup grâce au suivi personnalisé. Les professeurs connaissent parfaitement les examens.", "name": "Emma R.", "role": "Préparation diplôme", "rating": 5 },
+      { "quote": "Enfin une plateforme qui combine qualité et flexibilité. Les cours en ligne sont aussi efficaces qu'en présentiel.", "name": "Nicolas F.", "role": "Expatrié", "rating": 5 }
+    ]
+  },
+  "footer": {
+    "email": "frenchwithus.noreply@gmail.com"
+  },
+  "login": {
+    "title": "Connexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "submit": "Connexion",
+    "submitting": "Connexion en cours...",
+    "backHome": "Retour à l'accueil",
+    "errorDefault": "Échec de la connexion"
+  }
+}

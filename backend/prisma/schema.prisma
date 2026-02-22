@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   // ADMIN, PROFESSOR, STUDENT
+  createdAt DateTime @default(now())
+
+  // Professor: courses they teach
+  coursesAsProfessor Course[] @relation("ProfessorCourses")
+  // Student: courses they attend
+  coursesAsStudent   Course[] @relation("StudentCourses")
+  // Professor: students assigned to them
+  assignedStudents  User[]   @relation("ProfessorAssignments")
+  professor         User?    @relation("ProfessorAssignments", fields: [professorId], references: [id])
+  professorId       String?
+
+  payments          Payment[]
+  messagesSent      Message[] @relation("SentMessages")
+  messagesReceived  Message[] @relation("ReceivedMessages")
+}
+
+model Course {
+  id            String   @id @default(cuid())
+  professorId   String
+  studentId     String
+  date          String   // YYYY-MM-DD
+  time          String   // HH:mm
+  meetingLink   String?
+  isStarted     Boolean  @default(false)
+  recordingLink String?
+  createdAt     DateTime @default(now())
+
+  professor User @relation("ProfessorCourses", fields: [professorId], references: [id], onDelete: Cascade)
+  student  User @relation("StudentCourses", fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  studentId String
+  amount    Float
+  status    String   // paid, unpaid
+  date      DateTime @default(now())
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  content   String
+  createdAt DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}

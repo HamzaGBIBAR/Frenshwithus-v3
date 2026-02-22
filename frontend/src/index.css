@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pink-primary: #E75480;
+  --pink-soft: #FADADD;
+  --pink-dark: #C2185B;
+  --bg: #FFF7FA;
+  --text: #1F1F1F;
+  --gold: #F4B400;
+}
+
+html {
+  @apply transition-colors duration-500 ease-in-out;
+}
+
+body {
+  @apply font-sans antialiased transition-colors duration-500 ease-in-out;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.dark body {
+  background-color: #111111;
+  color: #f5f5f5;
+}
+
+/* French lines subtle pattern */
+.bg-french-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(231, 84, 128, 0.03) 2px,
+    rgba(231, 84, 128, 0.03) 4px
+  );
+}
+
+.dark .bg-french-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(231, 84, 128, 0.06) 2px,
+    rgba(231, 84, 128, 0.06) 4px
+  );
+}
+
+/* Card hover */
+.card-hover {
+  @apply transition-all duration-300;
+}
+.card-hover:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(231, 84, 128, 0.2);
+}
+
+/* Button glow */
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(231, 84, 128, 0.4);
+}
+
+/* Approach headline - soft pink, subtle depth */
+.headline-approach {
+  color: var(--pink-primary);
+  text-shadow: 0 1px 2px rgba(231, 84, 128, 0.15);
+}
+
+.dark .headline-approach {
+  color: #f472b6;
+  text-shadow: 0 1px 2px rgba(244, 114, 182, 0.2);
+}
+
+/* Brand "Me" - soft scale-in on load (hero only) */
+.brand-me {
+  display: inline-block;
+  animation: brandMeScaleIn 0.7s ease-out forwards;
+}
+
+@keyframes brandMeScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-me {
+    animation: none;
+  }
+}
+
+/* Header logo - scroll-synced reveal (opacity controlled by JS) */
+.logo-part {
+  transition: opacity 0.35s ease-out;
+}
+
+/* Scroll reveal - fade + slight upward, triggers on viewport */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .scroll-reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Pricing cards - hover and transitions only (visibility controlled by component) */
+.pricing-card {
+  transition: opacity 0.5s ease-out, transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
