@@ -1,0 +1,15 @@
+# Railway / Nixpacks – build plan for FrenchWithUs (frontend + backend)
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm ci --prefix frontend", "npm ci --prefix backend"]
+
+[phases.build]
+cmds = [
+  "cd frontend && npm run build",
+  "cd backend && npx prisma generate && cp -r ../frontend/dist ./public"
+]
+
+[start]
+cmd = "node backend/src/index.js"

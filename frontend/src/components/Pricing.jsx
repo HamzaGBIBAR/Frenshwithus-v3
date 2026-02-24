@@ -48,8 +48,8 @@ export default function Pricing() {
   };
 
   return (
-    <section id="pricing" className="w-full py-16 lg:py-24" ref={ref}>
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="pricing" className="w-full py-12 sm:py-16 lg:py-24" ref={ref}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           className={`text-2xl lg:text-3xl font-bold text-text dark:text-[#f5f5f5] text-center mb-3 transition-all duration-500 ${
             visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'

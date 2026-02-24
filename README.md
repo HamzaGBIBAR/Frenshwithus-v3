@@ -45,6 +45,18 @@ npm run dev
 
 **Default admin:** `admin@frenchwithus.com` / `admin123`
 
+## Deploy on Railway
+
+1. Connect your GitHub repo to Railway.
+2. Railway will detect the project via `nixpacks.toml` (root directory).
+3. Add variables in Railway:
+   - `DATABASE_URL` – PostgreSQL connection string (Railway can provision one)
+   - `JWT_SECRET` – secret for JWT tokens
+4. Run migrations: in Railway shell or via deploy hook, run `npx prisma db push` from the `backend` directory.
+5. Seed (optional): `node prisma/seed.js` from `backend`.
+
+The build compiles the frontend, copies it to `backend/public`, and serves everything from a single Node process.
+
 ## Roles
 
 - **Admin** – Create professors/students, assign students, manage payments, view courses and revenue

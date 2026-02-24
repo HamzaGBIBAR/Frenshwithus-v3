@@ -1,6 +1,6 @@
 export default function HeroCharacter() {
   return (
-    <div className="relative w-full max-w-sm mx-auto lg:mx-0 animate-fade-in">
+    <div className="relative w-full max-w-[260px] sm:max-w-[320px] lg:max-w-sm mx-auto lg:mx-0 animate-fade-in">
       {/* Sparkle particles */}
       <span className="absolute top-8 right-12 w-2 h-2 bg-pink-primary rounded-full animate-sparkle opacity-80" style={{ animationDelay: '0s' }} />
       <span className="absolute top-16 left-8 w-1.5 h-1.5 bg-gold rounded-full animate-sparkle opacity-70" style={{ animationDelay: '0.5s' }} />

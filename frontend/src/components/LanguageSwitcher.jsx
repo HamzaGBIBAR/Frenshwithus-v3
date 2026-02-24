@@ -41,7 +41,7 @@ export default function LanguageSwitcher({ className = '' }) {
         className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-250 ease-in-out border border-pink-soft/50 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-pink-soft/40 dark:hover:bg-white/10 text-text dark:text-[#f5f5f5] rounded-xl ${className}`}
       >
         <span className="text-base">{currentLang.flag}</span>
-        <span>{currentLang.name}</span>
+        <span className="hidden sm:inline">{currentLang.name}</span>
         <svg
           className={`w-4 h-4 transition-transform duration-250 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
           fill="none"

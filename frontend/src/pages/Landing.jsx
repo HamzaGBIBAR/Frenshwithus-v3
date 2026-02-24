@@ -11,6 +11,7 @@ import Pricing from '../components/Pricing';
 import ScrollReveal from '../components/ScrollReveal';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AnimatedEye from '../components/AnimatedEye';
 
 function getSampleEvents(t) {
   const today = new Date().toISOString().slice(0, 10);
@@ -81,24 +82,26 @@ export default function Landing() {
   const showMe = logoState === 'me' || logoState === 'all';
 
   return (
-    <div className="min-h-screen bg-transparent transition-colors duration-500 relative">
+    <div className="min-h-screen bg-transparent transition-colors duration-500 relative overflow-x-hidden">
       <ScrollCharacter />
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-500">
-        <div className="w-full pl-2 pr-4 sm:pl-4 sm:pr-6 py-4 flex justify-between items-center">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center gap-2">
           <div className="flex flex-col gap-0.5" dir="ltr">
-            <span className="logo-sequence text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-1 min-w-[160px]">
+            <span className="logo-sequence text-xl sm:text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-baseline gap-1 min-w-0 shrink">
               <span className={`logo-part font-bold text-text dark:text-[#f5f5f5] transition-opacity duration-300 ${showFrench ? 'opacity-100' : 'opacity-0'}`}>French</span>
               <span className={`logo-part text-base font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase transition-opacity duration-300 ${showWith ? 'opacity-100' : 'opacity-0'}`}>with</span>
-              <span className={`logo-part inline-block px-2.5 py-0.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white text-base font-semibold transition-opacity duration-300 ${showMe ? 'opacity-100' : 'opacity-0'}`}>Me</span>
+              <span className={`logo-part transition-opacity duration-300 ${showMe ? 'opacity-100' : 'opacity-0'}`}>
+                <AnimatedEye variant="navbar" show={showMe} />
+              </span>
             </span>
             <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 font-normal">{t('nav.tagline')}</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <LanguageSwitcher className="rounded-full" />
             <ThemeToggle className="rounded-full" />
             <Link
               to={getDashboardLink()}
-              className="px-6 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-sm"
+              className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
             >
               {user ? t('nav.dashboard') : t('nav.login')}
             </Link>
@@ -106,18 +109,20 @@ export default function Landing() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-16 lg:py-24">
+      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-24">
         {/* Hero Section */}
-        <section ref={heroRef} className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-20">
-          <ScrollReveal className="flex-1">
-            <h1 className="text-4xl lg:text-5xl font-bold text-text dark:text-[#f5f5f5] mb-4 leading-tight" dir="ltr">
-              {t('hero.title')} <span className="text-xl lg:text-2xl font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase">{t('hero.with')}</span>{' '}
-              <span className="brand-me inline-block px-3 py-1 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-bold">{t('hero.me')}</span>
+        <section ref={heroRef} className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-20">
+          <ScrollReveal className="flex-1 w-full min-w-0">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-text dark:text-[#f5f5f5] mb-3 sm:mb-4 leading-tight flex flex-wrap items-baseline gap-1" dir="ltr">
+              {t('hero.title')} <span className="text-lg sm:text-xl lg:text-2xl font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase">{t('hero.with')}</span>{' '}
+              <span className="brand-me">
+                <AnimatedEye variant="hero" />
+              </span>
             </h1>
-            <p className="text-lg text-text/80 dark:text-[#f5f5f5]/80 mb-8 max-w-xl">
+            <p className="text-base sm:text-lg text-text/80 dark:text-[#f5f5f5]/80 mb-6 sm:mb-8 max-w-xl">
               {t('hero.subtitle')}
             </p>
-            <div className="flex flex-wrap gap-6 mb-8">
+            <div className="flex flex-wrap gap-3 sm:gap-6 mb-6 sm:mb-8">
               <div className="flex items-center gap-2 bg-white/80 dark:bg-[#1a1a1a] rounded-xl px-4 py-2 shadow-pink-soft dark:shadow-lg transition-colors duration-500">
                 <span className="text-gold text-xl">★</span>
                 <span className="font-medium text-text dark:text-[#f5f5f5]">{t('hero.rating')}</span>
@@ -129,22 +134,22 @@ export default function Landing() {
                 <span className="font-medium text-text dark:text-[#f5f5f5]">{t('hero.countries')}</span>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
 <Link
               to={getDashboardLink()}
-              className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium"
+              className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"
             >
                 {user ? t('nav.dashboard') : t('hero.getStarted')}
               </Link>
               <a
                 href="mailto:frenchwithus.noreply@gmail.com"
-                className="px-6 py-3 border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 rounded-xl hover:bg-pink-soft/50 dark:hover:bg-white/10 transition-all duration-300 btn-hover text-center font-medium"
+                className="px-6 py-3 border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 rounded-xl hover:bg-pink-soft/50 dark:hover:bg-white/10 transition-all duration-300 btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"
               >
                 {t('hero.contactUs')}
               </a>
             </div>
           </ScrollReveal>
-          <ScrollReveal className="flex-1 flex justify-center lg:justify-end">
+          <ScrollReveal className="flex-1 w-full min-w-0 flex justify-center lg:justify-end">
             <HeroMotionWrapper>
               <HeroCharacter />
             </HeroMotionWrapper>
@@ -156,10 +161,10 @@ export default function Landing() {
         </div>
 
         {/* Approach Section */}
-        <section className="w-full py-16 lg:py-24">
-          <div className="max-w-6xl mx-auto px-6">
+        <section className="w-full py-12 sm:py-16 lg:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
-              <h2 className="headline-approach text-4xl lg:text-5xl xl:text-6xl font-bold text-center uppercase leading-tight mb-12">
+              <h2 className="headline-approach text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center uppercase leading-tight mb-8 sm:mb-12">
               {t('approach.line1')}
               <br />
               {t('approach.line2')}
@@ -167,7 +172,7 @@ export default function Landing() {
               {t('approach.line3')}
             </h2>
             </ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <ScrollReveal className="approach-card bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500 flex flex-col h-full">
                 <div className="absolute top-4 right-4 w-10 h-10 bg-pink-soft dark:bg-white/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,8 +230,8 @@ export default function Landing() {
         </div>
 
         {/* Apprendre & Pratiquer Section */}
-        <section className="w-full py-16 lg:py-24">
-          <div className="max-w-6xl mx-auto px-6">
+        <section className="w-full py-12 sm:py-16 lg:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal className="text-center mb-10">
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-soft dark:bg-white/10 text-pink-dark dark:text-pink-400 text-sm font-medium transition-colors duration-500">
                 <span className="w-1 h-1 rounded-full bg-pink-primary" />
@@ -334,12 +339,12 @@ export default function Landing() {
         </div>
 
         {/* Testimonials */}
-        <section className="mb-16">
+        <section className="mb-12 sm:mb-16">
           <ScrollReveal>
             <h2 className="text-2xl lg:text-3xl font-semibold text-text dark:text-[#f5f5f5] mb-2">{t('testimonials.title')}</h2>
             <p className="text-text/60 dark:text-[#f5f5f5]/60 text-sm mb-10">{t('testimonials.subtitle')}</p>
           </ScrollReveal>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {t('testimonials.items', { returnObjects: true }).map((item, index) => (
               <ScrollReveal key={index}>
                 <blockquote className="group bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 border-s-4 border-s-pink-primary dark:border-s-pink-400 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(231,84,128,0.2)] dark:hover:shadow-[0_12px_40px_rgba(231,84,128,0.15)] hover:scale-[1.02]">
@@ -370,8 +375,8 @@ export default function Landing() {
 
         <ContactSection />
 
-        <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-16 pt-12 pb-8">
-          <div className="max-w-7xl mx-auto px-6">
+        <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-12 sm:mt-16 pt-8 sm:pt-12 pb-6 sm:pb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
               <div dir="ltr" className="flex flex-col gap-1">
                 <span className="font-semibold text-text dark:text-[#f5f5f5] text-lg">

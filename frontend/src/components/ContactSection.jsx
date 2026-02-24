@@ -61,15 +61,15 @@ export default function ContactSection() {
   ];
 
   return (
-    <section id="contact" className="w-full py-16 lg:py-24">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="contact" className="w-full py-12 sm:py-16 lg:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
-          <div className="contact-card bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 lg:p-12 shadow-pink-soft dark:shadow-xl border border-pink-soft/50 dark:border-white/10 overflow-hidden relative">
+          <div className="contact-card bg-white dark:bg-[#1a1a1a] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-pink-soft dark:shadow-xl border border-pink-soft/50 dark:border-white/10 overflow-hidden relative">
             {/* Subtle gradient accent – animated */}
             <div className="contact-card__blob contact-card__blob--top absolute top-0 right-0 w-64 h-64 bg-pink-soft/30 dark:bg-pink-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="contact-card__blob contact-card__blob--bottom absolute bottom-0 left-0 w-48 h-48 bg-pink-soft/20 dark:bg-pink-400/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
-            <div className="relative flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+            <div className="relative flex flex-col lg:flex-row items-center gap-6 sm:gap-10 lg:gap-16">
               {/* Illustration – gentle float */}
               <div className="flex-shrink-0 flex items-center justify-center w-40 h-32 lg:w-48 lg:h-40">
                 <ContactIllustration />

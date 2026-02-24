@@ -18,6 +18,7 @@
 html {
   @apply transition-colors duration-500 ease-in-out;
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -27,6 +28,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   animation: bgBreath 30s ease-in-out infinite;
+  overflow-x: hidden;
 }
 
 @keyframes bgBreath {
@@ -100,7 +102,7 @@ h1, h2, h3, h4, h5, h6,
 .section-divider {
   height: 1px;
   margin: 0 auto;
-  max-width: 80%;
+  max-width: 95%;
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -111,6 +113,11 @@ h1, h2, h3, h4, h5, h6,
     rgba(250, 218, 221, 0.4) 85%,
     transparent 100%
   );
+}
+@media (min-width: 640px) {
+  .section-divider {
+    max-width: 80%;
+  }
 }
 
 .dark .section-divider {
@@ -300,9 +307,123 @@ h1, h2, h3, h4, h5, h6,
   text-shadow: 0 1px 2px rgba(244, 114, 182, 0.2);
 }
 
-/* Brand "Me" - soft scale-in on load (hero only) */
+/* Me eye badge – almond (real eye) shape, not pill */
+.me-eye-badge {
+  --eye-bg: #E75480;
+  --eye-bg-dark: #f472b6;
+  --eyelid-light: rgba(255, 255, 255, 0.92);
+  --eyelid-dark: rgba(17, 17, 17, 0.92);
+  background: var(--eye-bg);
+  clip-path: url(#me-eye-almond);
+  font-family: inherit;
+  box-shadow:
+    0 1px 1px rgba(194, 24, 91, 0.18),
+    inset 0 1px 4px rgba(0, 0, 0, 0.08),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.dark .me-eye-badge {
+  background: var(--eye-bg-dark);
+  box-shadow:
+    0 1px 1px rgba(244, 114, 182, 0.15),
+    inset 0 1px 5px rgba(0, 0, 0, 0.25),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.04);
+}
+
+/* Eyelid – matches navbar/hero bg, slides down, 250ms blink */
+.me-eye-badge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: var(--eyelid-light);
+  border-radius: 0 0 50% 50%;
+  transform-origin: top center;
+  animation: eyeLidBlink calc(var(--blink-interval, 4000ms) + 260ms) ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dark .me-eye-badge::after {
+  background: var(--eyelid-dark);
+}
+
+/* 250ms blink: close 125ms + open 125ms (of ~4.25s total cycle) */
+@keyframes eyeLidBlink {
+  0%, 5.88%, 100% { height: 0; }
+  2.94% { height: 100%; }
+}
+
+/* Pupil – darker circular shape, soft and elegant */
+.me-eye-pupil {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40%;
+  height: 40%;
+  min-width: 12px;
+  min-height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(139, 20, 60, 0.45) 0%,
+    rgba(139, 20, 60, 0.28) 40%,
+    rgba(139, 20, 60, 0.12) 70%,
+    transparent 100%
+  );
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.dark .me-eye-pupil {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.04) 70%,
+    transparent 100%
+  );
+}
+
+/* Pupil hover – subtle 2–3px drift */
+.group\/me-eye:hover .me-eye-pupil {
+  animation: eyePupilDrift 2.6s ease-in-out infinite;
+}
+
+@keyframes eyePupilDrift {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25% { transform: translate(calc(-50% - 2px), -50%); }
+  75% { transform: translate(calc(-50% + 2px), -50%); }
+}
+
+@media (min-width: 640px) {
+  .group\/me-eye:hover .me-eye-pupil {
+    animation: eyePupilDriftLg 2.6s ease-in-out infinite;
+  }
+}
+
+@keyframes eyePupilDriftLg {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25% { transform: translate(calc(-50% - 3px), -50%); }
+  75% { transform: translate(calc(-50% + 3px), -50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .me-eye-badge::after {
+    animation: none;
+  }
+  .group\/me-eye:hover .me-eye-pupil {
+    animation: none;
+  }
+}
+
+/* Brand "Me" (eye) – soft scale-in on load (hero only) */
 .brand-me {
-  display: inline-block;
+  display: inline-flex;
   animation: brandMeScaleIn 0.7s ease-out forwards;
 }
 

@@ -1,0 +1,11 @@
+{
+  "name": "frenchwithus",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm ci && npm run build && cd ../backend && npm ci && npx prisma generate && cp -r ../frontend/dist ./public",
+    "start": "node backend/src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
