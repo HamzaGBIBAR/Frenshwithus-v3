@@ -1,9 +1,18 @@
 import 'dotenv/config';
+
+// Ensure Railway Postgres SSL: append sslmode=require for non-local hosts
+const dbUrl = process.env.DATABASE_URL;
+if (dbUrl && !dbUrl.includes('sslmode=') && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1')) {
+  const sep = dbUrl.includes('?') ? '&' : '?';
+  process.env.DATABASE_URL = `${dbUrl}${sep}sslmode=require`;
+}
+
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import prisma from './lib/db.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import professorRoutes from './routes/professor.js';
@@ -37,6 +46,17 @@ if (fs.existsSync(publicPath)) {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+async function start() {
+  try {
+    await prisma.$connect();
+    console.log('Database connected');
+  } catch (err) {
+    console.error('Database connection failed:', err.message);
+    process.exit(1);
+  }
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+start();

@@ -2,6 +2,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Railway Postgres: use process.env.DATABASE_URL (set in Railway dashboard).
+// For SSL, ensure URL includes ?sslmode=require (Railway often adds this automatically).
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

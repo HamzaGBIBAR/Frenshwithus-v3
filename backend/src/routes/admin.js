@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.use(authenticate);
 router.use(requireRole('ADMIN'));

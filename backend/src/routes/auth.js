@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/me', authenticate, async (req, res) => {
   const user = await prisma.user.findUnique({

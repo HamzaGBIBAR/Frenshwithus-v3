@@ -1,3 +1,12 @@
+import 'dotenv/config';
+
+// Ensure Railway Postgres SSL for non-local hosts
+const dbUrl = process.env.DATABASE_URL;
+if (dbUrl && !dbUrl.includes('sslmode=') && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1')) {
+  const sep = dbUrl.includes('?') ? '&' : '?';
+  process.env.DATABASE_URL = `${dbUrl}${sep}sslmode=require`;
+}
+
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
