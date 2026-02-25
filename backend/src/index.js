@@ -47,6 +47,10 @@ if (fs.existsSync(publicPath)) {
 }
 
 async function start() {
+  if (!process.env.JWT_SECRET) {
+    console.error('Fatal: JWT_SECRET environment variable is not set. Add it in Railway Variables.');
+    process.exit(1);
+  }
   try {
     await prisma.$connect();
     console.log('Database connected');
