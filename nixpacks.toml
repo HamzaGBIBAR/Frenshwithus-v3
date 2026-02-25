@@ -8,7 +8,7 @@ cmds = ["npm ci --prefix frontend", "npm ci --prefix backend"]
 [phases.build]
 cmds = [
   "cd frontend && npm run build",
-  "cd backend && npx prisma generate && cp -r ../frontend/dist ./public"
+  "cd backend && npx prisma generate && npx prisma migrate deploy && cp -r ../frontend/dist ./public"
 ]
 
 [start]
