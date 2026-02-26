@@ -116,7 +116,7 @@ export default function Landing() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-text dark:text-[#f5f5f5] mb-3 sm:mb-4 leading-tight flex flex-wrap items-baseline gap-1" dir="ltr">
               {t('hero.title')} <span className="text-lg sm:text-xl lg:text-2xl font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase">{t('hero.with')}</span>{' '}
               <span className="brand-me">
-                <AnimatedEye variant="hero" />
+                <AnimatedEye variant="navbar" />
               </span>
             </h1>
             <p className="text-base sm:text-lg text-text/80 dark:text-[#f5f5f5]/80 mb-6 sm:mb-8 max-w-xl">
