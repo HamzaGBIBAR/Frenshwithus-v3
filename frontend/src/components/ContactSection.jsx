@@ -4,7 +4,7 @@ import { CONTACT } from '../config/contact';
 
 function ContactIllustration() {
   return (
-    <svg viewBox="0 0 180 140" className="contact-illustration w-full max-w-[180px] h-auto text-pink-primary/25 dark:text-pink-400/20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 180 140" className="contact-illustration w-full max-w-[180px] sm:max-w-[200px] lg:max-w-[220px] h-auto text-pink-primary/25 dark:text-pink-400/20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       {/* Minimal envelope – modern, friendly */}
       <rect x="25" y="45" width="130" height="90" rx="10" />
       <path d="M25 55 L90 95 L155 55" />

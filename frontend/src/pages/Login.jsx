@@ -32,16 +32,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 transition-colors duration-500 relative">
-      <div className="absolute top-6 end-6 flex items-center gap-2">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 sm:px-6 py-20 sm:py-0 transition-colors duration-500 relative">
+      <div className="absolute top-4 sm:top-6 end-4 sm:end-6 flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
       </div>
-      <div className="w-full max-w-sm animate-fade-in">
+      <div className="w-full max-w-[min(100%,28rem)] animate-fade-in">
         <Link to="/" className="block text-center text-xl font-semibold text-text dark:text-[#f5f5f5] mb-8 hover:text-pink-primary dark:hover:text-pink-400 transition">
           French With Us
         </Link>
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a1a1a] p-8 rounded-2xl shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 w-full transition-colors duration-500">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a1a1a] p-6 sm:p-8 rounded-2xl shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 w-full transition-colors duration-500">
           <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('login.title')}</h1>
           {error && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-xl text-sm border border-red-100 dark:border-red-800/50">{error}</div>

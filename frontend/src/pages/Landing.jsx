@@ -109,7 +109,7 @@ export default function Landing() {
         </div>
       </header>
 
-      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-24">
+      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 3xl:px-12 py-10 sm:py-16 lg:py-24 3xl:py-32">
         {/* Hero Section */}
         <section ref={heroRef} className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-20">
           <ScrollReveal className="flex-1 w-full min-w-0">
@@ -134,7 +134,7 @@ export default function Landing() {
                 <span className="font-medium text-text dark:text-[#f5f5f5]">{t('hero.countries')}</span>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
 <Link
               to={getDashboardLink()}
               className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"

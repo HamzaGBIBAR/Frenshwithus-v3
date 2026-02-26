@@ -104,8 +104,8 @@ export default function Professors() {
         </div>
       </form>
 
-      <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500">
-        <table className="w-full text-sm">
+      <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500 responsive-table-wrap">
+        <table className="w-full text-sm min-w-[280px]">
           <thead>
             <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.name')}</th>

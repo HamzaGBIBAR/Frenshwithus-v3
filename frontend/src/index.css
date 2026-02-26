@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Responsive base – mobile-first, relative units */
+html {
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  html { font-size: 16px; }
+}
+@media (min-width: 1024px) {
+  html { font-size: 16px; }
+}
+@media (min-width: 1600px) {
+  html { font-size: 18px; }
+}
+
+/* Responsive images and media */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+img {
+  display: block;
+}
+
 :root {
   --pink-primary: #E75480;
   --pink-soft: #FADADD;
@@ -137,6 +161,24 @@ h1, h2, h3, h4, h5, h6,
   height: 3px;
   border-radius: 2px;
   max-width: 60%;
+}
+
+/* Responsive tables – scroll on mobile */
+.responsive-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .responsive-table-wrap {
+    overflow-x: visible;
+  }
+}
+
+/* TV / large screen – enhance spacing and typography */
+@media (min-width: 1600px) {
+  .headline-approach {
+    letter-spacing: 0.02em;
+  }
 }
 
 /* Card hover – soft shadow + lift (200–300ms) */

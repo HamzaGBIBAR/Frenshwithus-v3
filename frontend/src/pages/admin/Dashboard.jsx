@@ -38,8 +38,8 @@ export default function AdminDashboard() {
             {t('dashboard.admin.viewAll')}
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto responsive-table-wrap">
+          <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.professor')}</th>

@@ -28,8 +28,8 @@ export default function ProfessorDashboard() {
             Manage courses
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto responsive-table-wrap">
+          <table className="w-full text-sm min-w-[320px]">
             <thead>
               <tr className="bg-pink-soft/30 text-left">
                 <th className="p-3 font-medium text-text">Student</th>
