@@ -3,42 +3,76 @@ import prisma from '../lib/db.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
-const LIVE_ROOM = 'frenchwithus-live';
 
 /**
- * GET /live-access
- * Vérifie si l'utilisateur peut accéder au live et si le professeur est en ligne.
- * Rôles autorisés : STUDENT, PROFESSOR
+ * GET /live-access?courseId=xxx
+ * Accès au live par cours (style Teams). Vérifie que l'utilisateur est prof ou élève du cours.
  */
 router.get('/live-access', authenticate, async (req, res) => {
   const { role } = req.user;
+  const courseId = req.query.courseId;
+  if (!courseId) {
+    return res.status(400).json({ error: 'courseId requis' });
+  }
   if (role !== 'STUDENT' && role !== 'PROFESSOR') {
     return res.status(403).json({ error: 'Accès réservé aux étudiants et professeurs' });
   }
 
-  const professorOnline = req.app.locals?.professorOnline ?? false;
-  const roomName = LIVE_ROOM;
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, professorId: true, studentId: true },
+  });
+  if (!course) {
+    return res.status(404).json({ error: 'Cours introuvable' });
+  }
+  if (role === 'PROFESSOR' && course.professorId !== req.user.id) {
+    return res.status(403).json({ error: 'Ce cours ne vous appartient pas' });
+  }
+  if (role === 'STUDENT' && course.studentId !== req.user.id) {
+    return res.status(403).json({ error: 'Ce cours ne vous est pas assigné' });
+  }
+
+  const courseProfessorOnline = req.app.locals?.courseProfessorOnline ?? {};
+  const professorOnline = !!courseProfessorOnline[courseId];
+  const roomName = `frenchwithus-course-${courseId}`;
 
   res.json({
     canAccess: true,
     professorOnline,
     roomName,
     role,
+    courseId,
   });
 });
 
 /**
  * POST /live/session/start
- * Professeur démarre une session (appelé côté front quand il entre dans la salle)
+ * Professeur démarre une session pour un cours (isStarted + session DB)
  */
 router.post('/live/session/start', authenticate, async (req, res) => {
   if (req.user.role !== 'PROFESSOR') {
     return res.status(403).json({ error: 'Réservé aux professeurs' });
   }
+  const { courseId } = req.body || {};
+  if (!courseId) {
+    return res.status(400).json({ error: 'courseId requis' });
+  }
+
+  const course = await prisma.course.findFirst({
+    where: { id: courseId, professorId: req.user.id },
+  });
+  if (!course) {
+    return res.status(404).json({ error: 'Cours introuvable' });
+  }
+
+  await prisma.course.update({
+    where: { id: courseId },
+    data: { isStarted: true },
+  });
 
   const session = await prisma.liveSession.create({
     data: {
-      roomName: LIVE_ROOM,
+      roomName: `frenchwithus-course-${courseId}`,
       professorId: req.user.id,
     },
   });
@@ -99,4 +133,3 @@ router.get('/live/sessions', authenticate, async (req, res) => {
 });
 
 export default router;
-export { LIVE_ROOM };

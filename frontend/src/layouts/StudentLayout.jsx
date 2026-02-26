@@ -8,7 +8,6 @@ import StudentMessages from '../pages/student/Messages';
 const navItems = [
   { to: '/', label: 'Accueil', end: true },
   { to: '/student', label: 'Mes cours', end: true },
-  { to: '/live', label: 'Cours en direct' },
   { to: '/student/messages', label: 'Messages' },
 ];
 

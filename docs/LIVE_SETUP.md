@@ -1,12 +1,24 @@
-# Configuration du cours en direct (Live)
+# Configuration du cours en direct (Live) – Style Teams
 
 ## Vue d'ensemble
 
-Le système permet aux **étudiants** et **professeurs** d'accéder à des cours en direct via Jitsi Meet. Les étudiants ne peuvent rejoindre que lorsque le professeur est déjà en ligne.
+Chaque **cours** a sa propre salle live (comme Teams). L'accès se fait depuis le **planning** :
+
+- **Professeur** : Planning → cours du jour → « Démarrer le cours » → ouvre la salle Jitsi
+- **Étudiant** : Mes cours → prochains cours → « Rejoindre » → rejoint la salle (ou attend le professeur)
+
+## Flux
+
+1. Le cours apparaît dans le planning (professeur et étudiant)
+2. Le jour du cours, le professeur clique « Démarrer le cours » sur le cours concerné
+3. Le professeur entre dans la salle Jitsi (room = `frenchwithus-course-{courseId}`)
+4. L'étudiant clique « Rejoindre » sur son cours
+5. Si le professeur est déjà en ligne → salle affichée
+6. Sinon → message d'attente + notification toast quand le professeur arrive
 
 ## Règles de sécurité
 
-- Seuls les rôles `STUDENT` et `PROFESSOR` peuvent accéder à `/live`
+- Accès à `/live?courseId=xxx` uniquement pour le professeur ou l'étudiant du cours
 - Les étudiants voient un message d'attente tant que le professeur n'est pas connecté
 - Notification toast automatique quand le professeur arrive
 - Vérification JWT côté serveur pour toutes les routes
@@ -66,16 +78,17 @@ L'enregistrement nécessite un déploiement Jitsi auto-hébergé avec **Jibri**.
 
 | Méthode | Route | Description |
 |---------|-------|-------------|
-| GET | `/api/live-access` | Vérifie l'accès et l'état `professorOnline` |
-| POST | `/api/live/session/start` | Professeur : démarre une session |
+| GET | `/api/live-access?courseId=xxx` | Vérifie l'accès au cours et l'état `professorOnline` |
+| POST | `/api/live/session/start` | Professeur : démarre une session (body: `{ courseId }`) |
 | POST | `/api/live/session/end` | Professeur : termine une session (optionnel : `recordingUrl`) |
 | GET | `/api/live/sessions` | Historique des sessions (professeur/admin) |
 
 ## Test
 
-1. Se connecter en tant que **professeur** → aller sur `/live` → la salle Jitsi s'affiche
-2. Dans un autre navigateur (ou mode privé), se connecter en tant qu'**étudiant** → aller sur `/live` → message d'attente
-3. Quand le professeur est sur `/live`, l'étudiant reçoit une notification toast et la salle s'affiche automatiquement
+1. Créer un cours (admin) pour aujourd'hui, assigner un professeur et un étudiant
+2. **Professeur** : Planning → trouver le cours → « Démarrer le cours » → salle Jitsi s'ouvre
+3. **Étudiant** : Mes cours → prochains cours → « Rejoindre » → si le prof est en ligne, salle affichée ; sinon message d'attente
+4. Quand le professeur rejoint, l'étudiant en attente reçoit une notification toast
 
 ## CSP (Content Security Policy)
 

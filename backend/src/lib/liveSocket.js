@@ -12,10 +12,9 @@ function parseCookie(str) {
 import prisma from './db.js';
 
 const ACCESS_COOKIE = 'access_token';
-const LIVE_ROOM = 'live-room';
 
 /**
- * Initialise Socket.IO pour le live : état professorOnline + notifications étudiants
+ * Initialise Socket.IO pour le live : état professorOnline par cours + notifications
  */
 export function initLiveSocket(httpServer, app) {
   const origins = getSocketOrigins();
@@ -24,7 +23,7 @@ export function initLiveSocket(httpServer, app) {
     path: '/live-socket',
   });
 
-  app.locals.professorOnline = false;
+  app.locals.courseProfessorOnline = {};
   app.locals.io = io;
 
   io.use(async (socket, next) => {
@@ -51,18 +50,24 @@ export function initLiveSocket(httpServer, app) {
 
   io.on('connection', (socket) => {
     const { user } = socket;
+    const courseId = socket.handshake.query?.courseId || socket.handshake.auth?.courseId;
+    if (!courseId) {
+      socket.disconnect(true);
+      return;
+    }
 
-    socket.join(LIVE_ROOM);
+    const roomName = `course-${courseId}`;
+    socket.join(roomName);
 
     if (user.role === 'PROFESSOR') {
-      app.locals.professorOnline = true;
-      io.to(LIVE_ROOM).emit('professorOnline', { online: true });
+      app.locals.courseProfessorOnline[courseId] = true;
+      io.to(roomName).emit('professorOnline', { online: true, courseId });
     }
 
     socket.on('disconnect', () => {
       if (user.role === 'PROFESSOR') {
-        app.locals.professorOnline = false;
-        io.to(LIVE_ROOM).emit('professorOnline', { online: false });
+        app.locals.courseProfessorOnline[courseId] = false;
+        io.to(roomName).emit('professorOnline', { online: false, courseId });
       }
     });
   });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
@@ -7,7 +8,6 @@ export default function StudentDashboard() {
   const { t } = useTranslation();
   const [courses, setCourses] = useState([]);
   const [payments, setPayments] = useState([]);
-  const [meetingStatus, setMeetingStatus] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
@@ -22,11 +22,6 @@ export default function StudentDashboard() {
     time: c.time,
     type: 'course',
   }));
-
-  const checkMeetingLink = async (courseId) => {
-    const { data } = await api.get(`/student/courses/${courseId}/meeting-link`);
-    setMeetingStatus((s) => ({ ...s, [courseId]: data }));
-  };
 
   const upcoming = courses.filter((c) => {
     const d = new Date(`${c.date}T${c.time}`);
@@ -107,9 +102,7 @@ export default function StudentDashboard() {
           {upcoming.length === 0 ? (
             <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noUpcoming')}</p>
           ) : (
-            upcoming.map((c) => {
-              const status = meetingStatus[c.id];
-              return (
+            upcoming.map((c) => (
                 <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-colors duration-500">
                   <div className="flex justify-between items-start gap-4">
                     <div>
@@ -117,30 +110,16 @@ export default function StudentDashboard() {
                       <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {c.time}</p>
                     </div>
                     <div className="flex-shrink-0">
-                      {!status ? (
-                        <button
-                          onClick={() => checkMeetingLink(c.id)}
-                          className="px-4 py-2 bg-pink-primary dark:bg-pink-400 text-white rounded-xl text-sm hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
-                        >
-                          {t('dashboard.student.getLink')}
-                        </button>
-                      ) : status.unlocked ? (
-                        <a
-                          href={status.meetingLink}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-block px-4 py-2 bg-green-600 text-white rounded-xl text-sm hover:bg-green-700 transition"
-                        >
-                          {t('dashboard.student.join')}
-                        </a>
-                      ) : (
-                        <span className="text-amber-600 text-sm">{status.message}</span>
-                      )}
+                      <Link
+                        to={`/live?courseId=${c.id}`}
+                        className="inline-block px-4 py-2 bg-pink-primary dark:bg-pink-400 text-white rounded-xl text-sm hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
+                      >
+                        {t('dashboard.student.join')}
+                      </Link>
                     </div>
                   </div>
                 </div>
-              );
-            })
+              ))
           )}
         </div>
       </div>

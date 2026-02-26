@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
@@ -59,11 +60,6 @@ export default function ProfessorCourses() {
 
   const handleRemoveAvailability = async (id) => {
     await api.delete(`/professor/availability/${id}`);
-    load();
-  };
-
-  const startCourse = async (id) => {
-    await api.put(`/professor/courses/${id}/start`);
     load();
   };
 
@@ -446,13 +442,13 @@ export default function ProfessorCourses() {
                                   {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
                                 </button>
                               )}
-                              {!c.isStarted && status === 'upcoming' && (
-                                <button
-                                  onClick={() => startCourse(c.id)}
-                                  className="px-2 py-1 bg-pink-primary dark:bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-dark dark:hover:bg-pink-500 transition"
+                              {(status === 'upcoming' || status === 'live') && (
+                                <Link
+                                  to={`/live?courseId=${c.id}`}
+                                  className="inline-block px-2 py-1 bg-pink-primary dark:bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-dark dark:hover:bg-pink-500 transition"
                                 >
-                                  {t('dashboard.professor.startCourse')}
-                                </button>
+                                  {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
+                                </Link>
                               )}
                             </div>
                           </div>

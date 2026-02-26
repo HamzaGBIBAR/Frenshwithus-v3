@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { io } from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +10,8 @@ const JITSI_DOMAIN = 'meet.jit.si';
 
 export default function Live() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get('courseId');
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -34,12 +36,16 @@ export default function Live() {
       setLoading(false);
       return;
     }
+    if (!courseId) {
+      navigate(user?.role === 'PROFESSOR' ? '/professor/courses' : '/student', { replace: true });
+      return;
+    }
 
     let cancelled = false;
 
     async function fetchAccess() {
       try {
-        const { data } = await api.get('/live-access');
+        const { data } = await api.get(`/live-access?courseId=${courseId}`);
         if (cancelled) return;
         setAccess(data);
         setProfessorOnline(data.professorOnline);
@@ -59,20 +65,22 @@ export default function Live() {
 
     fetchAccess();
     return () => { cancelled = true; };
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, courseId]);
 
   useEffect(() => {
-    if (!user || access?.canAccess !== true) return;
+    if (!user || access?.canAccess !== true || !courseId) return;
 
     const socketUrl = import.meta.env.DEV ? '' : `${window.location.origin}`;
     const socket = io(socketUrl, {
       path: '/live-socket',
       withCredentials: true,
+      query: { courseId },
     });
 
     socketRef.current = socket;
 
-    socket.on('professorOnline', ({ online }) => {
+    socket.on('professorOnline', ({ online, courseId: evtCourseId }) => {
+      if (evtCourseId && evtCourseId !== courseId) return;
       setProfessorOnline(online);
       if (online && user.role === 'STUDENT') {
         setShowJitsi(true);
@@ -88,7 +96,7 @@ export default function Live() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [user, access?.canAccess, showToast, t]);
+  }, [user, access?.canAccess, courseId, showToast, t]);
 
   useEffect(() => {
     if (!showJitsi || !access?.roomName || !jitsiContainerRef.current) return;
@@ -96,8 +104,8 @@ export default function Live() {
     const isProfessor = user?.role === 'PROFESSOR';
     const displayName = user?.name || 'Participant';
 
-    if (isProfessor) {
-      api.post('/live/session/start').then(({ data }) => { sessionIdRef.current = data.sessionId; }).catch(() => {});
+    if (isProfessor && access?.courseId) {
+      api.post('/live/session/start', { courseId: access.courseId }).then(({ data }) => { sessionIdRef.current = data.sessionId; }).catch(() => {});
     }
 
     const script = document.createElement('script');
@@ -162,7 +170,7 @@ export default function Live() {
         jitsiApiRef.current = null;
       }
     };
-  }, [showJitsi, access?.roomName, user?.name, user?.role]);
+  }, [showJitsi, access?.roomName, access?.courseId, user?.name, user?.role]);
 
   if (authLoading || loading) {
     return (
@@ -176,7 +184,7 @@ export default function Live() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 text-center max-w-md">
-          <p className="text-text dark:text-[#f5f5f5]">{t('dashboard.livePage.accessDenied')}</p>
+          <p className="text-text dark:text-[#f5f5f5]">{!courseId ? 'Accédez au cours depuis le planning.' : t('dashboard.livePage.accessDenied')}</p>
           <button
             onClick={() => navigate('/')}
             className="mt-4 px-6 py-2 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:opacity-90 transition"

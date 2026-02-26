@@ -10,7 +10,6 @@ const navItems = [
   { to: '/', label: 'Accueil', end: true },
   { to: '/professor', label: 'Tableau de bord', end: true },
   { to: '/professor/courses', label: 'Planning' },
-  { to: '/live', label: 'Cours en direct' },
   { to: '/professor/messages', label: 'Messages' },
 ];
 
