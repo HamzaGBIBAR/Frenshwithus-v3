@@ -1,0 +1,10 @@
+# Exclude from Railway build context (reduces snapshot size)
+docs/
+*.md
+!README.md
+backend/test/
+frontend/TYPOGRAPHY.md
+AUDIT-REPORT.md
+RECOMMANDATIONS-APPLIQUEES.md
+backend/RAILWAY.md
+backend/SECURITY.md
