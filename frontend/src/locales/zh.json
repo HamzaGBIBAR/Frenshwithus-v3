@@ -276,6 +276,7 @@
       "message": "消息",
       "all": "全部消息",
       "professorStudent": "仅教师↔学生",
+      "filterByName": "按姓名筛选（学生或教师）",
       "empty": "暂无消息"
     },
     "professor": {

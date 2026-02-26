@@ -6,16 +6,23 @@ export default function AdminMessages() {
   const { t } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [filter, setFilter] = useState('all'); // all, professor-student
+  const [nameSearch, setNameSearch] = useState(''); // e.g. "student x" or "prof x"
 
   useEffect(() => {
     api.get('/admin/messages').then((r) => setMessages(r.data));
   }, []);
 
   const filtered = messages.filter((m) => {
-    if (filter === 'all') return true;
-    const isProf = m.sender?.role === 'PROFESSOR' || m.receiver?.role === 'PROFESSOR';
-    const isStudent = m.sender?.role === 'STUDENT' || m.receiver?.role === 'STUDENT';
-    return isProf && isStudent;
+    if (filter !== 'all') {
+      const isProf = m.sender?.role === 'PROFESSOR' || m.receiver?.role === 'PROFESSOR';
+      const isStudent = m.sender?.role === 'STUDENT' || m.receiver?.role === 'STUDENT';
+      if (!(isProf && isStudent)) return false;
+    }
+    if (!nameSearch.trim()) return true;
+    const q = nameSearch.trim().toLowerCase();
+    const senderName = (m.sender?.name ?? '').toLowerCase();
+    const receiverName = (m.receiver?.name ?? '').toLowerCase();
+    return senderName.includes(q) || receiverName.includes(q);
   });
 
   const sorted = [...filtered].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -29,7 +36,7 @@ export default function AdminMessages() {
         {t('dashboard.adminMessages.subtitle')}
       </p>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -38,6 +45,13 @@ export default function AdminMessages() {
           <option value="all">{t('dashboard.adminMessages.all')}</option>
           <option value="professor-student">{t('dashboard.adminMessages.professorStudent')}</option>
         </select>
+        <input
+          type="text"
+          value={nameSearch}
+          onChange={(e) => setNameSearch(e.target.value)}
+          placeholder={t('dashboard.adminMessages.filterByName')}
+          className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5] min-w-[180px] placeholder:text-text/50 dark:placeholder:text-[#f5f5f5]/60"
+        />
       </div>
 
       <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500">
