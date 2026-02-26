@@ -91,16 +91,16 @@ export default function SeeMoreReviews() {
         role="region"
         aria-labelledby="see-more-reviews-btn"
         aria-hidden={!isExpanded}
-        className={`overflow-hidden transition-all duration-400 ease-out ${
-          isExpanded ? 'max-h-[2000px] opacity-100 mt-6 sm:mt-8' : 'max-h-0 opacity-0 mt-0'
-        }`}
-        style={{
-          transitionProperty: 'max-height, opacity, margin-top',
-        }}
+        className="grid transition-[grid-template-rows] duration-500 ease-out"
+        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
-        <div
-          ref={scrollRef}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+        <div className="overflow-hidden min-h-0">
+          <div
+            className={`pt-6 sm:pt-8 transition-opacity duration-500 ease-out ${isExpanded ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <div
+              ref={scrollRef}
+              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           style={{ touchAction: 'pan-y' }}
@@ -136,10 +136,10 @@ export default function SeeMoreReviews() {
               </p>
             </blockquote>
           ))}
-        </div>
+            </div>
 
-        {totalPages > 1 && (
-          <nav
+            {totalPages > 1 && (
+              <nav
             className="flex items-center justify-center gap-4 mt-6 sm:mt-8"
             aria-label={t('testimonials.paginationLabel')}
           >
@@ -168,8 +168,10 @@ export default function SeeMoreReviews() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
-          </nav>
-        )}
+              </nav>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
