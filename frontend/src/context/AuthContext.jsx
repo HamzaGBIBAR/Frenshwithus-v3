@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
 
   const login = (data) => {
     setUser(data.user);
+    setLoading(false);
   };
 
   const logout = async () => {

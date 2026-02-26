@@ -253,7 +253,8 @@
       "markPaid": "Mark paid",
       "markUnpaid": "Mark unpaid",
       "paid": "Paid",
-      "unpaid": "Unpaid"
+      "unpaid": "Unpaid",
+      "deleteConfirm": "Delete this payment?"
     },
     "adminAvailability": {
       "title": "Availability",

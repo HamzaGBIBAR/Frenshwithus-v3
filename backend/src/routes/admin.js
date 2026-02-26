@@ -130,6 +130,11 @@ router.put('/payments/:id/status', paymentStatusValidation, validate, async (req
   res.json(payment);
 });
 
+router.delete('/payments/:id', async (req, res) => {
+  await prisma.payment.delete({ where: { id: req.params.id } });
+  res.json({ ok: true });
+});
+
 // Courses list
 router.get('/courses', async (req, res) => {
   const courses = await prisma.course.findMany({

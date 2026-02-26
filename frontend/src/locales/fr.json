@@ -253,7 +253,8 @@
       "markPaid": "Marquer payé",
       "markUnpaid": "Marquer non payé",
       "paid": "Payé",
-      "unpaid": "Non payé"
+      "unpaid": "Non payé",
+      "deleteConfirm": "Supprimer ce paiement ?"
     },
     "adminAvailability": {
       "title": "Disponibilités",

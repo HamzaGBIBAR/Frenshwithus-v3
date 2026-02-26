@@ -30,6 +30,12 @@ export default function Payments() {
     load();
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm(t('dashboard.adminPayments.deleteConfirm'))) return;
+    await api.delete(`/admin/payments/${id}`);
+    load();
+  };
+
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('dashboard.adminPayments.title')}</h1>
@@ -90,12 +96,18 @@ export default function Payments() {
                   </span>
                 </td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{new Date(p.date).toLocaleDateString()}</td>
-                <td className="p-3">
+                <td className="p-3 flex flex-wrap gap-2">
                   <button
                     onClick={() => toggleStatus(p.id, p.status)}
                     className="text-pink-primary dark:text-pink-300 hover:underline font-medium"
                   >
                     {p.status === 'paid' ? t('dashboard.adminPayments.markUnpaid') : t('dashboard.adminPayments.markPaid')}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    className="text-red-600 dark:text-red-300 hover:underline font-medium"
+                  >
+                    {t('dashboard.adminStudents.delete')}
                   </button>
                 </td>
               </tr>
