@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AnimatedEye from '../components/AnimatedEye';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -38,8 +39,14 @@ export default function Login() {
         <ThemeToggle />
       </div>
       <div className="w-full max-w-[min(100%,28rem)] animate-fade-in">
-        <Link to="/" className="block text-center text-xl font-semibold text-text dark:text-[#f5f5f5] mb-8 hover:text-pink-primary dark:hover:text-pink-400 transition">
-          French With Us
+        <Link to="/" className="block text-center mb-8 hover:opacity-90 transition-opacity" dir="ltr">
+          <span className="inline-flex flex-wrap items-baseline justify-center gap-1 text-xl sm:text-2xl font-semibold">
+            <span className="font-bold text-text dark:text-[#f5f5f5]">French</span>
+            <span className="text-base font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase">with</span>
+            <span className="inline-flex">
+              <AnimatedEye variant="hero" />
+            </span>
+          </span>
         </Link>
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a1a1a] p-6 sm:p-8 rounded-2xl shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 w-full transition-colors duration-500">
           <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('login.title')}</h1>
