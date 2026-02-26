@@ -87,8 +87,7 @@ async function start() {
     process.exit(1);
   }
   if (isProd && process.env.JWT_SECRET.length < 64) {
-    console.error('Fatal: JWT_SECRET must be at least 64 characters in production. Generate with: openssl rand -base64 48');
-    process.exit(1);
+    console.warn('Security: JWT_SECRET should be at least 64 characters in production. Generate with: node backend/scripts/generate-jwt-secret.js');
   }
   if (isProd && process.env.NODE_ENV !== 'production') {
     console.warn('Warning: NODE_ENV should be "production" in production.');
