@@ -315,6 +315,17 @@
       "completed": "Terminé",
       "dayViewSoon": "Vue Jour (bientôt disponible)"
     },
+    "livePage": {
+      "title": "Cours en direct",
+      "professorWaiting": "Le professeur n'est pas encore en ligne. Merci de patienter.",
+      "professorOnline": "Professeur en ligne",
+      "joinRoom": "Rejoindre la salle",
+      "accessDenied": "Accès réservé aux étudiants et professeurs.",
+      "loading": "Chargement...",
+      "professorArrived": "Le professeur est en ligne ! Vous pouvez rejoindre le cours.",
+      "leaveRoom": "Quitter la salle",
+      "recording": "Enregistrement en cours..."
+    },
     "student": {
       "title": "Mes cours",
       "coursesThisWeek": "{{count}} cours cette semaine",

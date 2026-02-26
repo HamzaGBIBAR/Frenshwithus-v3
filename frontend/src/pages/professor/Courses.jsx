@@ -244,7 +244,7 @@ export default function ProfessorCourses() {
                 </span>
                 <button
                   onClick={() => handleRemoveAvailability(slot.id)}
-                  className="text-pink-primary dark:text-pink-400 hover:underline text-sm"
+                  className="text-pink-primary dark:text-pink-300 hover:underline text-sm"
                 >
                   {t('dashboard.professor.remove')}
                 </button>

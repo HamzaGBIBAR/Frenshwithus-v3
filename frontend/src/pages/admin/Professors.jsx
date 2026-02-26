@@ -119,8 +119,8 @@ export default function Professors() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.email}</td>
                 <td className="p-3 flex gap-2">
-                  <button onClick={() => startEdit(p)} className="text-pink-primary dark:text-pink-400 hover:underline font-medium">{t('dashboard.adminStudents.edit')}</button>
-                  <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline">{t('dashboard.adminStudents.delete')}</button>
+                  <button onClick={() => startEdit(p)} className="text-pink-primary dark:text-pink-300 hover:underline font-medium">{t('dashboard.adminStudents.edit')}</button>
+                  <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-300 hover:underline">{t('dashboard.adminStudents.delete')}</button>
                 </td>
               </tr>
             ))}

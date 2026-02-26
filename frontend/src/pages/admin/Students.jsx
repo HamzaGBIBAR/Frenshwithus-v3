@@ -154,8 +154,8 @@ export default function Students() {
                   </select>
                 </td>
                 <td className="p-3 flex gap-2">
-                  <button onClick={() => startEdit(s)} className="text-pink-primary dark:text-pink-400 hover:underline font-medium">{t('dashboard.adminStudents.edit')}</button>
-                  <button onClick={() => handleDelete(s.id)} className="text-red-600 dark:text-red-400 hover:underline">{t('dashboard.adminStudents.delete')}</button>
+                  <button onClick={() => startEdit(s)} className="text-pink-primary dark:text-pink-300 hover:underline font-medium">{t('dashboard.adminStudents.edit')}</button>
+                  <button onClick={() => handleDelete(s.id)} className="text-red-600 dark:text-red-300 hover:underline">{t('dashboard.adminStudents.delete')}</button>
                 </td>
               </tr>
             ))}

@@ -42,12 +42,12 @@ export const helmetMiddleware = helmet({
     ? {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://meet.jit.si"],
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
           imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'"],
-          frameSrc: ["'none'"],
+          connectSrc: ["'self'", "https://meet.jit.si", "wss://meet.jit.si"],
+          frameSrc: ["'self'", "https://meet.jit.si"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],

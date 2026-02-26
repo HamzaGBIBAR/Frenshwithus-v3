@@ -33,6 +33,7 @@ model User {
   payments          Payment[]
   messagesSent      Message[] @relation("SentMessages")
   messagesReceived  Message[] @relation("ReceivedMessages")
+  liveSessions      LiveSession[]
 }
 
 model ProfessorAvailability {
@@ -89,4 +90,16 @@ model Message {
 
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model LiveSession {
+  id            String    @id @default(cuid())
+  roomName      String
+  professorId   String
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  recordingUrl  String?
+  createdAt     DateTime  @default(now())
+
+  professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
 }

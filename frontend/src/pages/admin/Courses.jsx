@@ -167,7 +167,7 @@ export default function Courses() {
                 </td>
                 <td className="p-3">
                   {c.meetingLink ? (
-                    <a href={c.meetingLink} target="_blank" rel="noreferrer" className="text-pink-primary dark:text-pink-400 hover:underline truncate max-w-[150px] block">
+                    <a href={c.meetingLink} target="_blank" rel="noreferrer" className="text-pink-primary dark:text-pink-300 hover:underline truncate max-w-[150px] block">
                       {t('dashboard.admin.link')}
                     </a>
                   ) : '-'}
@@ -175,7 +175,7 @@ export default function Courses() {
                 <td className="p-3">
                   <button
                     onClick={() => handleDelete(c.id)}
-                    className="text-red-600 dark:text-red-400 hover:underline text-sm"
+                    className="text-red-600 dark:text-red-300 hover:underline text-sm"
                   >
                     {t('dashboard.adminCourses.delete')}
                   </button>

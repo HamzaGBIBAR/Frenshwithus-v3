@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import http from 'http';
 
 // Ensure Railway Postgres SSL: append sslmode=require for non-local hosts
 const dbUrl = process.env.DATABASE_URL;
@@ -17,10 +18,12 @@ import { fileURLToPath } from 'url';
 import prisma from './lib/db.js';
 import { helmetMiddleware, generalLimiter, authLimiter, getAllowedOrigins } from './middleware/security.js';
 import { initSentry, captureException } from './lib/sentry.js';
+import { initLiveSocket } from './lib/liveSocket.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import professorRoutes from './routes/professor.js';
 import studentRoutes from './routes/student.js';
+import liveRoutes from './routes/live.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -56,6 +59,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/professor', professorRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api', liveRoutes);
 
 app.get('/api/health', (_, res) => res.json({ ok: true }));
 
@@ -99,7 +103,10 @@ async function start() {
     console.error('Database connection failed:', err.message);
     process.exit(1);
   }
-  app.listen(PORT, '0.0.0.0', () => {
+
+  const httpServer = http.createServer(app);
+  initLiveSocket(httpServer, app);
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

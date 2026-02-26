@@ -1,10 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/Toast';
 import AnimatedBackground from './components/AnimatedBackground';
 import FloatingLetters from './components/FloatingLetters';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Live from './pages/Live';
 import AdminLayout from './layouts/AdminLayout';
 import ProfessorLayout from './layouts/ProfessorLayout';
 import StudentLayout from './layouts/StudentLayout';
@@ -22,6 +24,14 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route
+        path="/live"
+        element={
+          <ProtectedRoute roles={['STUDENT', 'PROFESSOR']}>
+            <Live />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/*"
         element={
@@ -55,11 +65,13 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <ToastProvider>
         <AnimatedBackground />
         <FloatingLetters />
         <div className="relative z-10 transition-all duration-500">
           <AppRoutes />
         </div>
+      </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );

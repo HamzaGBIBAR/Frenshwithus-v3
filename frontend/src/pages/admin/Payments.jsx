@@ -85,7 +85,7 @@ export default function Payments() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.student?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">${p.amount.toFixed(2)}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${p.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400'}`}>
+                  <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${p.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'}`}>
                     {p.status === 'paid' ? t('dashboard.adminPayments.paid') : t('dashboard.adminPayments.unpaid')}
                   </span>
                 </td>
@@ -93,7 +93,7 @@ export default function Payments() {
                 <td className="p-3">
                   <button
                     onClick={() => toggleStatus(p.id, p.status)}
-                    className="text-pink-primary dark:text-pink-400 hover:underline font-medium"
+                    className="text-pink-primary dark:text-pink-300 hover:underline font-medium"
                   >
                     {p.status === 'paid' ? t('dashboard.adminPayments.markUnpaid') : t('dashboard.adminPayments.markPaid')}
                   </button>

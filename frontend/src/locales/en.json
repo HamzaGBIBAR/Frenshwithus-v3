@@ -315,6 +315,17 @@
       "completed": "Completed",
       "dayViewSoon": "Day view (coming soon)"
     },
+    "livePage": {
+      "title": "Live lesson",
+      "professorWaiting": "The professor is not online yet. Please wait.",
+      "professorOnline": "Professor online",
+      "joinRoom": "Join room",
+      "accessDenied": "Access reserved for students and professors.",
+      "loading": "Loading...",
+      "professorArrived": "The professor is online! You can join the lesson.",
+      "leaveRoom": "Leave room",
+      "recording": "Recording in progress..."
+    },
     "student": {
       "title": "My courses",
       "coursesThisWeek": "{{count}} courses this week",
