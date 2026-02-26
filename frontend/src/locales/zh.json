@@ -255,6 +255,29 @@
       "paid": "已付",
       "unpaid": "未付"
     },
+    "adminAvailability": {
+      "title": "可用时间",
+      "subtitle": "管理学生可用时间并查看教师可用时间。",
+      "studentAvailability": "学生可用时间",
+      "professorAvailability": "教师可用时间",
+      "selectStudent": "选择学生",
+      "day": "星期",
+      "from": "开始",
+      "to": "结束",
+      "add": "添加时段",
+      "currentSlots": "当前时段",
+      "noSlots": "无时段"
+    },
+    "adminMessages": {
+      "title": "消息",
+      "subtitle": "查看教师与学生之间的消息往来。",
+      "from": "发件人",
+      "to": "收件人",
+      "message": "消息",
+      "all": "全部消息",
+      "professorStudent": "仅教师↔学生",
+      "empty": "暂无消息"
+    },
     "professor": {
       "days": ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
       "title": "课程表",

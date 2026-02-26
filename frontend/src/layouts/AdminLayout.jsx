@@ -7,13 +7,17 @@ import Professors from '../pages/admin/Professors';
 import Students from '../pages/admin/Students';
 import Courses from '../pages/admin/Courses';
 import Payments from '../pages/admin/Payments';
+import Availability from '../pages/admin/Availability';
+import Messages from '../pages/admin/Messages';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/professors', label: 'Professors' },
   { to: '/admin/students', label: 'Students' },
+  { to: '/admin/availability', label: 'Availability' },
   { to: '/admin/courses', label: 'Courses' },
   { to: '/admin/payments', label: 'Payments' },
+  { to: '/admin/messages', label: 'Messages' },
 ];
 
 export default function AdminLayout() {
@@ -33,6 +37,8 @@ export default function AdminLayout() {
           <Route path="students" element={<Students />} />
           <Route path="courses" element={<Courses />} />
           <Route path="payments" element={<Payments />} />
+          <Route path="availability" element={<Availability />} />
+          <Route path="messages" element={<Messages />} />
         </Routes>
         </main>
       </div>

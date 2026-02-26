@@ -255,6 +255,29 @@
       "paid": "Payé",
       "unpaid": "Non payé"
     },
+    "adminAvailability": {
+      "title": "Disponibilités",
+      "subtitle": "Gérer la disponibilité des élèves et consulter celle des professeurs.",
+      "studentAvailability": "Disponibilité des élèves",
+      "professorAvailability": "Disponibilité des professeurs",
+      "selectStudent": "Sélectionner un élève",
+      "day": "Jour",
+      "from": "De",
+      "to": "À",
+      "add": "Ajouter un créneau",
+      "currentSlots": "Créneaux actuels",
+      "noSlots": "Aucun créneau"
+    },
+    "adminMessages": {
+      "title": "Messages",
+      "subtitle": "Voir les messages échangés entre professeurs et élèves.",
+      "from": "De",
+      "to": "À",
+      "message": "Message",
+      "all": "Tous les messages",
+      "professorStudent": "Professeur ↔ Élève uniquement",
+      "empty": "Aucun message"
+    },
     "professor": {
       "days": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
       "title": "Planning",

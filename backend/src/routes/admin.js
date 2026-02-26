@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation } from '../middleware/validate.js';
+import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation, studentAvailabilityValidation } from '../middleware/validate.js';
 
 const router = Router();
 
@@ -184,6 +184,50 @@ router.put('/courses/:id', async (req, res) => {
 router.delete('/courses/:id', async (req, res) => {
   await prisma.course.delete({ where: { id: req.params.id } });
   res.json({ ok: true });
+});
+
+// Student availability (admin manages)
+router.get('/students/availability', async (req, res) => {
+  const students = await prisma.user.findMany({
+    where: { role: 'STUDENT' },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      professorId: true,
+      professor: { select: { id: true, name: true } },
+      studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+    },
+  });
+  res.json(students);
+});
+
+router.post('/students/:id/availability', studentAvailabilityValidation, validate, async (req, res) => {
+  const { dayOfWeek, startTime, endTime } = req.body;
+  const slot = await prisma.studentAvailability.create({
+    data: { studentId: req.params.id, dayOfWeek, startTime, endTime },
+  });
+  res.json(slot);
+});
+
+router.delete('/students/:id/availability/:slotId', async (req, res) => {
+  await prisma.studentAvailability.delete({
+    where: { id: req.params.slotId, studentId: req.params.id },
+  });
+  res.json({ ok: true });
+});
+
+// Messages (admin can view all professor-student messages)
+router.get('/messages', async (req, res) => {
+  const messages = await prisma.message.findMany({
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      receiver: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 500,
+  });
+  res.json(messages);
 });
 
 // Get professors with their availability (for admin when creating courses)

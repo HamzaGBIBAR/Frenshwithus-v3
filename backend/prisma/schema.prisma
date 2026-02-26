@@ -23,6 +23,8 @@ model User {
   availability ProfessorAvailability[]
   // Student: courses they attend
   coursesAsStudent   Course[] @relation("StudentCourses")
+  // Student: weekly availability slots (admin-managed)
+  studentAvailability StudentAvailability[]
   // Professor: students assigned to them
   assignedStudents  User[]   @relation("ProfessorAssignments")
   professor         User?    @relation("ProfessorAssignments", fields: [professorId], references: [id])
@@ -41,6 +43,16 @@ model ProfessorAvailability {
   endTime   String // HH:mm
 
   professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
+}
+
+model StudentAvailability {
+  id        String @id @default(cuid())
+  studentId String
+  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun
+  startTime String // HH:mm
+  endTime   String // HH:mm
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Course {

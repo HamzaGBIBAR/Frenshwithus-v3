@@ -255,6 +255,29 @@
       "paid": "Paid",
       "unpaid": "Unpaid"
     },
+    "adminAvailability": {
+      "title": "Availability",
+      "subtitle": "Manage student availability and view professor availability.",
+      "studentAvailability": "Student availability",
+      "professorAvailability": "Professor availability",
+      "selectStudent": "Select a student",
+      "day": "Day",
+      "from": "From",
+      "to": "To",
+      "add": "Add slot",
+      "currentSlots": "Current slots",
+      "noSlots": "No slots"
+    },
+    "adminMessages": {
+      "title": "Messages",
+      "subtitle": "View messages exchanged between professors and students.",
+      "from": "From",
+      "to": "To",
+      "message": "Message",
+      "all": "All messages",
+      "professorStudent": "Professor ↔ Student only",
+      "empty": "No messages yet"
+    },
     "professor": {
       "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       "title": "Schedule",

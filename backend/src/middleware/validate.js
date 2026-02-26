@@ -56,6 +56,12 @@ export const assignProfessorValidation = [
   body('professorId').optional({ values: 'null' }).isString().trim().isLength({ max: 30 }),
 ];
 
+export const studentAvailabilityValidation = [
+  body('dayOfWeek').isInt({ min: 1, max: 7 }).withMessage('dayOfWeek must be 1-7'),
+  body('startTime').notEmpty().matches(/^\d{1,2}:\d{2}$/).withMessage('startTime must be HH:mm'),
+  body('endTime').notEmpty().matches(/^\d{1,2}:\d{2}$/).withMessage('endTime must be HH:mm'),
+];
+
 export const availabilityValidation = [
   body('dayOfWeek').isInt({ min: 1, max: 7 }).withMessage('dayOfWeek must be 1-7'),
   body('startTime').notEmpty().matches(/^\d{1,2}:\d{2}$/).withMessage('startTime must be HH:mm'),
