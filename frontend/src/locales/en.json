@@ -133,6 +133,11 @@
   "testimonials": {
     "title": "What our students say",
     "subtitle": "Join hundreds of satisfied learners",
+    "seeMore": "See More Rave Reviews",
+    "seeLess": "Show Less Reviews",
+    "prevReviews": "Previous reviews",
+    "nextReviews": "Next reviews",
+    "paginationLabel": "Navigate between review pages",
     "items": [
       { "quote": "The one-on-one sessions really helped me improve my pronunciation. Teachers listen and adapt the pace. Highly recommend!", "name": "Marie L.", "role": "Beginner student", "rating": 5 },
       { "quote": "Flexible scheduling and patient professors. Perfect for busy professionals. I progressed in just 3 months.", "name": "Thomas D.", "role": "Engineer", "rating": 5 },
@@ -140,6 +145,14 @@
       { "quote": "Speaking groups gave me confidence. We practice in a supportive atmosphere. A real plus for oral skills!", "name": "Lucas B.", "role": "Intermediate student", "rating": 5 },
       { "quote": "Passed B2 on the first try thanks to personalized support. Teachers know the exams inside out.", "name": "Emma R.", "role": "Exam preparation", "rating": 5 },
       { "quote": "Finally a platform that combines quality and flexibility. Online lessons are as effective as in-person.", "name": "Nicolas F.", "role": "Expat", "rating": 5 }
+    ],
+    "extraItems": [
+      { "quote": "Best French learning experience I've had. The professors are knowledgeable and make every lesson engaging.", "name": "Claire T.", "role": "Advanced student", "rating": 5, "date": "Jan 2025" },
+      { "quote": "My daughter improved dramatically in just two months. She now loves speaking French!", "name": "David K.", "role": "Parent", "rating": 5, "date": "Dec 2024" },
+      { "quote": "Professional, flexible, and effective. Exactly what I needed for my DELF preparation.", "name": "Amélie S.", "role": "Exam candidate", "rating": 5, "date": "Nov 2024" },
+      { "quote": "The group sessions are fantastic. I've met people from around the world while improving my French.", "name": "James P.", "role": "Intermediate", "rating": 5, "date": "Oct 2024" },
+      { "quote": "Clear explanations and patient teachers. I finally understand French grammar!", "name": "Sarah W.", "role": "Beginner", "rating": 5, "date": "Sep 2024" },
+      { "quote": "Worth every euro. The quality of instruction rivals in-person schools.", "name": "Marc B.", "role": "Professional", "rating": 5, "date": "Aug 2024" }
     ]
   },
   "contact": {

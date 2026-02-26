@@ -133,6 +133,11 @@
   "testimonials": {
     "title": "学生评价",
     "subtitle": "加入数百名满意的学员",
+    "seeMore": "查看更多好评",
+    "seeLess": "收起评价",
+    "prevReviews": "上一页评价",
+    "nextReviews": "下一页评价",
+    "paginationLabel": "在评价页面之间导航",
     "items": [
       { "quote": "一对一课程真的帮助我提高了发音。老师会倾听并调整节奏。强烈推荐！", "name": "Marie L.", "role": "初级学员", "rating": 5 },
       { "quote": "灵活的时间安排和耐心的老师。非常适合忙碌的职场人士。仅3个月我就进步了很多。", "name": "Thomas D.", "role": "工程师", "rating": 5 },
@@ -140,6 +145,14 @@
       { "quote": "口语小组给了我信心。我们在支持性的氛围中练习。对口语能力帮助很大！", "name": "Lucas B.", "role": "中级学员", "rating": 5 },
       { "quote": "多亏了个性化辅导，第一次就通过了B2。老师对考试了如指掌。", "name": "Emma R.", "role": "备考学员", "rating": 5 },
       { "quote": "终于有一个兼顾质量和灵活性的平台。在线课程和面对面一样有效。", "name": "Nicolas F.", "role": "海外侨民", "rating": 5 }
+    ],
+    "extraItems": [
+      { "quote": "最好的法语学习体验。老师知识渊博，每堂课都很有趣。", "name": "Claire T.", "role": "高级学员", "rating": 5, "date": "2025年1月" },
+      { "quote": "我女儿两个月内进步巨大。她现在喜欢说法语了！", "name": "David K.", "role": "家长", "rating": 5, "date": "2024年12月" },
+      { "quote": "专业、灵活、有效。正是我备考DELF所需要的。", "name": "Amélie S.", "role": "考试考生", "rating": 5, "date": "2024年11月" },
+      { "quote": "小组课程很棒。我在提高法语的同时结识了来自世界各地的人。", "name": "James P.", "role": "中级学员", "rating": 5, "date": "2024年10月" },
+      { "quote": "讲解清晰，老师耐心。我终于理解了法语语法！", "name": "Sarah W.", "role": "初级学员", "rating": 5, "date": "2024年9月" },
+      { "quote": "物超所值。教学质量可与线下学校媲美。", "name": "Marc B.", "role": "职场人士", "rating": 5, "date": "2024年8月" }
     ]
   },
   "contact": {

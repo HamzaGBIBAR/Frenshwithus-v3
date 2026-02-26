@@ -209,6 +209,9 @@ h1, h2, h3, h4, h5, h6,
   .card-hover:hover {
     transform: none;
   }
+  #see-more-reviews-panel {
+    transition: none;
+  }
 }
 
 /* Contact section – animations */

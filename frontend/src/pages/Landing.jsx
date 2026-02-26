@@ -9,6 +9,7 @@ import ContactSection from '../components/ContactSection';
 import ScrollCharacter from '../components/ScrollCharacter';
 import Pricing from '../components/Pricing';
 import ScrollReveal from '../components/ScrollReveal';
+import SeeMoreReviews from '../components/SeeMoreReviews';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AnimatedEye from '../components/AnimatedEye';
@@ -367,6 +368,7 @@ export default function Landing() {
               </ScrollReveal>
             ))}
           </div>
+          <SeeMoreReviews />
         </section>
 
         <div className="py-8 lg:py-12" aria-hidden="true">
