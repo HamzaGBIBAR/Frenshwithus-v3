@@ -43,7 +43,7 @@ export default function Payments() {
           <select
             value={form.studentId}
             onChange={(e) => setForm((f) => ({ ...f, studentId: e.target.value }))}
-            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required
           >
             <option value="">{t('dashboard.adminCourses.select')}</option>

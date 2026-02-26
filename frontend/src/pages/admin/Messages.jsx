@@ -25,7 +25,7 @@ export default function AdminMessages() {
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">
         {t('dashboard.adminMessages.title')}
       </h1>
-      <p className="text-text/70 dark:text-[#f5f5f5]/70 text-sm mb-6">
+      <p className="text-text/70 dark:text-[#f5f5f5]/90 text-sm mb-6">
         {t('dashboard.adminMessages.subtitle')}
       </p>
 
@@ -33,7 +33,7 @@ export default function AdminMessages() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+          className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
         >
           <option value="all">{t('dashboard.adminMessages.all')}</option>
           <option value="professor-student">{t('dashboard.adminMessages.professorStudent')}</option>
@@ -78,7 +78,7 @@ export default function AdminMessages() {
           </table>
         </div>
         {sorted.length === 0 && (
-          <div className="p-8 text-center text-text/50 dark:text-[#f5f5f5]/50">
+          <div className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/80">
             {t('dashboard.adminMessages.empty')}
           </div>
         )}

@@ -65,7 +65,7 @@ export default function AdminAvailability() {
             <select
               value={selectedStudent || ''}
               onChange={(e) => setSelectedStudent(e.target.value || null)}
-              className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             >
               <option value="">{t('dashboard.adminAvailability.selectStudent')}</option>
               {students.map((s) => (
@@ -81,7 +81,7 @@ export default function AdminAvailability() {
                   <select
                     value={form.dayOfWeek}
                     onChange={(e) => setForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
-                    className="px-3 py-2 border border-pink-soft dark:border-white/20 rounded-lg bg-transparent text-text dark:text-[#f5f5f5]"
+                    className="px-3 py-2 border border-pink-soft dark:border-white/20 rounded-lg bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
                   >
                     {dayLabels.map((d, i) => (
                       <option key={i} value={i + 1}>{d}</option>
@@ -94,7 +94,7 @@ export default function AdminAvailability() {
                     type="time"
                     value={form.startTime}
                     onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
-                    className="px-3 py-2 border border-pink-soft dark:border-white/20 rounded-lg bg-transparent text-text dark:text-[#f5f5f5]"
+                    className="px-3 py-2 border border-pink-soft dark:border-white/20 rounded-lg bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
                   />
                 </div>
                 <div>
@@ -103,7 +103,7 @@ export default function AdminAvailability() {
                     type="time"
                     value={form.endTime}
                     onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
-                    className="px-3 py-2 border border-pink-soft dark:border-white/20 rounded-lg bg-transparent text-text dark:text-[#f5f5f5]"
+                    className="px-3 py-2 border border-pink-soft dark:border-white/20 rounded-lg bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
                   />
                 </div>
                 <button
@@ -135,7 +135,7 @@ export default function AdminAvailability() {
                     </span>
                   ))}
                   {(!selectedStudentData?.studentAvailability?.length) && (
-                    <span className="text-sm text-text/50 dark:text-[#f5f5f5]/50">
+                    <span className="text-sm text-text/60 dark:text-[#f5f5f5]/80">
                       {t('dashboard.adminAvailability.noSlots')}
                     </span>
                   )}
@@ -166,7 +166,7 @@ export default function AdminAvailability() {
                     </span>
                   ))}
                   {(!p.availability?.length) && (
-                    <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50">
+                    <span className="text-xs text-text/60 dark:text-[#f5f5f5]/80">
                       {t('dashboard.adminAvailability.noSlots')}
                     </span>
                   )}

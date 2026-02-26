@@ -101,7 +101,7 @@ export default function Students() {
             <select
               value={form.professorId}
               onChange={(e) => setForm((f) => ({ ...f, professorId: e.target.value }))}
-              className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             >
               <option value="">{t('dashboard.adminStudents.none')}</option>
               {professors.map((p) => (
@@ -145,7 +145,7 @@ export default function Students() {
                   <select
                     value={s.professorId || ''}
                     onChange={(e) => assignProfessor(s.id, e.target.value || null)}
-                    className="text-sm border border-pink-soft dark:border-white/20 rounded-lg px-2 py-1 focus:ring-1 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+                    className="text-sm border border-pink-soft dark:border-white/20 rounded-lg px-2 py-1 focus:ring-1 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
                   >
                     <option value="">{t('dashboard.adminStudents.none')}</option>
                     {professors.map((p) => (

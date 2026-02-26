@@ -1,7 +1,8 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
+import AnimatedEye from './AnimatedEye';
 
 export default function Sidebar({ items, open = false, onClose }) {
   const { user, logout } = useAuth();
@@ -39,10 +40,12 @@ export default function Sidebar({ items, open = false, onClose }) {
         `}
       >
         <div className="p-4 md:p-5 border-b border-pink-soft/50 dark:border-white/10">
-          <span className="font-semibold text-text dark:text-[#f5f5f5] text-base md:text-base">
-            French With Us
-          </span>
-          <p className="text-xs md:text-sm text-text/60 dark:text-[#f5f5f5]/60 mt-1 truncate">
+          <Link to="/" className="flex items-baseline gap-1 font-semibold text-text dark:text-[#f5f5f5] text-base hover:opacity-90 transition-opacity" dir="ltr">
+            <span className="font-bold">French</span>
+            <span className="font-light text-text/60 dark:text-[#f5f5f5]/70 lowercase">with</span>
+            <AnimatedEye variant="navbar" className="ml-0.5" />
+          </Link>
+          <p className="text-xs md:text-sm text-text/60 dark:text-[#f5f5f5]/80 mt-1 truncate">
             {user?.name}
           </p>
         </div>
