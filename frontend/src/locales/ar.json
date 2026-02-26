@@ -276,7 +276,7 @@
       "message": "الرسالة",
       "all": "جميع الرسائل",
       "professorStudent": "أستاذ ↔ طالب فقط",
-      "filterByName": "تصفية بالاسم (طالب أو أستاذ)",
+      "filterByName": "الرسائل المرسلة من (الاسم)",
       "empty": "لا توجد رسائل"
     },
     "professor": {

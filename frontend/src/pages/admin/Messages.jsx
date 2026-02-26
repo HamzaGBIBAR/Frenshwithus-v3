@@ -19,12 +19,11 @@ export default function AdminMessages() {
       const isStudent = m.sender?.role === 'STUDENT' || m.receiver?.role === 'STUDENT';
       if (!(isProf && isStudent)) return false;
     }
-    // Name filter: show only messages where this person is sender OR receiver
+    // Name filter: show only messages sent BY this person (sender = De)
     const q = nameSearch.trim().toLowerCase();
     if (!q) return true;
     const senderName = String(m.sender?.name ?? '').trim().toLowerCase();
-    const receiverName = String(m.receiver?.name ?? '').trim().toLowerCase();
-    return senderName.includes(q) || receiverName.includes(q);
+    return senderName.includes(q);
   });
 
   const sorted = [...filtered].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
