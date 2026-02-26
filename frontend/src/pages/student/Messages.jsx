@@ -11,19 +11,12 @@ export default function StudentMessages() {
 
   useEffect(() => {
     const load = async () => {
-      const [msgRes, meRes] = await Promise.all([
+      const [msgRes, profsRes] = await Promise.all([
         api.get('/student/messages'),
-        api.get('/auth/me').catch(() => ({ data: {} })),
+        api.get('/student/professors'),
       ]);
       setMessages(msgRes.data);
-      const profs = msgRes.data
-        .flatMap((m) => [m.sender, m.receiver])
-        .filter((p) => p && p.id !== user.id);
-      const unique = [...new Map(profs.map((p) => [p.id, p])).values()];
-      if (meRes.data?.professor && !unique.find((p) => p.id === meRes.data.professor.id)) {
-        unique.unshift(meRes.data.professor);
-      }
-      setProfessors(unique);
+      setProfessors(profsRes.data);
     };
     load();
   }, [user.id]);

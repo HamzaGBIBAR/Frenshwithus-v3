@@ -222,7 +222,7 @@ router.delete('/students/:id/availability/:slotId', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Messages (admin can view all professor-student messages)
+// Messages (admin sees ALL messages sent by everyone)
 router.get('/messages', async (req, res) => {
   const messages = await prisma.message.findMany({
     include: {
@@ -230,7 +230,7 @@ router.get('/messages', async (req, res) => {
       receiver: { select: { id: true, name: true, role: true } },
     },
     orderBy: { createdAt: 'desc' },
-    take: 500,
+    take: 1000,
   });
   res.json(messages);
 });

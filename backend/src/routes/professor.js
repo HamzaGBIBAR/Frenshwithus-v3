@@ -84,13 +84,37 @@ router.put('/courses/:id/recording', async (req, res) => {
   res.json(course);
 });
 
-// Assigned students
+// Students: all students (assigned ones listed first, so prof can message anyone)
 router.get('/students', async (req, res) => {
-  const students = await prisma.user.findMany({
-    where: { professorId: req.user.id, role: 'STUDENT' },
-    select: { id: true, name: true, email: true },
+  const professorId = req.user.id;
+  const [assigned, allStudents] = await Promise.all([
+    prisma.user.findMany({
+      where: { professorId, role: 'STUDENT' },
+      select: { id: true, name: true, email: true },
+    }),
+    prisma.user.findMany({
+      where: { role: 'STUDENT' },
+      select: { id: true, name: true, email: true },
+    }),
+  ]);
+  const seen = new Set();
+  const merged = [];
+  const assignedIds = new Set(assigned.map((s) => s.id));
+  assigned.forEach((s) => { seen.add(s.id); merged.push(s); });
+  allStudents.forEach((s) => {
+    if (!seen.has(s.id)) {
+      seen.add(s.id);
+      merged.push(s);
+    }
   });
-  res.json(students);
+  merged.sort((a, b) => {
+    const aAssigned = assignedIds.has(a.id);
+    const bAssigned = assignedIds.has(b.id);
+    if (aAssigned && !bAssigned) return -1;
+    if (!aAssigned && bAssigned) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  res.json(merged);
 });
 
 // Send message to student

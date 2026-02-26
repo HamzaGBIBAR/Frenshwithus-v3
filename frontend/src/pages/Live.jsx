@@ -215,7 +215,14 @@ export default function Live() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-text dark:text-[#f5f5f5] mb-2">{t('dashboard.livePage.title')}</h2>
-          <p className="text-text/80 dark:text-[#f5f5f5]/80">{t('dashboard.livePage.professorWaiting')}</p>
+          <p className="text-text/80 dark:text-[#f5f5f5]/80 mb-6">{t('dashboard.livePage.professorWaiting')}</p>
+          <button
+            type="button"
+            onClick={() => navigate(user?.role === 'PROFESSOR' ? '/professor' : '/student')}
+            className="px-6 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:opacity-90 transition"
+          >
+            {t('dashboard.livePage.leaveRoom')}
+          </button>
         </div>
       </div>
     );
@@ -232,8 +239,25 @@ export default function Live() {
           <span className="text-sm text-text/70 dark:text-[#f5f5f5]/70">{t('dashboard.livePage.title')}</span>
         </div>
         <button
+          type="button"
           onClick={() => {
-            if (jitsiApiRef.current) jitsiApiRef.current.executeCommand('hangup');
+            const jitsiApi = jitsiApiRef.current;
+            if (jitsiApi) {
+              try {
+                jitsiApi.executeCommand('hangup');
+              } catch (_) {
+                jitsiApi.dispose();
+              }
+              if (user?.role === 'PROFESSOR' && sessionIdRef.current) {
+                api.post('/live/session/end', { sessionId: sessionIdRef.current }).catch(() => {});
+                setSessionEnded(true);
+              }
+              setShowJitsi(false);
+            } else {
+              setShowJitsi(false);
+              if (user?.role === 'PROFESSOR') setSessionEnded(true);
+              navigate(user?.role === 'PROFESSOR' ? '/professor' : '/student');
+            }
           }}
           className="px-4 py-2 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition"
         >

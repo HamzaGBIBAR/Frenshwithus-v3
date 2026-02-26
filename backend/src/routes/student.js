@@ -57,6 +57,16 @@ router.post('/messages', messageValidation, validate, async (req, res) => {
   res.json(msg);
 });
 
+// All professors (so student can contact any of them)
+router.get('/professors', async (req, res) => {
+  const professors = await prisma.user.findMany({
+    where: { role: 'PROFESSOR' },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: 'asc' },
+  });
+  res.json(professors);
+});
+
 // My messages
 router.get('/messages', async (req, res) => {
   const messages = await prisma.message.findMany({
