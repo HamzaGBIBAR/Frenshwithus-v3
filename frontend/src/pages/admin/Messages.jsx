@@ -13,15 +13,17 @@ export default function AdminMessages() {
   }, []);
 
   const filtered = messages.filter((m) => {
+    // Type filter: only professor ↔ student conversations
     if (filter !== 'all') {
       const isProf = m.sender?.role === 'PROFESSOR' || m.receiver?.role === 'PROFESSOR';
       const isStudent = m.sender?.role === 'STUDENT' || m.receiver?.role === 'STUDENT';
       if (!(isProf && isStudent)) return false;
     }
-    if (!nameSearch.trim()) return true;
+    // Name filter: show only messages where this person is sender OR receiver
     const q = nameSearch.trim().toLowerCase();
-    const senderName = (m.sender?.name ?? '').toLowerCase();
-    const receiverName = (m.receiver?.name ?? '').toLowerCase();
+    if (!q) return true;
+    const senderName = String(m.sender?.name ?? '').trim().toLowerCase();
+    const receiverName = String(m.receiver?.name ?? '').trim().toLowerCase();
     return senderName.includes(q) || receiverName.includes(q);
   });
 
