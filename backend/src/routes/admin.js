@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
+import { validate, userCreateValidation, userUpdateValidation } from '../middleware/validate.js';
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.get('/professors', async (req, res) => {
   res.json(users);
 });
 
-router.post('/professors', async (req, res) => {
+router.post('/professors', userCreateValidation, validate, async (req, res) => {
   const { name, email, password } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
@@ -30,7 +31,7 @@ router.post('/professors', async (req, res) => {
   res.json(user);
 });
 
-router.put('/professors/:id', async (req, res) => {
+router.put('/professors/:id', userUpdateValidation, validate, async (req, res) => {
   const { name, email, password } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);
@@ -62,7 +63,7 @@ router.get('/students', async (req, res) => {
   res.json(users);
 });
 
-router.post('/students', async (req, res) => {
+router.post('/students', userCreateValidation, validate, async (req, res) => {
   const { name, email, password } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
@@ -73,7 +74,7 @@ router.post('/students', async (req, res) => {
   res.json(user);
 });
 
-router.put('/students/:id', async (req, res) => {
+router.put('/students/:id', userUpdateValidation, validate, async (req, res) => {
   const { name, email, password, professorId } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);

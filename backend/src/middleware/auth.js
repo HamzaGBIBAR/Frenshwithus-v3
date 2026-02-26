@@ -1,14 +1,15 @@
-import jwt from 'jsonwebtoken';
 import prisma from '../lib/db.js';
+import { verifyAccessToken } from '../lib/auth.js';
+
+const ACCESS_COOKIE = 'access_token';
 
 export const authenticate = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
+    const token = req.cookies?.[ACCESS_COOKIE] || req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyAccessToken(token);
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     if (!user) return res.status(401).json({ error: 'User not found' });
     req.user = user;

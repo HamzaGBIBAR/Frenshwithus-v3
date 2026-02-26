@@ -5,8 +5,9 @@
 Set in Railway dashboard:
 
 - `DATABASE_URL` – Provided automatically when you add a Postgres service. Reference it from your app service: `${{Postgres.DATABASE_URL}}`
-- `JWT_SECRET` – Your secret for JWT signing (required for auth)
+- `JWT_SECRET` – **Required.** Use 64+ character random string: `openssl rand -base64 48`
 - `NODE_ENV` – Set to `production` in production
+- `FRONTEND_URL` – (Optional) Restrict CORS to your app URL, e.g. `https://frenshwithus-v2-production.up.railway.app`
 
 ## Production Migration Command
 
