@@ -48,12 +48,14 @@ npm run dev
 ## Deploy on Railway
 
 1. Connect your GitHub repo to Railway.
-2. Railway will detect the project via `nixpacks.toml` (root directory).
-3. Add variables in Railway:
-   - `DATABASE_URL` – PostgreSQL connection string (Railway can provision one)
-   - `JWT_SECRET` – secret for JWT tokens
-4. Run migrations: in Railway shell or via deploy hook, run `npx prisma db push` from the `backend` directory.
-5. Seed (optional): `node prisma/seed.js` from `backend`.
+2. Railway détecte le projet via `nixpacks.toml` (racine).
+3. Variables d'environnement (Railway Variables) :
+   - `DATABASE_URL` – Chaîne de connexion PostgreSQL (Railway peut en provisionner une)
+   - `JWT_SECRET` – **≥64 caractères** (générer : `node backend/scripts/generate-jwt-secret.js`)
+   - `FRONTEND_URL` – (optionnel) URL du frontend pour CORS si différent du domaine principal
+   - `NODE_ENV=production`
+4. Les migrations s'exécutent automatiquement au déploiement (`preDeployCommand`).
+5. Le seed s'exécute après les migrations (admin créé si absent).
 
 The build compiles the frontend, copies it to `backend/public`, and serves everything from a single Node process.
 

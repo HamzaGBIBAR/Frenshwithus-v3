@@ -9,15 +9,18 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "node prisma/seed.js",
-    "railway:deploy": "prisma generate && prisma migrate deploy"
+    "railway:deploy": "prisma generate && prisma migrate deploy",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@sentry/node": "^8.0.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
+    "express-async-errors": "^3.1.1",
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
     "helmet": "^8.1.0",

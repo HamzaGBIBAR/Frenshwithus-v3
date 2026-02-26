@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { validate, userCreateValidation, userUpdateValidation } from '../middleware/validate.js';
+import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation } from '../middleware/validate.js';
 
 const router = Router();
 
@@ -93,7 +93,7 @@ router.delete('/students/:id', async (req, res) => {
 });
 
 // Assign student to professor
-router.put('/students/:id/assign', async (req, res) => {
+router.put('/students/:id/assign', assignProfessorValidation, validate, async (req, res) => {
   const { professorId } = req.body;
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'STUDENT' },
@@ -104,7 +104,7 @@ router.put('/students/:id/assign', async (req, res) => {
 });
 
 // Payments
-router.post('/payments', async (req, res) => {
+router.post('/payments', paymentCreateValidation, validate, async (req, res) => {
   const { studentId, amount, status } = req.body;
   const payment = await prisma.payment.create({
     data: { studentId, amount, status: status || 'unpaid' },
@@ -121,7 +121,7 @@ router.get('/payments', async (req, res) => {
   res.json(payments);
 });
 
-router.put('/payments/:id/status', async (req, res) => {
+router.put('/payments/:id/status', paymentStatusValidation, validate, async (req, res) => {
   const { status } = req.body;
   const payment = await prisma.payment.update({
     where: { id: req.params.id },
@@ -143,7 +143,7 @@ router.get('/courses', async (req, res) => {
 });
 
 // Create course (admin assigns professor and student)
-router.post('/courses', async (req, res) => {
+router.post('/courses', courseCreateValidation, validate, async (req, res) => {
   const { professorId, studentId, date, time, meetingLink } = req.body;
   const course = await prisma.course.create({
     data: {

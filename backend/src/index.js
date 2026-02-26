@@ -7,6 +7,7 @@ if (dbUrl && !dbUrl.includes('sslmode=') && !dbUrl.includes('localhost') && !dbU
   process.env.DATABASE_URL = `${dbUrl}${sep}sslmode=require`;
 }
 
+import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -15,6 +16,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import prisma from './lib/db.js';
 import { helmetMiddleware, generalLimiter, authLimiter, getAllowedOrigins } from './middleware/security.js';
+import { initSentry, captureException } from './lib/sentry.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import professorRoutes from './routes/professor.js';
@@ -57,6 +59,17 @@ app.use('/api/student', studentRoutes);
 
 app.get('/api/health', (_, res) => res.json({ ok: true }));
 
+// Global error handler for unhandled route errors
+app.use((err, req, res, next) => {
+  captureException(err);
+  if (err.name === 'PrismaClientKnownRequestError') {
+    if (err.code === 'P2025') return res.status(404).json({ error: 'Resource not found' });
+    if (err.code === 'P2002') return res.status(409).json({ error: 'Duplicate value' });
+  }
+  console.error('Route error:', err);
+  res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+});
+
 // Serve frontend static files (production – public folder created during build)
 const publicPath = path.join(__dirname, '../public');
 if (fs.existsSync(publicPath)) {
@@ -68,12 +81,14 @@ if (fs.existsSync(publicPath)) {
 }
 
 async function start() {
+  await initSentry();
   if (!process.env.JWT_SECRET) {
     console.error('Fatal: JWT_SECRET environment variable is not set. Add it in Railway Variables.');
     process.exit(1);
   }
   if (isProd && process.env.JWT_SECRET.length < 64) {
-    console.warn('Security: JWT_SECRET should be at least 64 characters in production.');
+    console.error('Fatal: JWT_SECRET must be at least 64 characters in production. Generate with: openssl rand -base64 48');
+    process.exit(1);
   }
   if (isProd && process.env.NODE_ENV !== 'production') {
     console.warn('Warning: NODE_ENV should be "production" in production.');
@@ -91,9 +106,11 @@ async function start() {
 }
 
 process.on('uncaughtException', (err) => {
+  captureException(err);
   console.error('Uncaught exception:', err);
 });
 process.on('unhandledRejection', (reason, promise) => {
+  captureException(reason instanceof Error ? reason : new Error(String(reason)));
   console.error('Unhandled rejection at:', promise, 'reason:', reason);
 });
 

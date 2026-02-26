@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import prisma from '../lib/db.js';
 import { authenticate } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../lib/auth.js';
 
 const router = Router();
@@ -36,12 +37,8 @@ const loginValidation = [
   body('password').notEmpty().withMessage('Password required'),
 ];
 
-router.post('/login', loginValidation, async (req, res) => {
+router.post('/login', loginValidation, validate, async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array()[0]?.msg || 'Validation failed' });
-    }
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });

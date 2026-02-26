@@ -8,6 +8,7 @@ Set in Railway dashboard:
 - `JWT_SECRET` – **Required.** Use 64+ character random string: `openssl rand -base64 48`
 - `NODE_ENV` – Set to `production` in production
 - `FRONTEND_URL` – (Optional) Restrict CORS to your app URL, e.g. `https://frenshwithus-v2-production.up.railway.app`
+- `SENTRY_DSN` – (Optional) Monitoring des erreurs avec Sentry
 
 ## Production Migration Command
 
@@ -28,6 +29,12 @@ npx prisma generate && npx prisma db push
 ```
 
 Use this if you haven’t created migrations yet. Add as a **build command** or **deploy hook** in Railway so it runs before `npm start`.
+
+## Sauvegardes base de données
+
+1. **Railway Backups** : Activer les backups automatiques dans le dashboard Postgres (plans payants).
+2. **Export manuel** : `pg_dump $DATABASE_URL > backup.sql` (Railway Shell ou localement).
+3. **Cron externe** : cron-job.org ou GitHub Actions pour dump quotidien vers S3/storage externe.
 
 ## SSL
 

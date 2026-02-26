@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
+import { validate, messageValidation, availabilityValidation } from '../middleware/validate.js';
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.get('/availability', async (req, res) => {
   res.json(slots);
 });
 
-router.post('/availability', async (req, res) => {
+router.post('/availability', availabilityValidation, validate, async (req, res) => {
   const { dayOfWeek, startTime, endTime } = req.body;
   const slot = await prisma.professorAvailability.create({
     data: { professorId: req.user.id, dayOfWeek, startTime, endTime },
@@ -93,7 +94,7 @@ router.get('/students', async (req, res) => {
 });
 
 // Send message to student
-router.post('/messages', async (req, res) => {
+router.post('/messages', messageValidation, validate, async (req, res) => {
   const { receiverId, content } = req.body;
   const msg = await prisma.message.create({
     data: { senderId: req.user.id, receiverId, content },

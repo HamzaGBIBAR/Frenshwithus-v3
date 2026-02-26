@@ -2,7 +2,7 @@
   "name": "frenchwithus",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm ci && npm run build && cd ../backend && npm ci && npx prisma generate && cp -r ../frontend/dist ./public",
+    "build": "cd frontend && npm ci && npm run build && cd ../backend && npm ci && npx prisma generate && node scripts/copy-frontend.js",
     "start": "node backend/src/index.js"
   },
   "engines": {

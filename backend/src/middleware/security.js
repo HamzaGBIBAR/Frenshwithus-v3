@@ -6,8 +6,15 @@ const isProd = process.env.NODE_ENV === 'production';
 // CORS allowed origins – restrict in production
 export const getAllowedOrigins = () => {
   const frontendUrl = process.env.FRONTEND_URL;
-  if (isProd && frontendUrl) return [frontendUrl.trim()];
-  if (isProd) return true; // fallback: allow same-origin
+  if (isProd && frontendUrl) return frontendUrl.split(',').map((u) => u.trim()).filter(Boolean);
+  // Railway: derive from public domain when frontend is served from same origin
+  if (isProd && process.env.RAILWAY_PUBLIC_DOMAIN) {
+    return [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`, `https://www.${process.env.RAILWAY_PUBLIC_DOMAIN}`];
+  }
+  if (isProd) {
+    console.warn('CORS: Set FRONTEND_URL or RAILWAY_PUBLIC_DOMAIN for production. Allowing all origins as fallback.');
+    return true;
+  }
   return ['http://localhost:5173', 'http://127.0.0.1:5173'];
 };
 
@@ -35,7 +42,7 @@ export const helmetMiddleware = helmet({
     ? {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
           imgSrc: ["'self'", "data:", "https:"],

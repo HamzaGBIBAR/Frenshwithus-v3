@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
+import { validate, messageValidation } from '../middleware/validate.js';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ router.get('/payments', async (req, res) => {
 });
 
 // Send message to professor
-router.post('/messages', async (req, res) => {
+router.post('/messages', messageValidation, validate, async (req, res) => {
   const { receiverId, content } = req.body;
   const msg = await prisma.message.create({
     data: { senderId: req.user.id, receiverId, content },
