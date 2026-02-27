@@ -72,11 +72,12 @@ model Course {
 }
 
 model Payment {
-  id        String   @id @default(cuid())
-  studentId String
-  amount    Float
-  status    String   // paid, unpaid
-  date      DateTime @default(now())
+  id              String    @id @default(cuid())
+  studentId       String
+  amount          Float
+  status          String    // paid, unpaid
+  date            DateTime  @default(now())
+  nextPaymentDue  DateTime? // set when paid: date + 1 month
 
   student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }

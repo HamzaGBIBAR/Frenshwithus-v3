@@ -251,12 +251,18 @@
       "student": "Student",
       "amount": "Amount",
       "status": "Status",
+      "nextDue": "Next due",
       "addPayment": "Add Payment",
       "markPaid": "Mark paid",
       "markUnpaid": "Mark unpaid",
       "paid": "Paid",
       "unpaid": "Unpaid",
-      "deleteConfirm": "Delete this payment?"
+      "deleteConfirm": "Delete this payment?",
+      "dueSoon": "Payments due soon",
+      "dueSoonDesc": "Students with payments due in the next 7 days",
+      "overdue": "Overdue",
+      "dueIn": "Due in {{days}} days",
+      "dueToday": "Due today"
     },
     "adminAvailability": {
       "title": "Availability",

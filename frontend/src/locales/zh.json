@@ -251,11 +251,18 @@
       "student": "学生",
       "amount": "金额",
       "status": "状态",
+      "nextDue": "下次到期",
       "addPayment": "添加支付",
       "markPaid": "标记为已付",
       "markUnpaid": "标记为未付",
       "paid": "已付",
-      "unpaid": "未付"
+      "unpaid": "未付",
+      "deleteConfirm": "删除此支付？",
+      "dueSoon": "即将到期",
+      "dueSoonDesc": "7天内到期的学生支付",
+      "overdue": "已逾期",
+      "dueIn": "{{days}}天后到期",
+      "dueToday": "今日到期"
     },
     "adminAvailability": {
       "title": "可用时间",

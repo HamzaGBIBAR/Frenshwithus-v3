@@ -2,15 +2,30 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 
+const formatNextDue = (dateStr, t) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  d.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return <span className="text-red-600 dark:text-red-400 font-medium">{t('dashboard.adminPayments.overdue')}</span>;
+  if (diff === 0) return <span className="text-amber-600 dark:text-amber-400 font-medium">{t('dashboard.adminPayments.dueToday')}</span>;
+  if (diff <= 7) return <span className="text-amber-600 dark:text-amber-400">{t('dashboard.adminPayments.dueIn', { days: diff })}</span>;
+  return d.toLocaleDateString();
+};
+
 export default function Payments() {
   const { t } = useTranslation();
   const [payments, setPayments] = useState([]);
   const [students, setStudents] = useState([]);
+  const [dueSoon, setDueSoon] = useState([]);
   const [form, setForm] = useState({ studentId: '', amount: 0 });
 
   const load = () => {
     api.get('/admin/payments').then((r) => setPayments(r.data));
     api.get('/admin/students').then((r) => setStudents(r.data));
+    api.get('/admin/payments/due-soon').then((r) => setDueSoon(r.data)).catch(() => setDueSoon([]));
   };
 
   useEffect(() => {
@@ -40,9 +55,31 @@ export default function Payments() {
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('dashboard.adminPayments.title')}</h1>
 
+      {dueSoon.length > 0 && (
+        <div className="mb-6 p-4 rounded-2xl border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-900/20 animate-fade-in shadow-sm">
+          <div>
+            <h3 className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              {t('dashboard.adminPayments.dueSoon')} ({dueSoon.length})
+            </h3>
+            <p className="text-sm text-amber-700 dark:text-amber-400/90 mt-0.5">{t('dashboard.adminPayments.dueSoonDesc')}</p>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {dueSoon.slice(0, 5).map((p) => (
+              <span
+                key={p.id}
+                className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 border border-amber-200/60 dark:border-amber-500/30 animate-fade-in"
+              >
+                {p.student?.name} — {new Date(p.nextPaymentDue).toLocaleDateString()}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <form
         onSubmit={handleCreate}
-        className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft mb-6 flex flex-wrap gap-4 items-end transition-colors duration-500"
+        className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg mb-6 flex flex-wrap gap-4 items-end transition-all duration-500 hover:shadow-pink-soft/80"
       >
         <div>
           <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminPayments.student')}</label>
@@ -74,7 +111,7 @@ export default function Payments() {
         </button>
       </form>
 
-      <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500 responsive-table-wrap">
+      <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-500 responsive-table-wrap hover:shadow-pink-soft/80">
         <table className="w-full text-sm min-w-[320px]">
           <thead>
             <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
@@ -82,6 +119,7 @@ export default function Payments() {
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.amount')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.status')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.date')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.nextDue')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5] w-24">{t('dashboard.adminStudents.actions')}</th>
             </tr>
           </thead>
@@ -96,6 +134,7 @@ export default function Payments() {
                   </span>
                 </td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{new Date(p.date).toLocaleDateString()}</td>
+                <td className="p-3">{formatNextDue(p.nextPaymentDue, t)}</td>
                 <td className="p-3 flex flex-wrap gap-2">
                   <button
                     onClick={() => toggleStatus(p.id, p.status)}

@@ -106,8 +106,15 @@ router.put('/students/:id/assign', assignProfessorValidation, validate, async (r
 // Payments
 router.post('/payments', paymentCreateValidation, validate, async (req, res) => {
   const { studentId, amount, status } = req.body;
+  const st = status || 'unpaid';
+  const data = { studentId, amount, status: st };
+  if (st === 'paid') {
+    const next = new Date();
+    next.setMonth(next.getMonth() + 1);
+    data.nextPaymentDue = next;
+  }
   const payment = await prisma.payment.create({
-    data: { studentId, amount, status: status || 'unpaid' },
+    data,
     include: { student: { select: { id: true, name: true } } },
   });
   res.json(payment);
@@ -121,11 +128,41 @@ router.get('/payments', async (req, res) => {
   res.json(payments);
 });
 
+// Payments due soon (next 7 days or overdue) - for admin notification
+router.get('/payments/due-soon', async (req, res) => {
+  const now = new Date();
+  const in7Days = new Date(now);
+  in7Days.setDate(in7Days.getDate() + 7);
+
+  const payments = await prisma.payment.findMany({
+    where: {
+      status: 'paid',
+      nextPaymentDue: { not: null, lte: in7Days },
+    },
+    include: { student: { select: { id: true, name: true } } },
+    orderBy: { nextPaymentDue: 'asc' },
+  });
+  res.json(payments);
+});
+
 router.put('/payments/:id/status', paymentStatusValidation, validate, async (req, res) => {
   const { status } = req.body;
+  const existing = await prisma.payment.findUnique({ where: { id: req.params.id } });
+  if (!existing) return res.status(404).json({ error: 'Payment not found' });
+
+  const data = { status };
+  if (status === 'paid') {
+    const next = new Date();
+    next.setMonth(next.getMonth() + 1);
+    data.nextPaymentDue = next;
+  } else {
+    data.nextPaymentDue = null;
+  }
+
   const payment = await prisma.payment.update({
     where: { id: req.params.id },
-    data: { status },
+    data,
+    include: { student: { select: { id: true, name: true, email: true } } },
   });
   res.json(payment);
 });

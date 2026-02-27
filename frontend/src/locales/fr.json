@@ -251,12 +251,18 @@
       "student": "Élève",
       "amount": "Montant",
       "status": "Statut",
+      "nextDue": "Prochain échéance",
       "addPayment": "Ajouter un paiement",
       "markPaid": "Marquer payé",
       "markUnpaid": "Marquer non payé",
       "paid": "Payé",
       "unpaid": "Non payé",
-      "deleteConfirm": "Supprimer ce paiement ?"
+      "deleteConfirm": "Supprimer ce paiement ?",
+      "dueSoon": "Paiements à échéance",
+      "dueSoonDesc": "Élèves avec paiement dû dans les 7 prochains jours",
+      "overdue": "En retard",
+      "dueIn": "Dû dans {{days}} jours",
+      "dueToday": "Dû aujourd'hui"
     },
     "adminAvailability": {
       "title": "Disponibilités",

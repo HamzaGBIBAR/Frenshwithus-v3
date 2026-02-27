@@ -251,11 +251,18 @@
       "student": "الطالب",
       "amount": "المبلغ",
       "status": "الحالة",
+      "nextDue": "الموعد القادم",
       "addPayment": "إضافة دفعة",
       "markPaid": "تحديد كمُدفوع",
       "markUnpaid": "تحديد كغير مدفوع",
       "paid": "مدفوع",
-      "unpaid": "غير مدفوع"
+      "unpaid": "غير مدفوع",
+      "deleteConfirm": "حذف هذه الدفعة؟",
+      "dueSoon": "دفعات قريبة الموعد",
+      "dueSoonDesc": "طلاب لديهم دفعة مستحقة خلال 7 أيام",
+      "overdue": "متأخر",
+      "dueIn": "مستحق خلال {{days}} أيام",
+      "dueToday": "مستحق اليوم"
     },
     "adminAvailability": {
       "title": "التوفر",
