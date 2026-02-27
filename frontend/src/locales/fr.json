@@ -137,26 +137,27 @@
     "seeLess": "Voir moins",
     "prevReviews": "Avis précédents",
     "nextReviews": "Avis suivants",
-    "paginationLabel": "Navigation entre les pages d'avis",
+    "paginationLabel": "Navigation entre les groupes d'avis",
+      "group": "Groupe",
     "items": [
       { "quote": "Les cours individuels m'ont vraiment aidé à améliorer ma prononciation. Les professeurs sont à l'écoute et adaptent le rythme. Je recommande vivement !", "name": "Marie L.", "role": "Élève débutante", "rating": 5 },
-      { "quote": "Horaires flexibles et professeurs patients. Parfait pour les professionnels occupés. J'ai progressé en seulement 3 mois.", "name": "Thomas D.", "role": "Ingénieur", "rating": 5 },
+      { "quote": "Horaires flexibles et professeurs patients. Parfait pour les professionnels occupés. J'ai progressé en seulement 3 mois.", "name": "Thomas D.", "role": "Ingénieur", "rating": 4 },
       { "quote": "Je suis passé de zéro à conversationnel en quelques mois. Expérience incroyable. La méthode est vraiment efficace.", "name": "Sophie M.", "role": "Étudiante", "rating": 5 },
-      { "quote": "Les groupes de parole m'ont donné confiance. On pratique dans une ambiance bienveillante. Un vrai plus pour l'oral !", "name": "Lucas B.", "role": "Élève intermédiaire", "rating": 5 },
+      { "quote": "Les groupes de parole m'ont donné confiance. On pratique dans une ambiance bienveillante. Un vrai plus pour l'oral !", "name": "Lucas B.", "role": "Élève intermédiaire", "rating": 4 },
       { "quote": "Préparation B2 réussie du premier coup grâce au suivi personnalisé. Les professeurs connaissent parfaitement les examens.", "name": "Emma R.", "role": "Préparation diplôme", "rating": 5 },
-      { "quote": "Enfin une plateforme qui combine qualité et flexibilité. Les cours en ligne sont aussi efficaces qu'en présentiel.", "name": "Nicolas F.", "role": "Expatrié", "rating": 5 }
+      { "quote": "Enfin une plateforme qui combine qualité et flexibilité. Les cours en ligne sont aussi efficaces qu'en présentiel.", "name": "Nicolas F.", "role": "Expatrié", "rating": 4 }
     ],
     "extraItems": [
       { "quote": "Meilleure expérience d'apprentissage du français. Les professeurs sont compétents et rendent chaque cours captivant.", "name": "Claire T.", "role": "Élève avancée", "rating": 5, "date": "Janv. 2025" },
-      { "quote": "Ma fille a progressé énormément en deux mois. Elle adore maintenant parler français !", "name": "David K.", "role": "Parent", "rating": 5, "date": "Déc. 2024" },
+      { "quote": "Ma fille a progressé énormément en deux mois. Elle adore maintenant parler français !", "name": "David K.", "role": "Parent", "rating": 4, "date": "Déc. 2024" },
       { "quote": "Professionnel, flexible et efficace. Exactement ce qu'il me fallait pour ma préparation DELF.", "name": "Amélie S.", "role": "Candidat examen", "rating": 5, "date": "Nov. 2024" },
-      { "quote": "Les groupes de parole sont fantastiques. J'ai rencontré des gens du monde entier tout en améliorant mon français.", "name": "James P.", "role": "Intermédiaire", "rating": 5, "date": "Oct. 2024" },
+      { "quote": "Les groupes de parole sont fantastiques. J'ai rencontré des gens du monde entier tout en améliorant mon français.", "name": "James P.", "role": "Intermédiaire", "rating": 4, "date": "Oct. 2024" },
       { "quote": "Explications claires et professeurs patients. Je comprends enfin la grammaire française !", "name": "Sarah W.", "role": "Débutante", "rating": 5, "date": "Sept. 2024" },
-      { "quote": "Chaque euro en vaut la peine. La qualité rivalise avec les écoles en présentiel.", "name": "Marc B.", "role": "Professionnel", "rating": 5, "date": "Août 2024" },
+      { "quote": "Chaque euro en vaut la peine. La qualité rivalise avec les écoles en présentiel.", "name": "Marc B.", "role": "Professionnel", "rating": 4, "date": "Août 2024" },
       { "quote": "Les professeurs s'adaptent à votre niveau et objectifs. Je me suis sentie soutenue dès le premier jour.", "name": "Isabelle G.", "role": "Débutante", "rating": 5, "date": "Juil. 2024" },
-      { "quote": "Des cours en ligne qui fonctionnent vraiment. Ma confiance en français a explosé.", "name": "Pierre M.", "role": "Professionnel", "rating": 5, "date": "Juin 2024" },
+      { "quote": "Des cours en ligne qui fonctionnent vraiment. Ma confiance en français a explosé.", "name": "Pierre M.", "role": "Professionnel", "rating": 4, "date": "Juin 2024" },
       { "quote": "Les petits groupes = plus de temps de parole. Fini l'apprentissage passif !", "name": "Anna K.", "role": "Intermédiaire", "rating": 5, "date": "Mai 2024" },
-      { "quote": "Préparé mon C1 avec des cours sur mesure. Réussi haut la main.", "name": "Olivier D.", "role": "Candidat examen", "rating": 5, "date": "Avr. 2024" },
+      { "quote": "Préparé mon C1 avec des cours sur mesure. Réussi haut la main.", "name": "Olivier D.", "role": "Candidat examen", "rating": 4, "date": "Avr. 2024" },
       { "quote": "Meilleur investissement pour ma carrière. Le français m'a ouvert des portes inattendues.", "name": "Laura V.", "role": "Expatriée", "rating": 5, "date": "Mars 2024" }
     ]
   },

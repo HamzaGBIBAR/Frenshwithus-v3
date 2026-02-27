@@ -115,11 +115,9 @@ export default function SeeMoreReviews() {
                   {item.name.split(' ').map((n) => n[0]).join('')}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 mb-1" aria-label={`${item.rating || 5} out of 5 stars`}>
-                    {[...Array(item.rating || 5)].map((_, i) => (
-                      <span key={i} className="text-gold text-sm" aria-hidden>
-                        ★
-                      </span>
+                  <div className="flex items-center gap-1 mb-1" aria-label={`${item.rating ?? 5} out of 5 stars`}>
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className={`text-sm ${i < (item.rating ?? 5) ? 'text-gold' : 'text-text/30 dark:text-[#f5f5f5]/30'}`} aria-hidden>★</span>
                     ))}
                   </div>
                   <p className="font-medium text-text dark:text-[#f5f5f5] text-sm">{item.name}</p>

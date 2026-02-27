@@ -9,7 +9,7 @@ import ContactSection from '../components/ContactSection';
 import ScrollCharacter from '../components/ScrollCharacter';
 import Pricing from '../components/Pricing';
 import ScrollReveal from '../components/ScrollReveal';
-import SeeMoreReviews from '../components/SeeMoreReviews';
+import TestimonialsCarousel from '../components/TestimonialsCarousel';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AnimatedEye from '../components/AnimatedEye';
@@ -339,36 +339,13 @@ export default function Landing() {
           <div className="section-divider section-divider--tall" />
         </div>
 
-        {/* Testimonials */}
+        {/* Testimonials – 5 groups on loop with fade */}
         <section className="mb-12 sm:mb-16">
           <ScrollReveal>
             <h2 className="text-2xl lg:text-3xl font-semibold text-text dark:text-[#f5f5f5] mb-2">{t('testimonials.title')}</h2>
             <p className="text-text/60 dark:text-[#f5f5f5]/60 text-sm mb-10">{t('testimonials.subtitle')}</p>
           </ScrollReveal>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {t('testimonials.items', { returnObjects: true }).map((item, index) => (
-              <ScrollReveal key={index}>
-                <blockquote className="group bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 border-s-4 border-s-pink-primary dark:border-s-pink-400 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(231,84,128,0.2)] dark:hover:shadow-[0_12px_40px_rgba(231,84,128,0.15)] hover:scale-[1.02]">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-pink-soft dark:bg-pink-400/20 flex items-center justify-center flex-shrink-0 text-pink-primary dark:text-pink-400 font-semibold text-sm">
-                      {item.name.split(' ').map((n) => n[0]).join('')}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 mb-1">
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} className="text-gold text-sm">★</span>
-                        ))}
-                      </div>
-                      <p className="font-medium text-text dark:text-[#f5f5f5] text-sm">{item.name}</p>
-                      <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{item.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-text/80 dark:text-[#f5f5f5]/80 italic text-sm leading-relaxed">"{item.quote}"</p>
-                </blockquote>
-              </ScrollReveal>
-            ))}
-          </div>
-          <SeeMoreReviews />
+          <TestimonialsCarousel />
         </section>
 
         <div className="py-8 lg:py-12" aria-hidden="true">
