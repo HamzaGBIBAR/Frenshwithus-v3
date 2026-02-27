@@ -277,6 +277,17 @@
       "all": "全部消息",
       "professorStudent": "仅教师↔学生",
       "filterByName": "由谁发送（姓名）",
+      "filtersTitle": "筛选",
+      "filterBySender": "发件人",
+      "filterByDate": "日期",
+      "loadError": "无法加载消息，请重试。",
+      "dateFilterNone": "不按日期",
+      "dateFilterYear": "年",
+      "dateFilterMonth": "月",
+      "dateFilterDay": "日",
+      "dateFilterHour": "小时",
+      "yearPlaceholder": "年份",
+      "hourPlaceholder": "小时",
       "empty": "暂无消息"
     },
     "professor": {

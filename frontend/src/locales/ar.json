@@ -277,6 +277,17 @@
       "all": "جميع الرسائل",
       "professorStudent": "أستاذ ↔ طالب فقط",
       "filterByName": "الرسائل المرسلة من (الاسم)",
+      "filtersTitle": "التصفية",
+      "filterBySender": "المرسل",
+      "filterByDate": "التاريخ",
+      "loadError": "تعذر تحميل الرسائل. يرجى المحاولة مرة أخرى.",
+      "dateFilterNone": "بدون تصفية تاريخ",
+      "dateFilterYear": "السنة",
+      "dateFilterMonth": "الشهر",
+      "dateFilterDay": "اليوم",
+      "dateFilterHour": "الساعة",
+      "yearPlaceholder": "السنة",
+      "hourPlaceholder": "الساعة",
       "empty": "لا توجد رسائل"
     },
     "professor": {

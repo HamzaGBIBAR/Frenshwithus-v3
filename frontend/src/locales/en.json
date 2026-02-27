@@ -278,6 +278,17 @@
       "all": "All messages",
       "professorStudent": "Professor ↔ Student only",
       "filterByName": "Messages sent by (name)",
+      "filtersTitle": "Filters",
+      "filterBySender": "Sender",
+      "filterByDate": "Date",
+      "loadError": "Unable to load messages. Please try again.",
+      "dateFilterNone": "No date filter",
+      "dateFilterYear": "Year",
+      "dateFilterMonth": "Month",
+      "dateFilterDay": "Day",
+      "dateFilterHour": "Hour",
+      "yearPlaceholder": "Year",
+      "hourPlaceholder": "Hour",
       "empty": "No messages yet"
     },
     "professor": {

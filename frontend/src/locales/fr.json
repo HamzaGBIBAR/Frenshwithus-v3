@@ -278,6 +278,17 @@
       "all": "Tous les messages",
       "professorStudent": "Professeur ↔ Élève uniquement",
       "filterByName": "Messages envoyés par (nom)",
+      "filtersTitle": "Filtres",
+      "filterBySender": "Expéditeur",
+      "filterByDate": "Date",
+      "loadError": "Impossible de charger les messages. Réessayez.",
+      "dateFilterNone": "Sans filtre date",
+      "dateFilterYear": "Année",
+      "dateFilterMonth": "Mois",
+      "dateFilterDay": "Jour",
+      "dateFilterHour": "Heure",
+      "yearPlaceholder": "Année",
+      "hourPlaceholder": "Heure",
       "empty": "Aucun message"
     },
     "professor": {
