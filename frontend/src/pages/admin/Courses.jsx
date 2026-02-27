@@ -9,6 +9,7 @@ export default function Courses() {
   const [professors, setProfessors] = useState([]);
   const [students, setStudents] = useState([]);
   const [professorsWithAvailability, setProfessorsWithAvailability] = useState([]);
+  const [studentsWithAvailability, setStudentsWithAvailability] = useState([]);
   const [form, setForm] = useState({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' });
   const [error, setError] = useState('');
 
@@ -17,6 +18,7 @@ export default function Courses() {
     api.get('/admin/professors').then((r) => setProfessors(r.data));
     api.get('/admin/students').then((r) => setStudents(r.data));
     api.get('/admin/professors/availability').then((r) => setProfessorsWithAvailability(r.data)).catch(() => setProfessorsWithAvailability([]));
+    api.get('/admin/students/availability').then((r) => setStudentsWithAvailability(r.data)).catch(() => setStudentsWithAvailability([]));
   };
 
   useEffect(() => {
@@ -44,6 +46,11 @@ export default function Courses() {
   const getProfessorAvailability = (profId) => {
     const p = professorsWithAvailability.find((x) => x.id === profId);
     return p?.availability || [];
+  };
+
+  const getStudentAvailability = (studentId) => {
+    const s = studentsWithAvailability.find((x) => x.id === studentId);
+    return s?.studentAvailability || [];
   };
 
   /** Generate a unique Jitsi Meet room URL. Same link = same video room for professor and student. */
@@ -87,8 +94,19 @@ export default function Courses() {
                 ))}
               </select>
               {form.professorId && (
-                <div className="mt-1 text-xs text-text/50 dark:text-[#f5f5f5]/50">
-                  {getProfessorAvailability(form.professorId).map((s) => formatSlot(s)).join(' • ') || t('dashboard.adminCourses.noAvailability')}
+                <div className="mt-2 flex flex-wrap gap-1.5 animate-fade-in">
+                  {getProfessorAvailability(form.professorId).length > 0 ? (
+                    getProfessorAvailability(form.professorId).map((s) => (
+                      <span
+                        key={s.id}
+                        className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-300 border border-pink-soft/50 dark:border-pink-400/30 animate-fade-in transition-transform duration-200 hover:scale-105"
+                      >
+                        {formatSlot(s)}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 italic">{t('dashboard.adminCourses.noAvailability')}</span>
+                  )}
                 </div>
               )}
             </div>
@@ -105,6 +123,22 @@ export default function Courses() {
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
+              {form.studentId && (
+                <div className="mt-2 flex flex-wrap gap-1.5 animate-fade-in">
+                  {getStudentAvailability(form.studentId).length > 0 ? (
+                    getStudentAvailability(form.studentId).map((s) => (
+                      <span
+                        key={s.id}
+                        className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-400/30 animate-fade-in transition-transform duration-200 hover:scale-105"
+                      >
+                        {formatSlot(s)}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 italic">{t('dashboard.adminCourses.noAvailability')}</span>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.admin.date')}</label>
