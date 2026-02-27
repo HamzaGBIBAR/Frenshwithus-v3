@@ -170,6 +170,16 @@
     "linkedin": "LinkedIn",
     "cta": "Get in touch"
   },
+  "chatbot": {
+    "title": "French With Us Assistant",
+    "subtitle": "Ask questions about our courses",
+    "welcome": "Hello! I'm the French With Us assistant. Ask me about our French lessons, pricing, sign-up, or our teaching method. How can I help you?",
+    "placeholder": "Type your question…",
+    "send": "Send",
+    "close": "Close",
+    "suggested": "Suggested questions:",
+    "error": "Sorry, I couldn't respond. Email us at frenchwithus.noreply@gmail.com for a personalized reply."
+  },
   "footer": {
     "brand": "French with Me",
     "tagline": "French learning",

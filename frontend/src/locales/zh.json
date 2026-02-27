@@ -170,6 +170,16 @@
     "linkedin": "LinkedIn",
     "cta": "联系我们"
   },
+  "chatbot": {
+    "title": "French With Us 助手",
+    "subtitle": "询问关于我们课程的问题",
+    "welcome": "您好！我是 French With Us 的助手。您可以问我关于法语课程、价格、报名或教学方法的问题。我能帮您什么？",
+    "placeholder": "输入您的问题…",
+    "send": "发送",
+    "close": "关闭",
+    "suggested": "建议问题：",
+    "error": "抱歉，无法回复。请发邮件至 frenchwithus.noreply@gmail.com 获取个性化回复。"
+  },
   "footer": {
     "brand": "French with Me",
     "tagline": "法语学习",

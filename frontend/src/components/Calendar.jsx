@@ -162,11 +162,12 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                     onClick={() => onSelectDate?.(dateKey)}
                     className={`min-h-[110px] sm:min-h-[130px] p-3 rounded-xl border transition cursor-pointer
                       ${isOtherMonth ? 'bg-pink-soft/20 dark:bg-white/5 text-text/50 dark:text-[#f5f5f5]/50' : 'bg-white dark:bg-[#111111]'}
-                      ${isToday ? 'ring-2 ring-pink-primary/30 dark:ring-pink-400/30' : ''}
-                      ${isSelected ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : 'border-pink-soft/50 dark:border-white/10 hover:bg-pink-soft/40 dark:hover:bg-white/5'}
+                      ${isToday ? 'calendar-today-cell bg-pink-primary/15 dark:bg-pink-400/20 border-pink-primary/50 dark:border-pink-400/50 font-semibold' : ''}
+                      ${isSelected && !isToday ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : ''}
+                      ${!isToday ? (isSelected ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : 'border-pink-soft/50 dark:border-white/10 hover:bg-pink-soft/40 dark:hover:bg-white/5') : ''}
                     `}
                   >
-                    <div className="text-sm font-medium mb-1 text-text dark:text-[#f5f5f5]">{date.getDate()}</div>
+                    <div className={`text-sm font-medium mb-1 ${isToday ? 'text-pink-primary dark:text-pink-400 text-base font-bold' : 'text-text dark:text-[#f5f5f5]'}`}>{date.getDate()}</div>
                     <div className="space-y-1 overflow-hidden">
                       {dayEvents.slice(0, 3).map((evt) => (
                         <div
@@ -208,10 +209,10 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                     key={dateKey}
                     onClick={() => onSelectDate?.(dateKey)}
                     className={`p-4 rounded-2xl border transition ${
-                      isToday ? 'ring-2 ring-pink-primary/30 dark:ring-pink-400/30' : ''
-                    } ${isSelected ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : 'border-pink-soft/50 dark:border-white/10 bg-white dark:bg-[#111111]'}`}
+                      isToday ? 'calendar-today-cell bg-pink-primary/15 dark:bg-pink-400/20 border-pink-primary/50 dark:border-pink-400/50' : ''
+                    } ${isSelected && !isToday ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : ''} ${!isToday ? 'border-pink-soft/50 dark:border-white/10 bg-white dark:bg-[#111111]' : ''}`}
                   >
-                    <div className="font-medium text-text dark:text-[#f5f5f5] mb-2">
+                    <div className={`font-medium mb-2 ${isToday ? 'text-pink-primary dark:text-pink-400 font-bold' : 'text-text dark:text-[#f5f5f5]'}`}>
                       {days[date.getDay() === 0 ? 6 : date.getDay() - 1]} {date.getDate()} {months[date.getMonth()]}
                     </div>
                     <div className="space-y-2">

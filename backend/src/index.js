@@ -24,6 +24,7 @@ import adminRoutes from './routes/admin.js';
 import professorRoutes from './routes/professor.js';
 import studentRoutes from './routes/student.js';
 import liveRoutes from './routes/live.js';
+import chatRoutes from './routes/chat.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -60,6 +61,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/professor', professorRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api', liveRoutes);
+app.use('/api', chatRoutes);
 
 app.get('/api/health', (_, res) => res.json({ ok: true }));
 

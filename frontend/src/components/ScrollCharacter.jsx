@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import Chatbot from './Chatbot';
 
 /**
  * ScrollCharacter – personnage qui affiche la section "Restons en contact"
- * Apparaît quand on scroll jusqu'à la section Contact
+ * Apparaît quand on scroll jusqu'à la section Contact.
+ * Cliquable : ouvre un chatbot AI pour poser des questions sur French With Us.
  * Design: version simplifiée (tête + béret) du HeroCharacter
  */
 export default function ScrollCharacter() {
   const [contactVisible, setContactVisible] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -39,13 +42,16 @@ export default function ScrollCharacter() {
   if (reduceMotion) return null;
 
   return (
-    <div
-      className={`scroll-character scroll-character--contact fixed top-[18%] left-[4%] lg:left-[6%] z-[1] pointer-events-none w-20 h-20 lg:w-24 lg:h-24 transition-all duration-500 ease-out ${
-        contactVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
-      }`}
-      aria-hidden="true"
-    >
-      <svg viewBox="0 0 100 100" className="w-full h-full scroll-character-svg" fill="none">
+    <>
+      <button
+        type="button"
+        onClick={() => setChatOpen(true)}
+        className={`scroll-character scroll-character--contact fixed top-[18%] left-[4%] lg:left-[6%] z-[10] w-20 h-20 lg:w-24 lg:h-24 transition-all duration-500 ease-out rounded-full focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] ${
+          contactVisible ? 'opacity-100 translate-x-0 cursor-pointer hover:scale-110 pointer-events-auto' : 'opacity-0 -translate-x-12 pointer-events-none'
+        }`}
+        aria-label="Ouvrir l'assistant – poser une question"
+      >
+        <svg viewBox="0 0 100 100" className="w-full h-full scroll-character-svg" fill="none">
         {/* Tête – light: rose clair | dark: gris foncé + contour rose lumineux */}
         <circle cx="50" cy="50" r="38" fill="#FADADD" stroke="#E75480" strokeWidth="1.5" className="scroll-character-face" />
         {/* Béret – rose, pompon jaune */}
@@ -58,6 +64,9 @@ export default function ScrollCharacter() {
         {/* Sourire – light: rose | dark: blanc */}
         <path d="M42 62 Q50 68 58 62" stroke="#C2185B" strokeWidth="1.5" fill="none" strokeLinecap="round" className="scroll-character-smile" />
       </svg>
-    </div>
+      </button>
+
+      <Chatbot open={chatOpen} onClose={() => setChatOpen(false)} />
+    </>
   );
 }

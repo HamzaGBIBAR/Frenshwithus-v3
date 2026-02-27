@@ -170,6 +170,16 @@
     "linkedin": "LinkedIn",
     "cta": "Écrivez-nous"
   },
+  "chatbot": {
+    "title": "Assistant French With Us",
+    "subtitle": "Posez vos questions sur nos cours",
+    "welcome": "Bonjour ! Je suis l'assistant de French With Us. Posez-moi vos questions sur nos cours de français, les tarifs, l'inscription ou notre méthode. Comment puis-je vous aider ?",
+    "placeholder": "Écrivez votre question…",
+    "send": "Envoyer",
+    "close": "Fermer",
+    "suggested": "Questions suggérées :",
+    "error": "Désolé, je n'ai pas pu répondre. Écrivez-nous à frenchwithus.noreply@gmail.com pour une réponse personnalisée."
+  },
   "footer": {
     "brand": "French with Me",
     "tagline": "Apprentissage du français",

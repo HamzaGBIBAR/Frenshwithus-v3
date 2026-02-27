@@ -170,6 +170,16 @@
     "linkedin": "لينكد إن",
     "cta": "تواصل معنا"
   },
+  "chatbot": {
+    "title": "مساعد French With Us",
+    "subtitle": "اطرح أسئلتك عن دوراتنا",
+    "welcome": "مرحباً! أنا مساعد French With Us. اسألني عن دروس الفرنسية أو الأسعار أو التسجيل. كيف يمكنني مساعدتك؟",
+    "placeholder": "اكتب سؤالك…",
+    "send": "إرسال",
+    "close": "إغلاق",
+    "suggested": "أسئلة مقترحة:",
+    "error": "عذراً، لم أستطع الرد. راسلنا على frenchwithus.noreply@gmail.com للحصول على رد شخصي."
+  },
   "footer": {
     "brand": "French with Me",
     "tagline": "تعلم الفرنسية",

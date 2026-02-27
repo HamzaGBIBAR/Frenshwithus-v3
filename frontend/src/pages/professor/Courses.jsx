@@ -97,7 +97,7 @@ export default function ProfessorCourses() {
     const rangeStart = new Date();
     rangeStart.setMonth(rangeStart.getMonth() - 2);
     const rangeEnd = new Date();
-    rangeEnd.setMonth(rangeEnd.getMonth() + 4);
+    rangeEnd.setMonth(rangeEnd.getMonth() + 12); // 12 mois pour afficher la dispo au-delà de juin
     const evts = [];
     for (const prof of allProfsAvailability) {
       const isMe = prof.id === user?.id;
@@ -363,7 +363,7 @@ export default function ProfessorCourses() {
             {coursesByDay.map(({ day, dateStr, isToday, courses: dayCourses, availability: dayAvail }) => (
                 <div
                   key={day}
-                  className={`min-h-[140px] rounded-2xl p-4 transition ${isToday ? 'bg-pink-soft/60 dark:bg-pink-400/20 ring-2 ring-pink-primary/30 dark:ring-pink-400/30' : 'bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10'}`}
+                  className={`min-h-[140px] rounded-2xl p-4 transition ${isToday ? 'calendar-today-cell bg-pink-primary/20 dark:bg-pink-400/25 border-2 border-pink-primary/50 dark:border-pink-400/50' : 'bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10'}`}
                 >
                   <div className="font-medium text-text dark:text-[#f5f5f5] mb-1">{day}</div>
                   <div className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mb-3">{dateStr}</div>
