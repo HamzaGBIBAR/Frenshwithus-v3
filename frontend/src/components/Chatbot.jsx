@@ -1,6 +1,49 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../api/axios';
+
+// Fallback côté client quand l'API est indisponible (réponses adaptées à French With Us)
+const CLIENT_FALLBACK = {
+  fr: {
+    tarif: "Nos tarifs varient selon la formule (cours individuels ou en groupe). Pour connaître les prix actuels, n'hésitez pas à nous écrire à frenchwithus.noreply@gmail.com ou à cliquer sur « Écrivez-nous » sur notre site. Nous vous répondrons rapidement !",
+    prix: "Nos tarifs varient selon la formule (cours individuels ou en groupe). Pour connaître les prix actuels, n'hésitez pas à nous écrire à frenchwithus.noreply@gmail.com ou à cliquer sur « Écrivez-nous » sur notre site. Nous vous répondrons rapidement !",
+    inscription: "Pour vous inscrire, cliquez sur « Connexion » ou « Commencer » sur notre site, créez un compte, puis réservez une séance d'essai gratuite. Notre équipe vous contactera pour organiser votre premier cours !",
+    niveau: "Nous proposons tous les niveaux du CECRL : A1 (débutant), A2 (élémentaire), B1 (intermédiaire), B2 (avancé) et C1 (autonome). Chaque élève est évalué pour être placé dans le bon niveau.",
+    essai: "Oui ! Nous proposons une séance d'essai gratuite pour découvrir notre méthode et faire connaissance avec un professeur. Cliquez sur « Commencer » pour réserver votre créneau.",
+    cours: "Nos cours sont individuels ou en petits groupes. Chaque séance combine expression orale, grammaire et culture francophone, adaptée à votre niveau et vos objectifs.",
+    durée: "Les cours durent généralement 1 heure. La durée peut être adaptée selon vos besoins et votre formule.",
+    default: "Merci pour votre question ! Pour une réponse personnalisée, n'hésitez pas à nous écrire à frenchwithus.noreply@gmail.com ou à cliquer sur « Écrivez-nous » sur notre site. Notre équipe vous répondra avec plaisir.",
+  },
+  en: {
+    price: "Our prices vary depending on the format (individual or group lessons). For current rates, please email us at frenchwithus.noreply@gmail.com or click « Write to us » on our site. We'll get back to you quickly!",
+    signup: "To sign up, click « Login » or « Get started » on our site, create an account, then book a free trial session. Our team will contact you to schedule your first lesson!",
+    level: "We offer all CEFR levels: A1 (beginner), A2 (elementary), B1 (intermediate), B2 (advanced) and C1 (autonomous). Each student is assessed to be placed at the right level.",
+    trial: "Yes! We offer a free trial session to discover our method and meet a teacher. Click « Get started » to book your slot.",
+    default: "Thank you for your question! For a personalized answer, please email us at frenchwithus.noreply@gmail.com or click « Write to us » on our site. Our team will be happy to help.",
+  },
+  ar: {
+    tarif: "تختلف أسعارنا حسب الصيغة (دروس فردية أو جماعية). للتعرف على الأسعار الحالية، راسلنا على frenchwithus.noreply@gmail.com أو انقر على «تواصل معنا» على موقعنا.",
+    inscription: "للتسجيل، انقر على «تسجيل الدخول» أو «ابدأ» على موقعنا، أنشئ حساباً، ثم احجز جلسة تجريبية مجانية. سيتواصل معك فريقنا لتنظيم درسك الأول!",
+    niveau: "نقدم جميع مستويات الإطار الأوروبي: A1 إلى C1. يتم تقييم كل طالب لوضعه في المستوى المناسب.",
+    essai: "نعم! نقدم جلسة تجريبية مجانية لاكتشاف طريقتنا والتعرف على المعلم. انقر على «ابدأ» لحجز موعدك.",
+    default: "شكراً لسؤالك! للحصول على رد شخصي، راسلنا على frenchwithus.noreply@gmail.com أو انقر على «تواصل معنا» على موقعنا.",
+  },
+  zh: {
+    price: "我们的价格根据课程形式（一对一或小组）而有所不同。如需了解当前价格，请发邮件至 frenchwithus.noreply@gmail.com 或点击我们网站上的「联系我们」。",
+    signup: "报名请点击我们网站上的「登录」或「开始」，创建账户后预约免费试听课。我们的团队将联系您安排第一节课！",
+    level: "我们提供所有CEFR级别：A1到C1。每位学生都会经过评估以确定适合的级别。",
+    trial: "是的！我们提供免费试听课，让您了解我们的教学方法并与老师见面。点击「开始」预约您的时段。",
+    default: "感谢您的提问！如需个性化回复，请发邮件至 frenchwithus.noreply@gmail.com 或点击我们网站上的「联系我们」。",
+  },
+};
+
+function getClientFallback(content, lang) {
+  const lower = (content || '').toLowerCase();
+  const responses = CLIENT_FALLBACK[lang] || CLIENT_FALLBACK.fr;
+  for (const [key, reply] of Object.entries(responses)) {
+    if (key !== 'default' && lower.includes(key)) return reply;
+  }
+  return responses.default;
+}
 
 const SUGGESTED_QUESTIONS = {
   fr: [
@@ -87,13 +130,26 @@ export default function Chatbot({ open, onClose }) {
     setLoading(true);
 
     try {
-      const { data } = await api.post('/chat', {
-        messages: [...messages, userMsg].map(({ role, content }) => ({ role, content })),
+      const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+      const url = base ? `${base}/api/chat` : '/api/chat';
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMsg].map(({ role, content }) => ({ role, content })),
+        }),
+        credentials: 'include',
       });
-      setMessages((m) => [...m, { id: Date.now(), role: 'assistant', content: data.reply }]);
+      const data = await res.json();
+      if (res.ok && data.reply) {
+        setMessages((m) => [...m, { id: Date.now(), role: 'assistant', content: data.reply }]);
+      } else {
+        throw new Error(data.error || 'No reply');
+      }
     } catch (err) {
-      const fallback = t('chatbot.error');
-      setMessages((m) => [...m, { id: Date.now(), role: 'assistant', content: fallback }]);
+      // Fallback côté client : réponses adaptées même si l'API est indisponible
+      const reply = getClientFallback(content, lang);
+      setMessages((m) => [...m, { id: Date.now(), role: 'assistant', content: reply }]);
     } finally {
       setLoading(false);
     }
