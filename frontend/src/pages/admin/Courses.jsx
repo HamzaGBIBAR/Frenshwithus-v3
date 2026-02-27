@@ -46,6 +46,16 @@ export default function Courses() {
     return p?.availability || [];
   };
 
+  /** Generate a unique Jitsi Meet room URL. Same link = same video room for professor and student. */
+  const generateJitsiRoomLink = () => {
+    const base = 'https://meet.jit.si';
+    const datePart = form.date || 'cours';
+    const timePart = (form.time || '').replace(':', '-') || '00-00';
+    const slug = `frenchwithus-${datePart}-${timePart}-${Math.random().toString(36).slice(2, 6)}`;
+    const url = `${base}/${slug}`;
+    setForm((f) => ({ ...f, meetingLink: url }));
+  };
+
   const formatSlot = (slot) => {
     const day = DAYS[slot.dayOfWeek - 1] || '-';
     return `${day} ${slot.startTime}-${slot.endTime}`;
@@ -116,15 +126,27 @@ export default function Courses() {
                 required
               />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.meetingLink')}</label>
-              <input
-                type="url"
-                placeholder="https://..."
-                value={form.meetingLink}
-                onChange={(e) => setForm((f) => ({ ...f, meetingLink: e.target.value }))}
-                className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
-              />
+              <div className="flex flex-wrap gap-2">
+                <input
+                  type="url"
+                  placeholder="https://meet.jit.si/francais-a1-2026"
+                  value={form.meetingLink}
+                  onChange={(e) => setForm((f) => ({ ...f, meetingLink: e.target.value }))}
+                  className="flex-1 min-w-[200px] px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                />
+                <button
+                  type="button"
+                  onClick={generateJitsiRoomLink}
+                  className="px-4 py-2.5 rounded-xl border border-pink-primary dark:border-pink-400 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 transition whitespace-nowrap"
+                >
+                  {t('dashboard.adminCourses.generateJitsiRoom')}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-text/50 dark:text-[#f5f5f5]/50">
+                {t('dashboard.adminCourses.meetingLinkHelp')}
+              </p>
             </div>
           </div>
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
