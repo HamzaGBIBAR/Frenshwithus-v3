@@ -46,10 +46,17 @@ export default function ScrollCharacter() {
   return (
     <>
       <div
-        className={`scroll-character-wrapper fixed top-[18%] left-[4%] lg:left-[6%] z-[10] flex flex-col items-center gap-2 transition-all duration-500 ease-out ${
+        className={`scroll-character-wrapper fixed top-[18%] left-[4%] lg:left-[6%] z-[10] flex flex-col items-center gap-1 transition-all duration-500 ease-out ${
           contactVisible ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 -translate-x-12 pointer-events-none'
         }`}
       >
+        {contactVisible && (
+        <div className="scroll-character-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 32" className="w-8 h-10 lg:w-10 lg:h-12 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2v20M6 18l6 6 6-6" />
+          </svg>
+        </div>
+        )}
         {contactVisible && (
         <button
           type="button"

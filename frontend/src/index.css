@@ -316,6 +316,21 @@ textarea::placeholder {
   filter: drop-shadow(0 4px 12px rgba(231, 84, 128, 0.2));
 }
 
+/* Flèche animée au-dessus du Chat Bot */
+.scroll-character-arrow {
+  animation: chatbotArrowBounce 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 2px 6px rgba(231, 84, 128, 0.3));
+}
+
+.dark .scroll-character-arrow {
+  filter: drop-shadow(0 2px 8px rgba(244, 114, 182, 0.4));
+}
+
+@keyframes chatbotArrowBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(6px); opacity: 0.85; }
+}
+
 /* Chat Bot logo – flash animé à l'apparition + label */
 .scroll-character--flash {
   animation: chatbotFlash 1.2s ease-out;
@@ -381,6 +396,7 @@ textarea::placeholder {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scroll-character-arrow,
   .scroll-character--flash,
   .scroll-character-label {
     animation: none;
