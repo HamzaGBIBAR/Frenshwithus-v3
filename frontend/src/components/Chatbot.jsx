@@ -361,24 +361,22 @@ export default function Chatbot({ open, onClose }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggested questions */}
-        {messages.length <= 1 && (
-          <div className="px-4 pb-2">
-            <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-2">{t('chatbot.suggested')}</p>
-            <div className="flex flex-wrap gap-2">
-              {suggested.slice(0, 4).map((q) => (
-                <button
-                  key={q}
-                  onClick={() => sendMessage(q)}
-                  disabled={loading}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-pink-soft/50 dark:bg-white/10 text-pink-dark dark:text-pink-400 hover:bg-pink-soft dark:hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-pink-soft/50 dark:border-white/10"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+        {/* Suggested questions – toujours visibles pour pouvoir reposer une question */}
+        <div className="px-4 py-2 border-t border-pink-soft/30 dark:border-white/5 flex-shrink-0">
+          <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-2">{t('chatbot.suggested')}</p>
+          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto scrollbar-hide">
+            {suggested.slice(0, 6).map((q) => (
+              <button
+                key={q}
+                onClick={() => sendMessage(q)}
+                disabled={loading}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-soft/50 dark:bg-white/10 text-pink-dark dark:text-pink-400 hover:bg-pink-soft dark:hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-pink-soft/50 dark:border-white/10 flex-shrink-0"
+              >
+                {q}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* Input */}
         <form onSubmit={handleSubmit} className="p-4 border-t border-pink-soft/50 dark:border-white/10">
