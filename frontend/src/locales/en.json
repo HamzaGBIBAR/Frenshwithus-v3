@@ -171,6 +171,7 @@
     "cta": "Get in touch"
   },
   "chatbot": {
+    "logoLabel": "Chat Bot",
     "title": "French With Us Assistant",
     "subtitle": "Ask questions about our courses",
     "welcome": "Hello! I'm the French With Us assistant. Ask me about our French lessons, pricing, sign-up, or our teaching method. How can I help you?",

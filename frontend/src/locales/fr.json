@@ -171,6 +171,7 @@
     "cta": "Écrivez-nous"
   },
   "chatbot": {
+    "logoLabel": "Chat Bot",
     "title": "Assistant French With Us",
     "subtitle": "Posez vos questions sur nos cours",
     "welcome": "Bonjour ! Je suis l'assistant de French With Us. Posez-moi vos questions sur nos cours de français, les tarifs, l'inscription ou notre méthode. Comment puis-je vous aider ?",
