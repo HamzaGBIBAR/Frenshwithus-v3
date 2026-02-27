@@ -52,9 +52,10 @@ export default function AdminAvailability() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Student availability */}
-        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500">
-          <div className="p-4 border-b border-pink-soft/50 dark:border-white/10">
-            <h2 className="font-semibold text-text dark:text-[#f5f5f5]">
+        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-500 hover:shadow-pink-soft/80 dark:hover:shadow-[0_8px_30px_rgba(244,114,182,0.08)]">
+          <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
+            <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
+              <span className="w-1 h-5 rounded-full bg-pink-primary dark:bg-pink-400" />
               {t('dashboard.adminAvailability.studentAvailability')}
             </h2>
           </div>
@@ -121,7 +122,7 @@ export default function AdminAvailability() {
                   {(selectedStudentData?.studentAvailability || []).map((slot) => (
                     <span
                       key={slot.id}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-pink-soft/50 dark:bg-white/10 rounded-lg text-sm text-text dark:text-[#f5f5f5]"
+                      className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-400/30 transition-transform duration-200 hover:scale-105 animate-fade-in"
                     >
                       {formatSlot(slot)}
                       <button
@@ -146,27 +147,33 @@ export default function AdminAvailability() {
         </div>
 
         {/* Professor availability (announcement / view) */}
-        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500">
-          <div className="p-4 border-b border-pink-soft/50 dark:border-white/10">
-            <h2 className="font-semibold text-text dark:text-[#f5f5f5]">
+        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-500 hover:shadow-pink-soft/80 dark:hover:shadow-[0_8px_30px_rgba(244,114,182,0.08)]">
+          <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
+            <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
+              <span className="w-1 h-5 rounded-full bg-pink-primary dark:bg-pink-400" />
               {t('dashboard.adminAvailability.professorAvailability')}
             </h2>
           </div>
-          <div className="p-4 max-h-96 overflow-y-auto space-y-4">
+          <div className="p-4 max-h-96 overflow-y-auto space-y-4 scrollbar-hide">
             {professors.map((p) => (
-              <div key={p.id} className="border-b border-pink-soft/30 dark:border-white/10 pb-4 last:border-0 pb-0">
-                <div className="font-medium text-text dark:text-[#f5f5f5] mb-2">{p.name}</div>
+              <div
+                key={p.id}
+                className="group p-4 rounded-xl bg-pink-soft/20 dark:bg-white/5 border border-pink-soft/30 dark:border-white/10 hover:border-pink-soft/60 dark:hover:border-pink-400/20 transition-all duration-300 animate-fade-in"
+              >
+                <div className="font-semibold text-text dark:text-[#f5f5f5] mb-3 flex items-center gap-2">
+                  <span className="text-pink-primary dark:text-pink-400">{p.name}</span>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {(p.availability || []).map((slot) => (
                     <span
                       key={slot.id}
-                      className="px-2 py-1 bg-pink-soft/40 dark:bg-white/10 rounded text-xs text-text dark:text-[#f5f5f5]"
+                      className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-300 border border-pink-soft/50 dark:border-pink-400/30 transition-transform duration-200 hover:scale-105 animate-fade-in"
                     >
                       {formatSlot(slot)}
                     </span>
                   ))}
                   {(!p.availability?.length) && (
-                    <span className="text-xs text-text/60 dark:text-[#f5f5f5]/80">
+                    <span className="text-xs text-text/50 dark:text-[#f5f5f5]/60 italic">
                       {t('dashboard.adminAvailability.noSlots')}
                     </span>
                   )}
