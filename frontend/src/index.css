@@ -701,3 +701,36 @@ textarea::placeholder {
     animation: none;
   }
 }
+
+/* Chatbot – message slide-in + typewriter cursor */
+.chat-message-enter {
+  animation: chatMessageEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes chatMessageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.chat-typewriter-cursor::after {
+  content: '▌';
+  animation: chatCursorBlink 0.8s step-end infinite;
+  color: inherit;
+  opacity: 0.8;
+}
+
+@keyframes chatCursorBlink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-message-enter {
+    animation: none;
+  }
+}

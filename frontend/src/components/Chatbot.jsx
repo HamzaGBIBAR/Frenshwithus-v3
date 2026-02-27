@@ -1,6 +1,114 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+// Réponses professionnelles structurées pour les questions suggérées (affichage instantané + animé)
+const PROFESSIONAL_RESPONSES = {
+  fr: {
+    'tarifs': {
+      title: 'Nos tarifs',
+      text: "Nos tarifs varient selon la formule : cours individuels ou en groupe. Pour connaître les prix actuels et les offres personnalisées, notre équipe est à votre disposition.",
+      bullets: ['Cours individuels sur mesure', 'Cours en petits groupes', 'Séance d\'essai gratuite'],
+      cta: 'Écrivez-nous à frenchwithus.noreply@gmail.com ou cliquez sur « Écrivez-nous » pour une réponse rapide.',
+    },
+    'inscription': {
+      title: 'Comment s\'inscrire',
+      text: "L'inscription est simple et rapide :",
+      bullets: ['Cliquez sur « Connexion » ou « Commencer »', 'Créez votre compte en quelques clics', 'Réservez une séance d\'essai gratuite', 'Notre équipe vous contacte pour organiser votre premier cours'],
+      cta: null,
+    },
+    'niveaux': {
+      title: 'Nos niveaux',
+      text: "Nous proposons tous les niveaux du CECRL (Cadre européen commun de référence) :",
+      bullets: ['A1 – Débutant', 'A2 – Élémentaire', 'B1 – Intermédiaire', 'B2 – Avancé', 'C1 – Autonome'],
+      cta: "Chaque élève est évalué pour être placé dans le niveau qui lui correspond.",
+    },
+    'séance': {
+      title: 'Déroulement d\'une séance',
+      text: "Chaque séance est personnalisée et interactive :",
+      bullets: ['Expression orale et conversation guidée', 'Grammaire et vocabulaire en contexte', 'Culture francophone et pratique vivante', 'Adaptation à votre rythme et objectifs'],
+      cta: "Les cours sont individuels ou en petits groupes, en visioconférence.",
+    },
+    'essai': {
+      title: 'Séance d\'essai gratuite',
+      text: "Oui ! Nous proposons une séance d'essai gratuite pour :",
+      bullets: ['Découvrir notre méthode pédagogique', 'Faire connaissance avec un professeur', 'Évaluer votre niveau', 'Définir vos objectifs ensemble'],
+      cta: "Cliquez sur « Commencer » pour réserver votre créneau.",
+    },
+    'durée': {
+      title: 'Durée des cours',
+      text: "Les cours durent généralement 1 heure. La durée peut être adaptée selon vos besoins et votre formule.",
+      bullets: ['Séances de 45 min à 1h30 possibles', 'Flexible selon votre emploi du temps'],
+      cta: null,
+    },
+  },
+  en: {
+    'price': {
+      title: 'Our prices',
+      text: "Our prices vary depending on the format: individual or group lessons. For current rates and personalized offers, our team is at your disposal.",
+      bullets: ['Tailored individual lessons', 'Small group lessons', 'Free trial session'],
+      cta: 'Email us at frenchwithus.noreply@gmail.com or click « Write to us » for a quick response.',
+    },
+    'signup': {
+      title: 'How to sign up',
+      text: "Registration is simple and quick:",
+      bullets: ['Click « Login » or « Get started »', 'Create your account in a few clicks', 'Book a free trial session', 'Our team contacts you to schedule your first lesson'],
+      cta: null,
+    },
+    'level': {
+      title: 'Our levels',
+      text: "We offer all CEFR levels:",
+      bullets: ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate', 'B2 – Advanced', 'C1 – Autonomous'],
+      cta: "Each student is assessed to be placed at the right level.",
+    },
+    'session': {
+      title: 'How a session works',
+      text: "Each session is personalized and interactive:",
+      bullets: ['Oral expression and guided conversation', 'Grammar and vocabulary in context', 'Francophone culture and live practice', 'Adapted to your pace and goals'],
+      cta: "Lessons are individual or in small groups, via videoconference.",
+    },
+    'trial': {
+      title: 'Free trial session',
+      text: "Yes! We offer a free trial session to:",
+      bullets: ['Discover our teaching method', 'Meet a teacher', 'Assess your level', 'Define your goals together'],
+      cta: "Click « Get started » to book your slot.",
+    },
+    'duration': {
+      title: 'Lesson duration',
+      text: "Lessons typically last 1 hour. Duration can be adapted to your needs and format.",
+      bullets: ['Sessions from 45 min to 1h30 possible', 'Flexible to your schedule'],
+      cta: null,
+    },
+  },
+  ar: {
+    tarif: { title: 'الأسعار', text: 'تختلف أسعارنا حسب الصيغة. راسلنا للتعرف على العروض.', bullets: ['دروس فردية', 'دروس جماعية', 'جلسة تجريبية مجانية'], cta: 'راسلنا على frenchwithus.noreply@gmail.com' },
+    inscription: { title: 'التسجيل', text: 'التسجيل بسيط وسريع:', bullets: ['انقر على «ابدأ»', 'أنشئ حسابك', 'احجز جلسة تجريبية'], cta: null },
+    niveau: { title: 'المستويات', text: 'نقدم جميع المستويات من A1 إلى C1.', bullets: ['A1 مبتدئ', 'B1 متوسط', 'C1 متقدم'], cta: null },
+    essai: { title: 'جلسة تجريبية', text: 'نعم! جلسة مجانية لاكتشاف طريقتنا.', bullets: ['تعرف على المعلم', 'تقييم مستواك'], cta: 'انقر على «ابدأ»' },
+  },
+  zh: {
+    price: { title: '价格', text: '价格根据课程形式而有所不同。', bullets: ['一对一课程', '小组课程', '免费试听'], cta: '发邮件至 frenchwithus.noreply@gmail.com' },
+    signup: { title: '如何报名', text: '报名简单快捷：', bullets: ['点击「开始」', '创建账户', '预约免费试听'], cta: null },
+    level: { title: '级别', text: '我们提供A1至C1所有级别。', bullets: ['A1 初级', 'B1 中级', 'C1 高级'], cta: null },
+    trial: { title: '免费试听', text: '是的！我们提供免费试听课。', bullets: ['了解教学方法', '与老师见面'], cta: '点击「开始」预约' },
+  },
+};
+
+function getProfessionalResponse(question, lang) {
+  const q = (question || '').toLowerCase();
+  const map = PROFESSIONAL_RESPONSES[lang] || PROFESSIONAL_RESPONSES.fr;
+  const keywords = {
+    fr: { tarif: 'tarifs', inscrire: 'inscription', niveaux: 'niveaux', séance: 'séance', déroule: 'séance', essai: 'essai', durée: 'durée' },
+    en: { price: 'price', signup: 'signup', register: 'signup', level: 'level', session: 'session', trial: 'trial', duration: 'duration' },
+    ar: { أسعار: 'tarif', أسجل: 'inscription', مستويات: 'niveau', جلسة: 'essai', تجريبية: 'essai' },
+    zh: { 价格: 'price', 报名: 'signup', 级别: 'level', 试听: 'trial' },
+  };
+  const kws = keywords[lang] || keywords.fr;
+  for (const [kw, responseKey] of Object.entries(kws)) {
+    if (q.includes(kw) && map[responseKey]) return map[responseKey];
+  }
+  return null;
+}
+
 // Fallback côté client quand l'API est indisponible (réponses adaptées à French With Us)
 const CLIENT_FALLBACK = {
   fr: {
@@ -80,6 +188,25 @@ const SUGGESTED_QUESTIONS = {
   ],
 };
 
+function ProfessionalReply({ data }) {
+  if (!data) return null;
+  const { title, text, bullets, cta } = data;
+  return (
+    <div className="space-y-2">
+      {title && <p className="font-semibold text-pink-primary dark:text-pink-400">{title}</p>}
+      {text && <p>{text}</p>}
+      {bullets?.length > 0 && (
+        <ul className="list-disc list-inside space-y-1 text-sm opacity-90">
+          {bullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      )}
+      {cta && <p className="text-sm pt-1 border-t border-pink-soft/30 dark:border-white/10 mt-2">{cta}</p>}
+    </div>
+  );
+}
+
 function ScrollCharacterAvatar({ className = 'w-10 h-10' }) {
   return (
     <svg viewBox="0 0 100 100" className={`${className} flex-shrink-0`} fill="none">
@@ -127,8 +254,20 @@ export default function Chatbot({ open, onClose }) {
     setInput('');
     const userMsg = { id: Date.now(), role: 'user', content };
     setMessages((m) => [...m, userMsg]);
-    setLoading(true);
 
+    // Réponse professionnelle instantanée pour les questions suggérées
+    const professionalData = getProfessionalResponse(content, lang);
+    if (professionalData) {
+      setMessages((m) => [...m, {
+        id: Date.now(),
+        role: 'assistant',
+        content: null,
+        structured: professionalData,
+      }]);
+      return;
+    }
+
+    setLoading(true);
     try {
       const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
       const url = base ? `${base}/api/chat` : '/api/chat';
@@ -147,7 +286,6 @@ export default function Chatbot({ open, onClose }) {
         throw new Error(data.error || 'No reply');
       }
     } catch (err) {
-      // Fallback côté client : réponses adaptées même si l'API est indisponible
       const reply = getClientFallback(content, lang);
       setMessages((m) => [...m, { id: Date.now(), role: 'assistant', content: reply }]);
     } finally {
@@ -190,17 +328,21 @@ export default function Chatbot({ open, onClose }) {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+              className={`flex gap-3 chat-message-enter ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
             >
-              {msg.role === 'assistant' && <ScrollCharacterAvatar className="w-8 h-8" />}
+              {msg.role === 'assistant' && <ScrollCharacterAvatar className="w-8 h-8 flex-shrink-0" />}
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
                   msg.role === 'user'
                     ? 'bg-pink-primary dark:bg-pink-400 text-white ml-auto'
                     : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'
                 }`}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                {msg.structured ? (
+                  <ProfessionalReply data={msg.structured} />
+                ) : (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                )}
               </div>
             </div>
           ))}
@@ -229,7 +371,7 @@ export default function Chatbot({ open, onClose }) {
                   key={q}
                   onClick={() => sendMessage(q)}
                   disabled={loading}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-pink-soft/50 dark:bg-white/10 text-pink-dark dark:text-pink-400 hover:bg-pink-soft dark:hover:bg-white/20 transition border border-pink-soft/50 dark:border-white/10"
+                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-pink-soft/50 dark:bg-white/10 text-pink-dark dark:text-pink-400 hover:bg-pink-soft dark:hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-pink-soft/50 dark:border-white/10"
                 >
                   {q}
                 </button>
