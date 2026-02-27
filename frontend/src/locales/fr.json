@@ -339,7 +339,14 @@
       "loading": "Chargement...",
       "professorArrived": "Le professeur est en ligne ! Vous pouvez rejoindre le cours.",
       "leaveRoom": "Quitter la salle",
-      "recording": "Enregistrement en cours..."
+      "recording": "Enregistrement en cours...",
+      "openMeeting": "Ouvrir la réunion",
+      "joinMeeting": "Rejoindre la réunion",
+      "linkToShare": "Lien à partager :",
+      "copy": "Copier",
+      "linkCopied": "Lien copié !",
+      "professorHint": "Cliquez pour ouvrir la réunion. L'étudiant peut utiliser le même lien.",
+      "studentHint": "Cliquez pour rejoindre la réunion."
     },
     "student": {
       "title": "Mes cours",

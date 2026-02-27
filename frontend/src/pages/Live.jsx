@@ -18,12 +18,10 @@ export default function Live() {
   const [access, setAccess] = useState(null);
   const [loading, setLoading] = useState(true);
   const [professorOnline, setProfessorOnline] = useState(false);
-  const [showJitsi, setShowJitsi] = useState(false);
+  const [showMeeting, setShowMeeting] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const sessionIdRef = useRef(null);
   const socketRef = useRef(null);
-  const jitsiContainerRef = useRef(null);
-  const jitsiApiRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -51,9 +49,9 @@ export default function Live() {
         setProfessorOnline(data.professorOnline);
 
         if (data.role === 'PROFESSOR') {
-          setShowJitsi(true);
+          setShowMeeting(true);
         } else if (data.professorOnline) {
-          setShowJitsi(true);
+          setShowMeeting(true);
         }
       } catch (err) {
         if (cancelled) return;
@@ -83,7 +81,7 @@ export default function Live() {
       if (evtCourseId && evtCourseId !== courseId) return;
       setProfessorOnline(online);
       if (online && user.role === 'STUDENT') {
-        setShowJitsi(true);
+        setShowMeeting(true);
         showToast(t('dashboard.livePage.professorArrived'));
       }
     });
@@ -99,78 +97,11 @@ export default function Live() {
   }, [user, access?.canAccess, courseId, showToast, t]);
 
   useEffect(() => {
-    if (!showJitsi || !access?.roomName || !jitsiContainerRef.current) return;
-
-    const isProfessor = user?.role === 'PROFESSOR';
-    const displayName = user?.name || 'Participant';
-
-    if (isProfessor && access?.courseId) {
+    if (!showMeeting || !access?.courseId) return;
+    if (user?.role === 'PROFESSOR') {
       api.post('/live/session/start', { courseId: access.courseId }).then(({ data }) => { sessionIdRef.current = data.sessionId; }).catch(() => {});
     }
-
-    const script = document.createElement('script');
-    script.src = 'https://meet.jit.si/external_api.js';
-    script.async = true;
-    script.onload = () => {
-      const jitsiApi = window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
-        roomName: access.roomName,
-        parentNode: jitsiContainerRef.current,
-        width: '100%',
-        height: '100%',
-        configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
-          prejoinPageEnabled: false,
-        },
-        interfaceConfigOverwrite: {
-          SHOW_JITSI_WATERMARK: false,
-          TOOLBAR_BUTTONS: [
-            'microphone',
-            'camera',
-            'closedcaptions',
-            'desktop',
-            'fullscreen',
-            'fodeviceselection',
-            'hangup',
-            'profile',
-            'chat',
-            'recording',
-            'livestreaming',
-            'settings',
-            'raisehand',
-            'videoquality',
-            'filmstrip',
-            'stats',
-            'shortcuts',
-            'tileview',
-            'videobackgroundblur',
-            'download',
-            'help',
-            'mute-everyone',
-          ],
-        },
-        userInfo: { displayName },
-      });
-
-      jitsiApiRef.current = jitsiApi;
-
-      jitsiApi.addEventListener('videoConferenceLeft', () => {
-        if (isProfessor && sessionIdRef.current) {
-          api.post('/live/session/end', { sessionId: sessionIdRef.current }).catch(() => {});
-          setSessionEnded(true);
-        }
-        setShowJitsi(false);
-      });
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      if (jitsiApiRef.current) {
-        jitsiApiRef.current.dispose();
-        jitsiApiRef.current = null;
-      }
-    };
-  }, [showJitsi, access?.roomName, access?.courseId, user?.name, user?.role]);
+  }, [showMeeting, access?.courseId, user?.role]);
 
   if (authLoading || loading) {
     return (
@@ -213,7 +144,7 @@ export default function Live() {
     );
   }
 
-  if (!showJitsi) {
+  if (!showMeeting) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="p-8 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 text-center max-w-lg animate-fade-in">
@@ -236,9 +167,11 @@ export default function Live() {
     );
   }
 
+  const meetingUrl = access?.roomName ? `https://${JITSI_DOMAIN}/${access.roomName}` : '';
+
   return (
-    <div className="min-h-screen flex flex-col bg-transparent">
-      <div className="flex items-center justify-between gap-4 p-4 border-b border-pink-soft/50 dark:border-white/10 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm">
+    <div className="min-h-screen flex flex-col bg-transparent p-4 sm:p-6">
+      <div className="flex items-center justify-between gap-4 p-4 border-b border-pink-soft/50 dark:border-white/10 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm rounded-t-2xl">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -249,31 +182,54 @@ export default function Live() {
         <button
           type="button"
           onClick={() => {
-            const jitsiApi = jitsiApiRef.current;
-            if (jitsiApi) {
-              try {
-                jitsiApi.executeCommand('hangup');
-              } catch (_) {
-                jitsiApi.dispose();
-              }
-              if (user?.role === 'PROFESSOR' && sessionIdRef.current) {
-                api.post('/live/session/end', { sessionId: sessionIdRef.current }).catch(() => {});
-                setSessionEnded(true);
-              }
-              setShowJitsi(false);
-            } else {
-              setShowJitsi(false);
-              if (user?.role === 'PROFESSOR') setSessionEnded(true);
-              navigate(user?.role === 'PROFESSOR' ? '/professor' : '/student');
+            if (user?.role === 'PROFESSOR' && sessionIdRef.current) {
+              api.post('/live/session/end', { sessionId: sessionIdRef.current }).catch(() => {});
+              setSessionEnded(true);
             }
+            setShowMeeting(false);
+            navigate(user?.role === 'PROFESSOR' ? '/professor/courses' : '/student');
           }}
           className="px-4 py-2 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition"
         >
           {t('dashboard.livePage.leaveRoom')}
         </button>
       </div>
-      <div className="flex-1 min-h-0 relative" style={{ minHeight: 'calc(100vh - 80px)' }}>
-        <div ref={jitsiContainerRef} className="absolute inset-0 w-full h-full" />
+      <div className="flex-1 p-6 bg-white dark:bg-[#1a1a1a] border border-t-0 border-pink-soft/50 dark:border-white/10 rounded-b-2xl flex flex-col items-center justify-center gap-6">
+        <p className="text-text dark:text-[#f5f5f5] text-center">
+          {user?.role === 'PROFESSOR' ? t('dashboard.livePage.professorHint') : t('dashboard.livePage.studentHint')}
+        </p>
+        {meetingUrl && (
+          <>
+            <a
+              href={meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-4 bg-pink-primary dark:bg-pink-400 text-white rounded-xl text-lg font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
+            >
+              {user?.role === 'PROFESSOR' ? t('dashboard.livePage.openMeeting') : t('dashboard.livePage.joinMeeting')}
+            </a>
+            <div className="w-full max-w-md">
+              <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-2">{t('dashboard.livePage.linkToShare')}</p>
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={meetingUrl}
+                  className="flex-1 px-4 py-2 rounded-xl border border-pink-soft dark:border-white/20 bg-white dark:bg-[#111111] text-text dark:text-[#f5f5f5] text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(meetingUrl);
+                    showToast(t('dashboard.livePage.linkCopied'));
+                  }}
+                  className="px-4 py-2 bg-pink-soft dark:bg-white/10 text-pink-dark dark:text-pink-300 rounded-xl text-sm font-medium hover:bg-pink-soft/80 dark:hover:bg-white/20 transition"
+                >
+                  {t('dashboard.livePage.copy')}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

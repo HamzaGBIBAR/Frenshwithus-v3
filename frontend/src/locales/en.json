@@ -339,7 +339,14 @@
       "loading": "Loading...",
       "professorArrived": "The professor is online! You can join the lesson.",
       "leaveRoom": "Leave room",
-      "recording": "Recording in progress..."
+      "recording": "Recording in progress...",
+      "openMeeting": "Open meeting",
+      "joinMeeting": "Join meeting",
+      "linkToShare": "Link to share:",
+      "copy": "Copy",
+      "linkCopied": "Link copied!",
+      "professorHint": "Click to open the meeting. The student can use the same link.",
+      "studentHint": "Click to join the meeting."
     },
     "student": {
       "title": "My courses",
