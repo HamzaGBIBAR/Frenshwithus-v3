@@ -216,7 +216,11 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.time}</td>
                 <td className="p-3">
                   {c.isStarted ? (
-                    <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>
+                    c.sessionEnded ? (
+                      <span className="text-amber-600 dark:text-amber-400">{t('dashboard.admin.ended')}</span>
+                    ) : (
+                      <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>
+                    )
                   ) : (
                     <span className="text-text/60 dark:text-[#f5f5f5]/60">{t('dashboard.admin.no')}</span>
                   )}

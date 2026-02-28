@@ -172,7 +172,7 @@ router.delete('/payments/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Courses list
+// Courses list – inclut sessionEnded si le prof a terminé la session live
 router.get('/courses', async (req, res) => {
   const courses = await prisma.course.findMany({
     include: {
@@ -181,7 +181,23 @@ router.get('/courses', async (req, res) => {
     },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
-  res.json(courses);
+
+  const endedSessions = await prisma.liveSession.findMany({
+    where: { endedAt: { not: null } },
+    select: { roomName: true },
+  });
+  const endedCourseIds = new Set(
+    endedSessions
+      .map((s) => (s.roomName.startsWith('frenchwithus-course-') ? s.roomName.replace('frenchwithus-course-', '') : null))
+      .filter(Boolean)
+  );
+
+  const coursesWithStatus = courses.map((c) => ({
+    ...c,
+    sessionEnded: c.isStarted && endedCourseIds.has(c.id),
+  }));
+
+  res.json(coursesWithStatus);
 });
 
 // Create course (admin assigns professor and student)
