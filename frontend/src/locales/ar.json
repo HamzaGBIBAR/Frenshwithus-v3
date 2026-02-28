@@ -220,7 +220,12 @@
       "relaunch": "إعادة التشغيل",
       "relaunchCourse": "إعادة تشغيل الدرس",
       "meetingIssuesAlert": "مشكلة(ات) في الاجتماع",
-      "meetingIssuesDesc": "دروس انتهت بسبب مشكلة تقنية. أعد تشغيلها من صفحة الدروس."
+      "meetingIssuesDesc": "دروس انتهت بسبب مشكلة تقنية. أعد تشغيلها من صفحة الدروس.",
+      "dismiss": "إخفاء",
+      "dismissAll": "إخفاء الكل",
+      "endReasonCompleted": "الدرس انتهى بنجاح",
+      "endReasonStudentAbsent": "الطالب غائب",
+      "endReasonMeetingIssue": "مشكلة في الاجتماع"
     },
     "adminCourses": {
       "title": "دروس الأسبوع",

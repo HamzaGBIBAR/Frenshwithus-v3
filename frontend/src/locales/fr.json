@@ -220,7 +220,12 @@
       "relaunch": "Relancer",
       "relaunchCourse": "Relancer le cours",
       "meetingIssuesAlert": "Problème(s) au meet",
-      "meetingIssuesDesc": "Cours terminés suite à un problème technique. Relancez-les depuis la page Cours."
+      "meetingIssuesDesc": "Cours terminés suite à un problème technique. Relancez-les depuis la page Cours.",
+      "dismiss": "Supprimer",
+      "dismissAll": "Tout supprimer",
+      "endReasonCompleted": "Cours bien terminé",
+      "endReasonStudentAbsent": "Élève absent",
+      "endReasonMeetingIssue": "Problème au meet"
     },
     "adminCourses": {
       "title": "Cours de la semaine",

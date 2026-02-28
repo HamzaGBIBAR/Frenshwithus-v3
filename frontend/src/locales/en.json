@@ -220,7 +220,12 @@
       "relaunch": "Relaunch",
       "relaunchCourse": "Relaunch course",
       "meetingIssuesAlert": "Meeting issue(s)",
-      "meetingIssuesDesc": "Courses ended due to technical issues. Relaunch them from the Courses page."
+      "meetingIssuesDesc": "Courses ended due to technical issues. Relaunch them from the Courses page.",
+      "dismiss": "Dismiss",
+      "dismissAll": "Dismiss all",
+      "endReasonCompleted": "Course completed successfully",
+      "endReasonStudentAbsent": "Student absent",
+      "endReasonMeetingIssue": "Meeting technical issue"
     },
     "adminCourses": {
       "title": "Weekly Courses",

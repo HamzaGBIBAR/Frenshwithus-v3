@@ -220,7 +220,12 @@
       "relaunch": "重新安排",
       "relaunchCourse": "重新安排课程",
       "meetingIssuesAlert": "会议问题",
-      "meetingIssuesDesc": "因技术问题结束的课程。请从课程页面重新安排。"
+      "meetingIssuesDesc": "因技术问题结束的课程。请从课程页面重新安排。",
+      "dismiss": "删除",
+      "dismissAll": "全部删除",
+      "endReasonCompleted": "课程顺利完成",
+      "endReasonStudentAbsent": "学生缺席",
+      "endReasonMeetingIssue": "会议技术问题"
     },
     "adminCourses": {
       "title": "本周课程",

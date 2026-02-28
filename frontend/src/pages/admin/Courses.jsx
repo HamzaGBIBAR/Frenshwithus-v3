@@ -237,13 +237,22 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                 <td className="p-3">
                   {c.endReason === 'meeting_issue' ? (
-                    <span className="text-red-600 dark:text-red-400 font-medium">{t('dashboard.admin.meetingIssue')}</span>
+                    <span className="text-red-600 dark:text-red-400 font-medium">
+                      {t('dashboard.admin.endedAt')} {c.sessionEndedAt ? formatDateToAMPM(c.sessionEndedAt) : ''}
+                      <span className="block text-xs mt-0.5">{t('dashboard.admin.endReasonMeetingIssue')}</span>
+                    </span>
                   ) : c.isStarted ? (
                     c.sessionEnded ? (
                       <span className="text-amber-600 dark:text-amber-400">
                         {c.sessionEndedAt
                           ? `${t('dashboard.admin.endedAt')} ${formatDateToAMPM(c.sessionEndedAt)}`
                           : t('dashboard.admin.ended')}
+                        {c.endReason && (
+                          <span className="block text-xs mt-0.5 opacity-90">
+                            {c.endReason === 'completed' && t('dashboard.admin.endReasonCompleted')}
+                            {c.endReason === 'student_absent' && t('dashboard.admin.endReasonStudentAbsent')}
+                          </span>
+                        )}
                       </span>
                     ) : (
                       <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>

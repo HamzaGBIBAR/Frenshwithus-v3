@@ -28,3 +28,12 @@ export function formatProfessorName(name) {
   const capitalized = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
   return `Prof. ${capitalized}`;
 }
+
+/**
+ * Format student name professionally: "Élève Amin" (prefix from i18n)
+ */
+export function formatStudentName(name, studentLabel = 'Élève') {
+  if (!name) return '';
+  const capitalized = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  return `${studentLabel} ${capitalized}`;
+}

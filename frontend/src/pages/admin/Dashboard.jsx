@@ -2,13 +2,22 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
-import { formatTimeAMPM, formatDateToAMPM } from '../../utils/format';
+import { formatTimeAMPM, formatDateToAMPM, formatProfessorName, formatStudentName } from '../../utils/format';
+
+const STORAGE_KEY = 'adminDismissedMeetingIssues';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const [revenue, setRevenue] = useState(0);
   const [courses, setCourses] = useState([]);
   const [dueSoon, setDueSoon] = useState([]);
+  const [dismissedMeetingIssues, setDismissedMeetingIssues] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     api.get('/admin/revenue').then((r) => setRevenue(r.data.total));
@@ -16,22 +25,36 @@ export default function AdminDashboard() {
     api.get('/admin/payments/due-soon').then((r) => setDueSoon(r.data)).catch(() => setDueSoon([]));
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dismissedMeetingIssues));
+  }, [dismissedMeetingIssues]);
+
   const upcoming = courses.filter((c) => {
     const d = new Date(`${c.date}T${c.time}`);
     return d >= new Date();
   });
 
-  const meetingIssues = courses.filter((c) => c.endReason === 'meeting_issue');
+  const meetingIssues = courses.filter((c) => c.endReason === 'meeting_issue' && !dismissedMeetingIssues.includes(c.id));
+
+  const dismissMeetingIssue = (e, courseId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDismissedMeetingIssues((prev) => [...prev, courseId]);
+  };
+
+  const dismissAllMeetingIssues = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const ids = courses.filter((c) => c.endReason === 'meeting_issue').map((c) => c.id);
+    setDismissedMeetingIssues((prev) => [...new Set([...prev, ...ids])]);
+  };
 
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('dashboard.admin.title')}</h1>
 
       {meetingIssues.length > 0 && (
-        <Link
-          to="/admin/courses"
-          className="mb-6 block p-4 rounded-2xl border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-300 animate-fade-in shadow-sm hover:shadow-md"
-        >
+        <div className="mb-6 p-4 rounded-2xl border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-300 animate-fade-in shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold text-red-800 dark:text-red-300 flex items-center gap-2">
@@ -40,21 +63,45 @@ export default function AdminDashboard() {
               </h3>
               <p className="text-sm text-red-700 dark:text-red-400/90 mt-0.5">{t('dashboard.admin.meetingIssuesDesc')}</p>
             </div>
-            <span className="px-4 py-2 rounded-xl bg-red-500/20 dark:bg-red-500/30 text-red-800 dark:text-red-200 font-medium text-sm">
-              {t('dashboard.admin.viewAll')}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={dismissAllMeetingIssues}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200/50 dark:hover:bg-red-900/40 transition"
+                title={t('dashboard.admin.dismissAll')}
+              >
+                {t('dashboard.admin.dismissAll')}
+              </button>
+              <Link
+                to="/admin/courses"
+                className="px-4 py-2 rounded-xl bg-red-500/20 dark:bg-red-500/30 text-red-800 dark:text-red-200 font-medium text-sm hover:bg-red-500/30 transition"
+              >
+                {t('dashboard.admin.viewAll')}
+              </Link>
+            </div>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {meetingIssues.slice(0, 4).map((c) => (
               <span
                 key={c.id}
-                className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 border border-red-200/60 dark:border-red-500/30"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 border border-red-200/60 dark:border-red-500/30"
               >
-                {c.professor?.name} — {c.student?.name}
+                {formatProfessorName(c.professor?.name)} — {formatStudentName(c.student?.name, t('dashboard.admin.student'))}
+                <button
+                  type="button"
+                  onClick={(e) => dismissMeetingIssue(e, c.id)}
+                  className="ml-0.5 p-0.5 rounded hover:bg-red-200/50 dark:hover:bg-red-800/50 transition"
+                  title={t('dashboard.admin.dismiss')}
+                  aria-label={t('dashboard.admin.dismiss')}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </span>
             ))}
           </div>
-        </Link>
+        </div>
       )}
 
       {dueSoon.length > 0 && (
@@ -128,6 +175,13 @@ export default function AdminDashboard() {
                         {c.sessionEndedAt
                           ? `${t('dashboard.admin.endedAt')} ${formatDateToAMPM(c.sessionEndedAt)}`
                           : t('dashboard.admin.ended')}
+                        {c.endReason && (
+                          <span className="block text-xs mt-0.5 opacity-90">
+                            {c.endReason === 'completed' && t('dashboard.admin.endReasonCompleted')}
+                            {c.endReason === 'student_absent' && t('dashboard.admin.endReasonStudentAbsent')}
+                            {c.endReason === 'meeting_issue' && t('dashboard.admin.endReasonMeetingIssue')}
+                          </span>
+                        )}
                       </span>
                     ) : c.isStarted ? (
                       <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>

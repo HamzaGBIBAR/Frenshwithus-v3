@@ -53,6 +53,13 @@ export default function ProfessorDashboard() {
                         {c.sessionEndedAt
                           ? `${t('dashboard.admin.endedAt')} ${formatDateToAMPM(c.sessionEndedAt)}`
                           : t('dashboard.admin.ended')}
+                        {c.endReason && (
+                          <span className="block text-xs mt-0.5 opacity-90">
+                            {c.endReason === 'completed' && t('dashboard.admin.endReasonCompleted')}
+                            {c.endReason === 'student_absent' && t('dashboard.admin.endReasonStudentAbsent')}
+                            {c.endReason === 'meeting_issue' && t('dashboard.admin.endReasonMeetingIssue')}
+                          </span>
+                        )}
                       </span>
                     ) : c.isStarted ? (
                       <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>
