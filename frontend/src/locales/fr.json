@@ -30,9 +30,37 @@
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
+    "passwordRequirements": "Exigences du mot de passe",
+    "passwordRequirementsNotMet": "Le mot de passe ne respecte pas toutes les exigences.",
+    "passwordRule": {
+      "length": "Au moins 8 caractères",
+      "uppercase": "Au moins une majuscule (A-Z)",
+      "lowercase": "Au moins une minuscule (a-z)",
+      "number": "Au moins un chiffre (0-9)",
+      "special": "Au moins un caractère spécial (!@#$%^&*)",
+      "different": "Différent du mot de passe actuel"
+    },
     "passwordChanged": "Mot de passe modifié",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "appearanceDesc": "Personnalisez l'apparence de l'interface.",
+    "calendarCardStyle": "Style des cartes du calendrier",
+    "calendarCardStyleDesc": "Choisissez votre style de carte de planning préféré.",
+    "calendarStyle": {
+      "default": "Par défaut",
+      "gradient": "Cartes dégradées",
+      "status": "Cartes par statut",
+      "compact": "Liste compacte",
+      "minimal": "Minimaliste moderne",
+      "border": "Avec bordure"
+    },
+    "calendarStyleDesc": {
+      "default": "Style classique rose et gris",
+      "gradient": "Fonds avec de beaux dégradés",
+      "status": "Codées par couleur selon le statut",
+      "compact": "Liste propre avec barres colorées",
+      "minimal": "Cartes épurées et modernes",
+      "border": "Cartes avec bordures colorées"
+    },
     "adminNoPassword": "Seul le professeur peut modifier son mot de passe.",
     "viewProfile": "Voir le profil",
     "errorLoad": "Erreur lors du chargement",

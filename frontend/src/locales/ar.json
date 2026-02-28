@@ -30,9 +30,37 @@
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور",
+    "passwordRequirements": "متطلبات كلمة المرور",
+    "passwordRequirementsNotMet": "كلمة المرور لا تلبي جميع المتطلبات.",
+    "passwordRule": {
+      "length": "8 أحرف على الأقل",
+      "uppercase": "حرف كبير واحد على الأقل (A-Z)",
+      "lowercase": "حرف صغير واحد على الأقل (a-z)",
+      "number": "رقم واحد على الأقل (0-9)",
+      "special": "رمز خاص واحد على الأقل (!@#$%^&*)",
+      "different": "مختلف عن كلمة المرور الحالية"
+    },
     "passwordChanged": "تم تغيير كلمة المرور",
     "passwordMismatch": "كلمات المرور غير متطابقة",
     "appearanceDesc": "تخصيص مظهر الواجهة.",
+    "calendarCardStyle": "نمط بطاقات التقويم",
+    "calendarCardStyleDesc": "اختر نمط بطاقة التخطيط المفضل لديك.",
+    "calendarStyle": {
+      "default": "افتراضي",
+      "gradient": "بطاقات متدرجة",
+      "status": "بطاقات حسب الحالة",
+      "compact": "قائمة مضغوطة",
+      "minimal": "حديث بسيط",
+      "border": "مع حدود"
+    },
+    "calendarStyleDesc": {
+      "default": "نمط كلاسيكي وردي ورمادي",
+      "gradient": "خلفيات بتدرجات جميلة",
+      "status": "مرمزة بالألوان حسب الحالة",
+      "compact": "قائمة نظيفة مع أشرطة ملونة",
+      "minimal": "بطاقات نظيفة وعصرية",
+      "border": "بطاقات بحدود ملونة"
+    },
     "adminNoPassword": "الأستاذ فقط يمكنه تغيير كلمة المرور.",
     "viewProfile": "عرض الملف",
     "errorLoad": "خطأ في التحميل",

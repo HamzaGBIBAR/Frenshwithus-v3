@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import ThemeToggle from './ThemeToggle';
 import { useToast } from './Toast';
+import { CALENDAR_STYLES, getCalendarStyle, setCalendarStyle } from '../utils/calendarStyles';
 
 const TABS = ['personal', 'appearance', 'password'];
 
@@ -21,6 +22,22 @@ function getInitials(name) {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+}
+
+const PASSWORD_RULES = [
+  { key: 'length', test: (p) => p.length >= 8 },
+  { key: 'uppercase', test: (p) => /[A-Z]/.test(p) },
+  { key: 'lowercase', test: (p) => /[a-z]/.test(p) },
+  { key: 'number', test: (p) => /[0-9]/.test(p) },
+  { key: 'special', test: (p) => /[!@#$%^&*]/.test(p) },
+  { key: 'different', test: (p, current) => !current || p !== current },
+];
+
+function getPasswordRuleResults(newPassword, currentPassword) {
+  return PASSWORD_RULES.map((r) => ({
+    ...r,
+    met: r.key === 'different' ? r.test(newPassword, currentPassword) : r.test(newPassword),
+  }));
 }
 
 function resizeImageToDataUrl(file, maxSize = 200, quality = 0.85) {
@@ -59,7 +76,14 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   const [form, setForm] = useState({ name: '', email: '', avatarUrl: null });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [saving, setSaving] = useState(false);
+  const [calendarStyle, setCalendarStyleState] = useState(getCalendarStyle);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const handler = () => setCalendarStyleState(getCalendarStyle());
+    window.addEventListener('calendarStyleChanged', handler);
+    return () => window.removeEventListener('calendarStyleChanged', handler);
+  }, []);
 
   const isOwnProfile = !professorId;
   const isAdminView = !!professorId;
@@ -128,7 +152,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
       return;
     }
     try {
-      const dataUrl = await resizeImageToDataUrl(file);
+      const dataUrl = await resizeImageToDataUrl(file, 150, 0.8);
       setForm((f) => ({ ...f, avatarUrl: dataUrl }));
       setProfile((p) => (p ? { ...p, avatarUrl: dataUrl } : null));
       await saveAvatar(dataUrl);
@@ -146,6 +170,12 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    const rules = getPasswordRuleResults(passwordForm.newPassword, passwordForm.currentPassword);
+    const allMet = rules.every((r) => r.met);
+    if (!allMet) {
+      toast(t('profile.passwordRequirementsNotMet'));
+      return;
+    }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast(t('profile.passwordMismatch'));
       return;
@@ -348,11 +378,40 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           )}
 
           {activeTab === 'appearance' && (
-            <div className="animate-fade-in space-y-4">
+            <div className="animate-fade-in space-y-6">
               <p className="text-sm text-text/70 dark:text-[#f5f5f5]/80">{t('profile.appearanceDesc')}</p>
               <div className="p-4 rounded-xl bg-pink-soft/20 dark:bg-white/5 border border-pink-soft/40 dark:border-white/10">
                 <ThemeToggle className="w-full justify-between" />
               </div>
+              {isOwnProfile && (
+                <div>
+                  <h3 className="text-sm font-medium text-text dark:text-[#f5f5f5] mb-2">{t('profile.calendarCardStyle')}</h3>
+                  <p className="text-xs text-text/60 dark:text-[#f5f5f5]/70 mb-3">{t('profile.calendarCardStyleDesc')}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {CALENDAR_STYLES.map((style) => {
+                      const selected = calendarStyle === style.id;
+                      return (
+                        <button
+                          key={style.id}
+                          type="button"
+                          onClick={() => { setCalendarStyle(style.id); setCalendarStyleState(style.id); }}
+                          className={`p-3 rounded-xl border-2 text-left transition-all duration-300 ${
+                            selected
+                              ? 'border-pink-primary dark:border-pink-400 bg-pink-soft/30 dark:bg-pink-500/20'
+                              : 'border-pink-soft/40 dark:border-white/10 hover:border-pink-soft/70 dark:hover:border-white/20 bg-white/50 dark:bg-white/5'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className={`w-2 h-2 rounded-full ${selected ? 'bg-pink-primary dark:bg-pink-400' : 'bg-pink-soft dark:bg-white/30'}`} />
+                            <span className="text-sm font-medium text-text dark:text-[#f5f5f5]">{t(`profile.calendarStyle.${style.key}`)}</span>
+                          </div>
+                          <p className="text-xs text-text/60 dark:text-[#f5f5f5]/70">{t(`profile.calendarStyleDesc.${style.key}`)}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -379,9 +438,35 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                       value={passwordForm.newPassword}
                       onChange={(e) => setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))}
                       className="w-full px-4 py-2.5 rounded-xl border border-pink-soft/60 dark:border-white/20 bg-white dark:bg-[#2a2a2a] text-text dark:text-[#f5f5f5] focus:ring-2 focus:ring-pink-primary/50"
-                      minLength={6}
+                      minLength={8}
                       required
                     />
+                    <div className="mt-3 p-4 rounded-xl bg-pink-soft/10 dark:bg-white/5 border border-pink-soft/30 dark:border-white/10 animate-fade-in">
+                      <p className="text-sm font-medium text-text dark:text-[#f5f5f5] mb-2">{t('profile.passwordRequirements')}</p>
+                      <ul className="space-y-1.5">
+                        {getPasswordRuleResults(passwordForm.newPassword, passwordForm.currentPassword).map((rule, i) => (
+                          <li
+                            key={rule.key}
+                            className={`flex items-center gap-2 text-sm transition-all duration-300 ease-out ${
+                              rule.met
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-red-600 dark:text-red-400'
+                            }`}
+                          >
+                            {rule.met ? (
+                              <svg className="w-4 h-4 flex-shrink-0 text-emerald-500 dark:text-emerald-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4 flex-shrink-0 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            )}
+                            <span>{t(`profile.passwordRule.${rule.key}`)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-text dark:text-[#f5f5f5] mb-1.5">{t('profile.confirmPassword')}</label>
@@ -390,7 +475,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                       value={passwordForm.confirmPassword}
                       onChange={(e) => setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))}
                       className="w-full px-4 py-2.5 rounded-xl border border-pink-soft/60 dark:border-white/20 bg-white dark:bg-[#2a2a2a] text-text dark:text-[#f5f5f5] focus:ring-2 focus:ring-pink-primary/50"
-                      minLength={6}
+                      minLength={8}
                       required
                     />
                   </div>

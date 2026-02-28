@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import MobileMenuButton from '../components/MobileMenuButton';
 import ProfessorProfileModal from '../components/ProfessorProfileModal';
 import ProfessorDashboard from '../pages/professor/Dashboard';
 import ProfessorCourses from '../pages/professor/Courses';
 import ProfessorMessages from '../pages/professor/Messages';
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(/\s+/).map((s) => s[0]).join('').toUpperCase().slice(0, 2);
+}
 
 const navItems = [
   { to: '/', label: 'Accueil', end: true },
@@ -18,6 +24,8 @@ const navItems = [
 export default function ProfessorLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const { user } = useAuth();
+
   return (
     <div className="flex min-h-screen">
       <Sidebar items={navItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onProfileClick={() => setProfileOpen(true)} />
@@ -27,6 +35,27 @@ export default function ProfessorLayout() {
           <MobileMenuButton onClick={() => setSidebarOpen(true)} />
           <span className="font-semibold text-text dark:text-[#f5f5f5]">French With Us</span>
         </header>
+        <div className="hidden md:flex sticky top-0 z-20 items-center justify-end px-4 sm:px-6 py-3 bg-transparent border-b border-pink-soft/30 dark:border-white/5">
+          <button
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            className="group relative w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden ring-2 ring-pink-soft/50 dark:ring-white/10 hover:ring-pink-primary/60 dark:hover:ring-pink-400/30 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_20px_rgba(231,84,128,0.3)] dark:hover:shadow-[0_0_20px_rgba(244,114,182,0.25)] focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111111] animate-fade-in"
+            aria-label="Ouvrir le profil"
+          >
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-primary to-pink-dark dark:from-pink-400 dark:to-pink-600 text-white font-semibold text-sm shadow-inner">
+                {getInitials(user?.name)}
+              </div>
+            )}
+            <span className="absolute inset-0 rounded-full bg-pink-primary/0 group-hover:bg-pink-primary/10 dark:group-hover:bg-pink-400/10 transition-colors duration-300" />
+          </button>
+        </div>
         <main className="flex-1 p-4 sm:p-6 overflow-auto bg-transparent transition-colors duration-500">
         <Routes>
           <Route index element={<ProfessorDashboard />} />

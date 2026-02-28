@@ -60,7 +60,7 @@ router.post('/login', loginValidation, validate, async (req, res) => {
     });
 
     res.json({
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -30,9 +30,37 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmPassword": "Confirm password",
+    "passwordRequirements": "Password requirements",
+    "passwordRequirementsNotMet": "Password does not meet all requirements.",
+    "passwordRule": {
+      "length": "At least 8 characters long",
+      "uppercase": "At least one uppercase letter (A-Z)",
+      "lowercase": "At least one lowercase letter (a-z)",
+      "number": "At least one number (0-9)",
+      "special": "At least one special character (!@#$%^&*)",
+      "different": "Different from current password"
+    },
     "passwordChanged": "Password changed",
     "passwordMismatch": "Passwords do not match",
     "appearanceDesc": "Customize the interface appearance.",
+    "calendarCardStyle": "Calendar card style",
+    "calendarCardStyleDesc": "Choose your preferred planning card style.",
+    "calendarStyle": {
+      "default": "Default",
+      "gradient": "Gradient cards",
+      "status": "Cards by status",
+      "compact": "Compact list",
+      "minimal": "Modern minimalist",
+      "border": "With border"
+    },
+    "calendarStyleDesc": {
+      "default": "Classic pink and grey style",
+      "gradient": "Backgrounds with beautiful gradients",
+      "status": "Color-coded by status",
+      "compact": "Clean list with colored bars",
+      "minimal": "Clean, modern cards",
+      "border": "Cards with colored borders"
+    },
     "adminNoPassword": "Only the professor can change their password.",
     "viewProfile": "View profile",
     "errorLoad": "Error loading profile",

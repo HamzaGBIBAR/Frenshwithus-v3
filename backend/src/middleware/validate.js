@@ -73,7 +73,26 @@ export const profileUpdateValidation = [
   body('avatarUrl').optional().isString().isLength({ max: 200000 }),
 ];
 
+const passwordStrongValidation = (value) => {
+  if (!value || value.length < 8) return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter';
+  if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter';
+  if (!/[0-9]/.test(value)) return 'Password must contain at least one number';
+  if (!/[!@#$%^&*]/.test(value)) return 'Password must contain at least one special character (!@#$%^&*)';
+  return true;
+};
+
 export const passwordChangeValidation = [
   body('currentPassword').notEmpty().withMessage('Current password required'),
-  body('newPassword').isLength({ min: 6, max: 128 }).withMessage('New password must be 6-128 characters'),
+  body('newPassword')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Password must be 8-128 characters')
+    .custom((value, { req }) => {
+      if (value === req.body.currentPassword) {
+        throw new Error('New password must be different from current password');
+      }
+      const result = passwordStrongValidation(value);
+      if (result !== true) throw new Error(result);
+      return true;
+    }),
 ];

@@ -45,7 +45,7 @@ if (isProd) {
 
 app.use(helmetMiddleware);
 app.use(cookieParser());
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '500kb' }));
 app.use(cors({
   origin: getAllowedOrigins(),
   credentials: true,

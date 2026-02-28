@@ -5,6 +5,7 @@ import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
 import { formatTimeAMPM } from '../../utils/format';
+import { getCalendarStyle } from '../../utils/calendarStyles';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 
@@ -40,7 +41,18 @@ export default function ProfessorCourses() {
 
   const [allProfsAvailability, setAllProfsAvailability] = useState([]);
   const [showOtherProfs, setShowOtherProfs] = useState(true);
+  const [calendarStyle, setCalendarStyle] = useState(getCalendarStyle);
   const { user } = useAuth();
+
+  useEffect(() => {
+    const handler = () => setCalendarStyle(getCalendarStyle());
+    window.addEventListener('storage', handler);
+    window.addEventListener('calendarStyleChanged', handler);
+    return () => {
+      window.removeEventListener('storage', handler);
+      window.removeEventListener('calendarStyleChanged', handler);
+    };
+  }, []);
 
   const load = () => {
     api.get('/professor/courses').then((r) => setCourses(r.data));
@@ -314,6 +326,7 @@ export default function ProfessorCourses() {
           onSelectDate={setSelectedDate}
           viewMode="mois"
           onViewModeChange={setViewMode}
+          calendarStyle={calendarStyle}
         />
         </>
       ) : viewMode === 'semaine' ? (

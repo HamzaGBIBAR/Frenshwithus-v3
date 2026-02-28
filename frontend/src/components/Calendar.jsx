@@ -1,6 +1,45 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+function getEventStyleByCardStyle(evt, style, cursor, base) {
+  const type = evt.type || 'course';
+  if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white hover:bg-emerald-500 ${base}`;
+  if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-500/90 ${base}`;
+
+  if (type !== 'course') return `bg-pink-primary/90 dark:bg-pink-400/90 text-white ${base}`;
+
+  const isPast = evt.isPast;
+  const past = isPast;
+  const upcoming = !isPast;
+
+  switch (style) {
+    case 'gradient':
+      return past
+        ? `bg-gradient-to-r from-slate-500 to-slate-600 dark:from-slate-600 dark:to-slate-700 text-white hover:from-slate-600 hover:to-slate-700 ${base}`
+        : `bg-gradient-to-r from-pink-400 to-pink-600 dark:from-pink-500 dark:to-pink-600 text-white hover:from-pink-500 hover:to-pink-600 ${base}`;
+    case 'status':
+      return past
+        ? `bg-slate-500/90 dark:bg-slate-600/90 text-white border border-slate-400/30 ${base}`
+        : `bg-pink-primary/90 dark:bg-pink-400/90 text-white border border-pink-300/30 dark:border-pink-500/30 ${base}`;
+    case 'compact':
+      return past
+        ? `bg-slate-100/50 dark:bg-slate-800/30 border-l-4 border-slate-500 pl-2 py-1 text-slate-700 dark:text-slate-300 ${base}`
+        : `bg-pink-soft/40 dark:bg-pink-500/15 border-l-4 border-pink-primary dark:border-pink-400 pl-2 py-1 text-pink-dark dark:text-pink-300 ${base}`;
+    case 'minimal':
+      return past
+        ? `bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 ${base}`
+        : `bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-200 border border-pink-200 dark:border-pink-500/40 ${base}`;
+    case 'border':
+      return past
+        ? `bg-white/50 dark:bg-slate-800/30 border-2 border-slate-400 dark:border-slate-500 text-slate-700 dark:text-slate-300 ${base}`
+        : `bg-white/50 dark:bg-pink-500/10 border-2 border-pink-primary dark:border-pink-400 text-pink-dark dark:text-pink-300 ${base}`;
+    default:
+      return past
+        ? `bg-slate-500/80 dark:bg-slate-600/90 text-white/95 hover:bg-slate-500 dark:hover:bg-slate-500/95 border border-slate-400/30 dark:border-slate-500/50 ${base}`
+        : `bg-pink-primary/90 dark:bg-pink-400/90 text-white hover:bg-pink-primary dark:hover:bg-pink-400 ${base}`;
+  }
+}
+
 function getMonthWeeks(year, month) {
   const first = new Date(year, month, 1);
   const last = new Date(year, month + 1, 0);
@@ -25,7 +64,7 @@ function getMonthWeeks(year, month) {
   return weeks;
 }
 
-export default function Calendar({ events = [], selectedDate, onSelectDate, onSelectEvent, viewMode = 'mois', onViewModeChange, embedded }) {
+export default function Calendar({ events = [], selectedDate, onSelectDate, onSelectEvent, viewMode = 'mois', onViewModeChange, embedded, calendarStyle = 'default' }) {
   const { t } = useTranslation();
   const days = t('calendar.days', { returnObjects: true });
   const months = t('calendar.months', { returnObjects: true });
@@ -73,10 +112,7 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
     const type = evt.type || 'course';
     const cursor = type === 'course' && onSelectEvent ? 'cursor-pointer' : 'cursor-default';
     const base = `transition-colors duration-200 ${cursor}`;
-    if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white hover:bg-emerald-500 ${base}`;
-    if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-500/90 ${base}`;
-    if (type === 'course' && evt.isPast) return `bg-slate-500/80 dark:bg-slate-600/90 text-white/95 hover:bg-slate-500 dark:hover:bg-slate-500/95 border border-slate-400/30 dark:border-slate-500/50 ${base}`;
-    return `bg-pink-primary/90 dark:bg-pink-400/90 text-white hover:bg-pink-primary dark:hover:bg-pink-400 ${base}`;
+    return getEventStyleByCardStyle(evt, calendarStyle, cursor, base);
   };
 
   if (viewMode !== 'mois') return null;
