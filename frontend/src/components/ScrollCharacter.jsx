@@ -11,7 +11,8 @@ import Chatbot from './Chatbot';
 const EXIT_DURATION = 500;
 
 export default function ScrollCharacter() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language?.slice(0, 2) === 'ar';
   const [contactVisible, setContactVisible] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -58,8 +59,12 @@ export default function ScrollCharacter() {
   return (
     <>
       <div
-        className={`scroll-character-wrapper fixed top-[18%] left-[4%] lg:left-[6%] z-[10] flex flex-col items-center gap-1 transition-all duration-500 ease-out ${
-          contactVisible ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 -translate-x-12 pointer-events-none'
+        className={`scroll-character-wrapper fixed top-[18%] z-[10] flex flex-col items-center gap-1 transition-all duration-500 ease-out ${
+          isRtl ? 'right-[4%] lg:right-[6%]' : 'left-[4%] lg:left-[6%]'
+        } ${
+          contactVisible
+            ? 'opacity-100 translate-x-0 pointer-events-auto'
+            : `opacity-0 pointer-events-none ${isRtl ? 'translate-x-12' : '-translate-x-12'}`
         }`}
       >
         {contentVisible && (
