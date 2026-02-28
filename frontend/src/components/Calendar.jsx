@@ -72,10 +72,10 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
   const getEventStyle = (evt) => {
     const type = evt.type || 'course';
     const cursor = type === 'course' && onSelectEvent ? 'cursor-pointer' : 'cursor-default';
-    const base = `hover:scale-[1.02] hover:shadow-md active:scale-[0.98] transition-all duration-200 ${cursor}`;
-    if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white ${base}`;
-    if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 ${base}`;
-    return `bg-pink-primary/90 dark:bg-pink-400/90 text-white shadow-sm hover:shadow-pink-soft/50 ${base}`;
+    const base = `transition-colors duration-200 ${cursor}`;
+    if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white hover:bg-emerald-500 ${base}`;
+    if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-500/90 ${base}`;
+    return `bg-pink-primary/90 dark:bg-pink-400/90 text-white hover:bg-pink-primary dark:hover:bg-pink-400 ${base}`;
   };
 
   if (viewMode !== 'mois') return null;
