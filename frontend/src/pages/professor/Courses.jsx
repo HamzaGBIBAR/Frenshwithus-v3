@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
+import { formatTimeAMPM } from '../../utils/format';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 
@@ -126,7 +127,7 @@ export default function ProfessorCourses() {
     id: c.id,
     date: c.date,
     title: c.student?.name || t('dashboard.professor.course'),
-    time: c.time,
+    time: formatTimeAMPM(c.time),
     type: 'course',
   }));
 
@@ -396,7 +397,7 @@ export default function ProfessorCourses() {
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div>
                                 <span className="font-medium text-text dark:text-[#f5f5f5]">{c.student?.name}</span>
-                                <span className="text-sm text-text/60 dark:text-[#f5f5f5]/60 ml-2">{c.time}</span>
+                                <span className="text-sm text-text/60 dark:text-[#f5f5f5]/60 ml-2">{formatTimeAMPM(c.time)}</span>
                               </div>
                               <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${
                                 status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :

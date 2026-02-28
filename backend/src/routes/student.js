@@ -8,14 +8,35 @@ const router = Router();
 router.use(authenticate);
 router.use(requireRole('STUDENT'));
 
-// Upcoming courses
+// Upcoming courses – inclut sessionEnded et sessionEndedAt
 router.get('/courses', async (req, res) => {
   const courses = await prisma.course.findMany({
     where: { studentId: req.user.id },
     include: { professor: { select: { id: true, name: true } } },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
-  res.json(courses);
+
+  const endedSessions = await prisma.liveSession.findMany({
+    where: { endedAt: { not: null } },
+    select: { roomName: true, endedAt: true },
+    orderBy: { endedAt: 'desc' },
+  });
+  const endedCourseIds = new Set();
+  const endedAtByCourse = {};
+  for (const s of endedSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    const courseId = s.roomName.replace('frenchwithus-course-', '');
+    endedCourseIds.add(courseId);
+    if (!endedAtByCourse[courseId]) endedAtByCourse[courseId] = s.endedAt;
+  }
+
+  const coursesWithStatus = courses.map((c) => ({
+    ...c,
+    sessionEnded: c.isStarted && endedCourseIds.has(c.id),
+    sessionEndedAt: endedAtByCourse[c.id] || null,
+  }));
+
+  res.json(coursesWithStatus);
 });
 
 // Get meeting link (only if unlocked)

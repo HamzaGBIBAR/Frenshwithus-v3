@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
+import { formatTimeAMPM } from '../../utils/format';
 
 export default function StudentDashboard() {
   const { t } = useTranslation();
@@ -19,7 +20,7 @@ export default function StudentDashboard() {
     id: c.id,
     date: c.date,
     title: c.professor?.name || t('dashboard.student.frenchCourse'),
-    time: c.time,
+    time: formatTimeAMPM(c.time),
     type: 'course',
   }));
 
@@ -107,7 +108,7 @@ export default function StudentDashboard() {
                   <div className="flex justify-between items-start gap-4">
                     <div>
                       <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name}</p>
-                      <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {c.time}</p>
+                      <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
                     </div>
                     <div className="flex-shrink-0">
                       <Link
@@ -135,7 +136,7 @@ export default function StudentDashboard() {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name}</p>
-                    <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {c.time}</p>
+                    <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
                   </div>
                   {c.recordingLink ? (
                     <a

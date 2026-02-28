@@ -327,6 +327,7 @@
       "slotsAvailable": "{{count}} available slots",
       "viewCurrentWeek": "View current week",
       "myCourses": "My courses",
+      "manageCourses": "Manage courses",
       "myAvailabilityShort": "My availability",
       "otherProfs": "Other professors",
       "hide": "(hide)",
