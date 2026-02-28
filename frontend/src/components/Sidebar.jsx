@@ -54,23 +54,34 @@ export default function Sidebar({ items, open = false, onClose, onProfileClick }
           </p>
         </div>
         <nav className="flex-1 p-3 md:p-4 space-y-1 overflow-y-auto">
-          {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `block px-3 md:px-4 py-2.5 md:py-2.5 rounded-xl transition-all duration-200 text-sm md:text-base ${
-                  isActive
-                    ? 'bg-pink-soft/80 dark:bg-white/10 text-pink-dark dark:text-pink-400 font-medium border-l-4 border-pink-primary dark:border-pink-400'
-                    : 'text-text/70 dark:text-[#f5f5f5]/70 hover:bg-pink-soft/40 dark:hover:bg-white/5 hover:text-text dark:hover:text-[#f5f5f5]'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {items.map((item) =>
+            item.action === 'profile' && onProfileClick ? (
+              <button
+                key="profile"
+                type="button"
+                onClick={() => { onProfileClick(); onClose?.(); }}
+                className="block w-full text-left px-3 md:px-4 py-2.5 md:py-2.5 rounded-xl transition-all duration-200 text-sm md:text-base text-text/70 dark:text-[#f5f5f5]/70 hover:bg-pink-soft/40 dark:hover:bg-white/5 hover:text-text dark:hover:text-[#f5f5f5]"
+              >
+                {item.label}
+              </button>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={handleNavClick}
+                className={({ isActive }) =>
+                  `block px-3 md:px-4 py-2.5 md:py-2.5 rounded-xl transition-all duration-200 text-sm md:text-base ${
+                    isActive
+                      ? 'bg-pink-soft/80 dark:bg-white/10 text-pink-dark dark:text-pink-400 font-medium border-l-4 border-pink-primary dark:border-pink-400'
+                      : 'text-text/70 dark:text-[#f5f5f5]/70 hover:bg-pink-soft/40 dark:hover:bg-white/5 hover:text-text dark:hover:text-[#f5f5f5]'
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            )
+          )}
         </nav>
         <div className="p-3 md:p-4 border-t border-pink-soft/50 dark:border-white/10 space-y-2">
           <LanguageSwitcher className="w-full justify-center" />

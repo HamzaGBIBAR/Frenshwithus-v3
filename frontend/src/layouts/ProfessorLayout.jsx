@@ -12,6 +12,7 @@ const navItems = [
   { to: '/professor', label: 'Tableau de bord', end: true },
   { to: '/professor/courses', label: 'Planning' },
   { to: '/professor/messages', label: 'Messages' },
+  { action: 'profile', label: 'Profil' },
 ];
 
 export default function ProfessorLayout() {
