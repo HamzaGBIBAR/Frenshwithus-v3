@@ -89,7 +89,15 @@ export default function AdminDashboard() {
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.time}</td>
-                  <td className="p-3">{c.isStarted ? <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span> : <span className="text-text/60 dark:text-[#f5f5f5]/60">{t('dashboard.admin.no')}</span>}</td>
+                  <td className="p-3">
+                    {c.sessionEnded ? (
+                      <span className="text-amber-600 dark:text-amber-400">{t('dashboard.admin.ended')}</span>
+                    ) : c.isStarted ? (
+                      <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>
+                    ) : (
+                      <span className="text-text/60 dark:text-[#f5f5f5]/60">{t('dashboard.admin.no')}</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
