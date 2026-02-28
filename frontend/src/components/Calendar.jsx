@@ -162,7 +162,7 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                   <div
                     key={dateKey}
                     onClick={() => onSelectDate?.(dateKey)}
-                    className={`min-h-[110px] sm:min-h-[130px] p-3 rounded-xl border transition cursor-pointer
+                    className={`min-h-[110px] sm:min-h-[130px] p-3 rounded-xl border transition cursor-pointer overflow-visible
                       ${isOtherMonth ? 'bg-pink-soft/20 dark:bg-white/5 text-text/50 dark:text-[#f5f5f5]/50' : 'bg-white dark:bg-[#111111]'}
                       ${isToday ? 'calendar-today-cell bg-pink-primary/15 dark:bg-pink-400/20 border-pink-primary/50 dark:border-pink-400/50 font-semibold' : ''}
                       ${isSelected && !isToday ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : ''}
@@ -170,31 +170,45 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                     `}
                   >
                     <div className={`text-sm font-medium mb-1 ${isToday ? 'text-pink-primary dark:text-pink-400 text-base font-bold' : 'text-text dark:text-[#f5f5f5]'}`}>{date.getDate()}</div>
-                    <div className="space-y-1 overflow-hidden">
+                    <div className="space-y-1 overflow-visible">
                       {dayEvents.slice(0, 3).map((evt) => (
                         <div
                           key={evt.id}
-                          role={evt.type === 'course' && onSelectEvent ? 'button' : undefined}
-                          tabIndex={evt.type === 'course' && onSelectEvent ? 0 : undefined}
-                          onClick={(e) => {
-                            if (evt.type === 'course' && onSelectEvent) {
-                              e.stopPropagation();
-                              onSelectEvent(evt);
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (evt.type === 'course' && onSelectEvent && (e.key === 'Enter' || e.key === ' ')) {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              onSelectEvent(evt);
-                            }
-                          }}
-                          className={`text-xs rounded-xl px-2 py-1.5 truncate ${getEventStyle(evt)}`}
-                          title={evt.type === 'course' ? `${evt.title} · ${evt.time}` : `${evt.title} - ${evt.time}`}
+                          className={`relative group ${evt.type === 'course' ? 'inline-block w-full' : ''}`}
                         >
-                          <span className="font-medium">{evt.time}</span>
-                          <span className="opacity-90 mx-1">·</span>
-                          {evt.title}
+                          <div
+                            role={evt.type === 'course' && onSelectEvent ? 'button' : undefined}
+                            tabIndex={evt.type === 'course' && onSelectEvent ? 0 : undefined}
+                            onClick={(e) => {
+                              if (evt.type === 'course' && onSelectEvent) {
+                                e.stopPropagation();
+                                onSelectEvent(evt);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (evt.type === 'course' && onSelectEvent && (e.key === 'Enter' || e.key === ' ')) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onSelectEvent(evt);
+                              }
+                            }}
+                            className={`text-xs rounded-xl px-2 py-1.5 truncate ${getEventStyle(evt)} ${evt.type === 'course' ? 'block' : ''}`}
+                            title={evt.type === 'course' ? undefined : `${evt.title} - ${evt.time}`}
+                          >
+                            <span className="font-medium">{evt.time}</span>
+                            <span className="opacity-90 mx-1">·</span>
+                            {evt.title}
+                          </div>
+                          {evt.type === 'course' && (
+                            <div
+                              className="calendar-event-tooltip absolute left-0 top-full mt-1 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap min-w-max z-50 bg-pink-primary dark:bg-pink-400 text-white shadow-lg"
+                              aria-hidden
+                            >
+                              <span className="font-semibold">{evt.time}</span>
+                              <span className="opacity-90 mx-1.5">·</span>
+                              {evt.title}
+                            </div>
+                          )}
                         </div>
                       ))}
                       {dayEvents.length > 3 && (
@@ -227,40 +241,55 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                   <div
                     key={dateKey}
                     onClick={() => onSelectDate?.(dateKey)}
-                    className={`p-4 rounded-2xl border transition ${
+                    className={`p-4 rounded-2xl border transition overflow-visible ${
                       isToday ? 'calendar-today-cell bg-pink-primary/15 dark:bg-pink-400/20 border-pink-primary/50 dark:border-pink-400/50' : ''
                     } ${isSelected && !isToday ? 'ring-2 ring-pink-primary dark:ring-pink-400 bg-pink-soft/40 dark:bg-white/10' : ''} ${!isToday ? 'border-pink-soft/50 dark:border-white/10 bg-white dark:bg-[#111111]' : ''}`}
                   >
                     <div className={`font-medium mb-2 ${isToday ? 'text-pink-primary dark:text-pink-400 font-bold' : 'text-text dark:text-[#f5f5f5]'}`}>
                       {days[date.getDay() === 0 ? 6 : date.getDay() - 1]} {date.getDate()} {months[date.getMonth()]}
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 overflow-visible">
                       {dayEvents.length === 0 ? (
                         <p className="text-sm text-text/40 dark:text-[#f5f5f5]/40">{t('calendar.noClasses')}</p>
                       ) : (
                         dayEvents.map((evt) => (
                           <div
                             key={evt.id}
-                            role={evt.type === 'course' && onSelectEvent ? 'button' : undefined}
-                            tabIndex={evt.type === 'course' && onSelectEvent ? 0 : undefined}
-                            onClick={(e) => {
-                              if (evt.type === 'course' && onSelectEvent) {
-                                e.stopPropagation();
-                                onSelectEvent(evt);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (evt.type === 'course' && onSelectEvent && (e.key === 'Enter' || e.key === ' ')) {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onSelectEvent(evt);
-                              }
-                            }}
-                            className={`rounded-xl px-3 py-2 text-sm ${getEventStyle(evt)}`}
+                            className={`relative group ${evt.type === 'course' ? 'inline-block w-full' : ''}`}
                           >
-                            <span className="font-medium">{evt.time}</span>
-                            <span className="opacity-90 mx-1">·</span>
-                            {evt.title}
+                            <div
+                              role={evt.type === 'course' && onSelectEvent ? 'button' : undefined}
+                              tabIndex={evt.type === 'course' && onSelectEvent ? 0 : undefined}
+                              onClick={(e) => {
+                                if (evt.type === 'course' && onSelectEvent) {
+                                  e.stopPropagation();
+                                  onSelectEvent(evt);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (evt.type === 'course' && onSelectEvent && (e.key === 'Enter' || e.key === ' ')) {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  onSelectEvent(evt);
+                                }
+                              }}
+                              className={`rounded-xl px-3 py-2 text-sm truncate ${getEventStyle(evt)} ${evt.type === 'course' ? 'block' : ''}`}
+                              title={evt.type === 'course' ? undefined : `${evt.title} - ${evt.time}`}
+                            >
+                              <span className="font-medium">{evt.time}</span>
+                              <span className="opacity-90 mx-1">·</span>
+                              {evt.title}
+                            </div>
+                            {evt.type === 'course' && (
+                              <div
+                                className="calendar-event-tooltip absolute left-0 top-full mt-1 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap min-w-max z-50 bg-pink-primary dark:bg-pink-400 text-white shadow-lg"
+                                aria-hidden
+                              >
+                                <span className="font-semibold">{evt.time}</span>
+                                <span className="opacity-90 mx-1.5">·</span>
+                                {evt.title}
+                              </div>
+                            )}
                           </div>
                         ))
                       )}

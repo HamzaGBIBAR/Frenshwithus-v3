@@ -799,6 +799,22 @@ textarea::placeholder {
   }
 }
 
+/* Calendar event hover – expanded tooltip with neon (dark mode) */
+.calendar-event-tooltip {
+  opacity: 0;
+  transform: scale(0.95) translateY(4px);
+  pointer-events: none;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+.group:hover .calendar-event-tooltip {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+.dark .calendar-event-tooltip {
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.5), 0 0 40px rgba(244, 114, 182, 0.2);
+  border: 1px solid rgba(244, 114, 182, 0.4);
+}
+
 /* Chatbot – message slide-in + typewriter cursor */
 .chat-message-enter {
   animation: chatMessageEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
