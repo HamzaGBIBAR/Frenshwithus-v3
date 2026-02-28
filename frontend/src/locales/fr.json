@@ -214,6 +214,7 @@
       "yes": "Oui",
       "no": "Non",
       "ended": "Terminé",
+      "endedAt": "Terminé à",
       "link": "Lien"
     },
     "adminCourses": {

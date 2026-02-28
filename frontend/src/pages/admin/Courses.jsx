@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatTimeAMPM, formatDateToAMPM } from '../../utils/format';
 import api from '../../api/axios';
 
 export default function Courses() {
@@ -213,11 +214,15 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
-                <td className="p-3 text-text dark:text-[#f5f5f5]">{c.time}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                 <td className="p-3">
                   {c.isStarted ? (
                     c.sessionEnded ? (
-                      <span className="text-amber-600 dark:text-amber-400">{t('dashboard.admin.ended')}</span>
+                      <span className="text-amber-600 dark:text-amber-400">
+                        {c.sessionEndedAt
+                          ? `${t('dashboard.admin.endedAt')} ${formatDateToAMPM(c.sessionEndedAt)}`
+                          : t('dashboard.admin.ended')}
+                      </span>
                     ) : (
                       <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>
                     )

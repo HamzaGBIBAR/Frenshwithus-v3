@@ -184,17 +184,22 @@ router.get('/courses', async (req, res) => {
 
   const endedSessions = await prisma.liveSession.findMany({
     where: { endedAt: { not: null } },
-    select: { roomName: true },
+    select: { roomName: true, endedAt: true },
+    orderBy: { endedAt: 'desc' },
   });
-  const endedCourseIds = new Set(
-    endedSessions
-      .map((s) => (s.roomName.startsWith('frenchwithus-course-') ? s.roomName.replace('frenchwithus-course-', '') : null))
-      .filter(Boolean)
-  );
+  const endedCourseIds = new Set();
+  const endedAtByCourse = {};
+  for (const s of endedSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    const courseId = s.roomName.replace('frenchwithus-course-', '');
+    endedCourseIds.add(courseId);
+    if (!endedAtByCourse[courseId]) endedAtByCourse[courseId] = s.endedAt;
+  }
 
   const coursesWithStatus = courses.map((c) => ({
     ...c,
     sessionEnded: c.isStarted && endedCourseIds.has(c.id),
+    sessionEndedAt: endedAtByCourse[c.id] || null,
   }));
 
   res.json(coursesWithStatus);

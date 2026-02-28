@@ -214,6 +214,7 @@
       "yes": "Yes",
       "no": "No",
       "ended": "Ended",
+      "endedAt": "Ended at",
       "link": "Link"
     },
     "adminCourses": {

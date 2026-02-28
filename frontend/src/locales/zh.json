@@ -214,6 +214,7 @@
       "yes": "是",
       "no": "否",
       "ended": "已结束",
+      "endedAt": "结束于",
       "link": "链接"
     },
     "adminCourses": {

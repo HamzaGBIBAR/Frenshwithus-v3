@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
+import { formatTimeAMPM, formatDateToAMPM } from '../../utils/format';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -88,10 +89,14 @@ export default function AdminDashboard() {
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
-                  <td className="p-3 text-text dark:text-[#f5f5f5]">{c.time}</td>
+                  <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                   <td className="p-3">
                     {c.sessionEnded ? (
-                      <span className="text-amber-600 dark:text-amber-400">{t('dashboard.admin.ended')}</span>
+                      <span className="text-amber-600 dark:text-amber-400">
+                        {c.sessionEndedAt
+                          ? `${t('dashboard.admin.endedAt')} ${formatDateToAMPM(c.sessionEndedAt)}`
+                          : t('dashboard.admin.ended')}
+                      </span>
                     ) : c.isStarted ? (
                       <span className="text-green-600 dark:text-green-400">{t('dashboard.admin.yes')}</span>
                     ) : (
