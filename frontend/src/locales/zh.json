@@ -215,7 +215,12 @@
       "no": "否",
       "ended": "已结束",
       "endedAt": "结束于",
-      "link": "链接"
+      "link": "链接",
+      "meetingIssue": "会议技术问题",
+      "relaunch": "重新安排",
+      "relaunchCourse": "重新安排课程",
+      "meetingIssuesAlert": "会议问题",
+      "meetingIssuesDesc": "因技术问题结束的课程。请从课程页面重新安排。"
     },
     "adminCourses": {
       "title": "本周课程",

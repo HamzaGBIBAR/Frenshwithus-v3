@@ -100,6 +100,7 @@ model LiveSession {
   startedAt     DateTime  @default(now())
   endedAt       DateTime?
   recordingUrl  String?
+  endReason     String?   // student_absent | completed | meeting_issue
   createdAt     DateTime  @default(now())
 
   professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)

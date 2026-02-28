@@ -20,8 +20,16 @@ export default function Live() {
   const [professorOnline, setProfessorOnline] = useState(false);
   const [showMeeting, setShowMeeting] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endReason, setEndReason] = useState('');
   const sessionIdRef = useRef(null);
   const socketRef = useRef(null);
+
+  const END_REASONS = [
+    { value: 'student_absent', key: 'endReasonStudentAbsent' },
+    { value: 'completed', key: 'endReasonCompleted' },
+    { value: 'meeting_issue', key: 'endReasonMeetingIssue' },
+  ];
 
   useEffect(() => {
     if (authLoading) return;
@@ -182,18 +190,71 @@ export default function Live() {
         <button
           type="button"
           onClick={() => {
-            if (user?.role === 'PROFESSOR' && sessionIdRef.current) {
-              api.post('/live/session/end', { sessionId: sessionIdRef.current }).catch(() => {});
-              setSessionEnded(true);
+            if (user?.role === 'PROFESSOR') {
+              setShowEndModal(true);
+            } else {
+              setShowMeeting(false);
+              navigate('/student');
             }
-            setShowMeeting(false);
-            navigate(user?.role === 'PROFESSOR' ? '/professor/courses' : '/student');
           }}
           className="px-4 py-2 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition"
         >
           {t('dashboard.livePage.leaveRoom')}
         </button>
       </div>
+      {showEndModal && user?.role === 'PROFESSOR' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-xl p-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-text dark:text-[#f5f5f5] mb-2">{t('dashboard.livePage.endCourseTitle')}</h3>
+            <p className="text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-4">{t('dashboard.livePage.endCourseDesc')}</p>
+            <div className="space-y-3 mb-6">
+              {END_REASONS.map((r) => (
+                <label
+                  key={r.value}
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    endReason === r.value
+                      ? 'border-pink-primary dark:border-pink-400 bg-pink-soft/40 dark:bg-pink-400/20'
+                      : 'border-pink-soft/50 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="endReason"
+                    value={r.value}
+                    checked={endReason === r.value}
+                    onChange={() => setEndReason(r.value)}
+                    className="w-4 h-4 text-pink-primary dark:text-pink-400 focus:ring-pink-primary"
+                  />
+                  <span className="text-sm font-medium text-text dark:text-[#f5f5f5]">{t(`dashboard.livePage.${r.key}`)}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowEndModal(false); setEndReason(''); }}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-pink-soft dark:border-white/20 text-text dark:text-[#f5f5f5] font-medium hover:bg-pink-soft/30 dark:hover:bg-white/10 transition"
+              >
+                {t('dashboard.livePage.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (sessionIdRef.current) {
+                    api.post('/live/session/end', { sessionId: sessionIdRef.current, endReason: endReason || 'completed' }).catch(() => {});
+                  }
+                  setShowEndModal(false);
+                  setSessionEnded(true);
+                }}
+                disabled={!endReason}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {t('dashboard.livePage.confirmEnd')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex-1 p-6 bg-white dark:bg-[#1a1a1a] border border-t-0 border-pink-soft/50 dark:border-white/10 rounded-b-2xl flex flex-col items-center justify-center gap-6">
         <p className="text-text dark:text-[#f5f5f5] text-center">
           {user?.role === 'PROFESSOR' ? t('dashboard.livePage.professorHint') : t('dashboard.livePage.studentHint')}

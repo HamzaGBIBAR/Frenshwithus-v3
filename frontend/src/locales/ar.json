@@ -215,7 +215,12 @@
       "no": "لا",
       "ended": "انتهى",
       "endedAt": "انتهى الساعة",
-      "link": "الرابط"
+      "link": "الرابط",
+      "meetingIssue": "مشكلة في الاجتماع",
+      "relaunch": "إعادة التشغيل",
+      "relaunchCourse": "إعادة تشغيل الدرس",
+      "meetingIssuesAlert": "مشكلة(ات) في الاجتماع",
+      "meetingIssuesDesc": "دروس انتهت بسبب مشكلة تقنية. أعد تشغيلها من صفحة الدروس."
     },
     "adminCourses": {
       "title": "دروس الأسبوع",

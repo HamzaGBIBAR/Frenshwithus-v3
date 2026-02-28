@@ -215,7 +215,12 @@
       "no": "Non",
       "ended": "Terminé",
       "endedAt": "Terminé à",
-      "link": "Lien"
+      "link": "Lien",
+      "meetingIssue": "Problème au meet",
+      "relaunch": "Relancer",
+      "relaunchCourse": "Relancer le cours",
+      "meetingIssuesAlert": "Problème(s) au meet",
+      "meetingIssuesDesc": "Cours terminés suite à un problème technique. Relancez-les depuis la page Cours."
     },
     "adminCourses": {
       "title": "Cours de la semaine",
@@ -367,7 +372,14 @@
       "copy": "Copier",
       "linkCopied": "Lien copié !",
       "professorHint": "Cliquez pour ouvrir la réunion. L'étudiant peut utiliser le même lien.",
-      "studentHint": "Cliquez pour rejoindre la réunion."
+      "studentHint": "Cliquez pour rejoindre la réunion.",
+      "endCourseTitle": "Terminer le cours",
+      "endCourseDesc": "Pourquoi terminez-vous ce cours ?",
+      "endReasonStudentAbsent": "Étudiant absent",
+      "endReasonCompleted": "Cours bien terminé",
+      "endReasonMeetingIssue": "Problème au meet",
+      "confirmEnd": "Confirmer et terminer",
+      "cancel": "Annuler"
     },
     "student": {
       "title": "Mes cours",

@@ -89,15 +89,19 @@ router.post('/live/session/end', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Réservé aux professeurs' });
   }
 
-  const { sessionId, recordingUrl } = req.body || {};
+  const { sessionId, recordingUrl, endReason } = req.body || {};
 
   if (sessionId) {
+    const data = {
+      endedAt: new Date(),
+      recordingUrl: recordingUrl || null,
+    };
+    if (endReason && ['student_absent', 'completed', 'meeting_issue'].includes(endReason)) {
+      data.endReason = endReason;
+    }
     await prisma.liveSession.update({
       where: { id: sessionId },
-      data: {
-        endedAt: new Date(),
-        recordingUrl: recordingUrl || null,
-      },
+      data,
     });
   }
 

@@ -215,7 +215,12 @@
       "no": "No",
       "ended": "Ended",
       "endedAt": "Ended at",
-      "link": "Link"
+      "link": "Link",
+      "meetingIssue": "Meeting technical issue",
+      "relaunch": "Relaunch",
+      "relaunchCourse": "Relaunch course",
+      "meetingIssuesAlert": "Meeting issue(s)",
+      "meetingIssuesDesc": "Courses ended due to technical issues. Relaunch them from the Courses page."
     },
     "adminCourses": {
       "title": "Weekly Courses",
@@ -367,7 +372,14 @@
       "copy": "Copy",
       "linkCopied": "Link copied!",
       "professorHint": "Click to open the meeting. The student can use the same link.",
-      "studentHint": "Click to join the meeting."
+      "studentHint": "Click to join the meeting.",
+      "endCourseTitle": "End course",
+      "endCourseDesc": "Why are you ending this course?",
+      "endReasonStudentAbsent": "Student absent",
+      "endReasonCompleted": "Course completed successfully",
+      "endReasonMeetingIssue": "Meeting technical issue",
+      "confirmEnd": "Confirm and end",
+      "cancel": "Cancel"
     },
     "student": {
       "title": "My courses",

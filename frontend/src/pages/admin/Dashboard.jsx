@@ -21,9 +21,41 @@ export default function AdminDashboard() {
     return d >= new Date();
   });
 
+  const meetingIssues = courses.filter((c) => c.endReason === 'meeting_issue');
+
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('dashboard.admin.title')}</h1>
+
+      {meetingIssues.length > 0 && (
+        <Link
+          to="/admin/courses"
+          className="mb-6 block p-4 rounded-2xl border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-300 animate-fade-in shadow-sm hover:shadow-md"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-red-800 dark:text-red-300 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                {t('dashboard.admin.meetingIssuesAlert')} ({meetingIssues.length})
+              </h3>
+              <p className="text-sm text-red-700 dark:text-red-400/90 mt-0.5">{t('dashboard.admin.meetingIssuesDesc')}</p>
+            </div>
+            <span className="px-4 py-2 rounded-xl bg-red-500/20 dark:bg-red-500/30 text-red-800 dark:text-red-200 font-medium text-sm">
+              {t('dashboard.admin.viewAll')}
+            </span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {meetingIssues.slice(0, 4).map((c) => (
+              <span
+                key={c.id}
+                className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 border border-red-200/60 dark:border-red-500/30"
+              >
+                {c.professor?.name} — {c.student?.name}
+              </span>
+            ))}
+          </div>
+        </Link>
+      )}
 
       {dueSoon.length > 0 && (
         <Link

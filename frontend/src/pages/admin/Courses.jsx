@@ -13,6 +13,7 @@ export default function Courses() {
   const [studentsWithAvailability, setStudentsWithAvailability] = useState([]);
   const [form, setForm] = useState({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' });
   const [error, setError] = useState('');
+  const [relaunchCourse, setRelaunchCourse] = useState(null);
 
   const load = () => {
     api.get('/admin/courses').then((r) => setCourses(r.data));
@@ -42,6 +43,25 @@ export default function Courses() {
     if (!confirm(t('dashboard.adminCourses.deleteConfirm'))) return;
     await api.delete(`/admin/courses/${id}`);
     load();
+  };
+
+  const openRelaunch = (c) => {
+    setRelaunchCourse(c);
+    setForm({ professorId: c.professorId, studentId: c.studentId, date: '', time: '', meetingLink: '' });
+    setError('');
+  };
+
+  const handleRelaunch = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await api.post('/admin/courses', form);
+      setRelaunchCourse(null);
+      setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' });
+      load();
+    } catch (err) {
+      setError(err.response?.data?.error || t('dashboard.adminCourses.errorCreate'));
+    }
   };
 
   const getProfessorAvailability = (profId) => {
@@ -216,7 +236,9 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                 <td className="p-3">
-                  {c.isStarted ? (
+                  {c.endReason === 'meeting_issue' ? (
+                    <span className="text-red-600 dark:text-red-400 font-medium">{t('dashboard.admin.meetingIssue')}</span>
+                  ) : c.isStarted ? (
                     c.sessionEnded ? (
                       <span className="text-amber-600 dark:text-amber-400">
                         {c.sessionEndedAt
@@ -237,7 +259,15 @@ export default function Courses() {
                     </a>
                   ) : '-'}
                 </td>
-                <td className="p-3">
+                <td className="p-3 flex flex-wrap gap-2">
+                  {c.endReason === 'meeting_issue' && (
+                    <button
+                      onClick={() => openRelaunch(c)}
+                      className="text-pink-600 dark:text-pink-400 hover:underline text-sm font-medium"
+                    >
+                      {t('dashboard.admin.relaunch')}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(c.id)}
                     className="text-red-600 dark:text-red-300 hover:underline text-sm"
@@ -250,6 +280,73 @@ export default function Courses() {
           </tbody>
         </table>
       </div>
+
+      {/* Relaunch modal */}
+      {relaunchCourse && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-xl p-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-text dark:text-[#f5f5f5] mb-2">{t('dashboard.admin.relaunchCourse')}</h3>
+            <p className="text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-4">
+              {relaunchCourse.professor?.name} — {relaunchCourse.student?.name}
+            </p>
+            <form onSubmit={handleRelaunch} className="space-y-4">
+              {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.admin.date')}</label>
+                  <input
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                    className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.admin.time')}</label>
+                  <input
+                    type="time"
+                    value={form.time}
+                    onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
+                    className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.meetingLink')}</label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={form.meetingLink}
+                    onChange={(e) => setForm((f) => ({ ...f, meetingLink: e.target.value }))}
+                    placeholder="https://meet.jit.si/..."
+                    className="flex-1 px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                  />
+                  <button type="button" onClick={generateJitsiRoomLink} className="px-4 py-2.5 bg-pink-soft dark:bg-white/10 text-pink-dark dark:text-pink-300 rounded-xl text-sm font-medium whitespace-nowrap">
+                    {t('dashboard.adminCourses.generateJitsiRoom')}
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setRelaunchCourse(null); setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' }); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-pink-soft dark:border-white/20 text-text dark:text-[#f5f5f5] font-medium hover:bg-pink-soft/30 dark:hover:bg-white/10 transition"
+                >
+                  {t('dashboard.livePage.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition"
+                >
+                  {t('dashboard.adminCourses.create')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
