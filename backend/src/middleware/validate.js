@@ -67,3 +67,13 @@ export const availabilityValidation = [
   body('startTime').notEmpty().matches(/^\d{1,2}:\d{2}$/).withMessage('startTime must be HH:mm'),
   body('endTime').notEmpty().matches(/^\d{1,2}:\d{2}$/).withMessage('endTime must be HH:mm'),
 ];
+
+export const profileUpdateValidation = [
+  body('name').optional().trim().isLength({ min: 1, max: 100 }).escape(),
+  body('avatarUrl').optional().isString().isLength({ max: 200000 }),
+];
+
+export const passwordChangeValidation = [
+  body('currentPassword').notEmpty().withMessage('Current password required'),
+  body('newPassword').isLength({ min: 6, max: 128 }).withMessage('New password must be 6-128 characters'),
+];

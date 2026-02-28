@@ -58,6 +58,7 @@ export default {
         'float': 'float 4s ease-in-out infinite',
         'sparkle': 'sparkle 2s ease-in-out infinite',
         'fade-in': 'fadeIn 0.5s ease-out',
+        'modal-in': 'modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
         'blob-float': 'blobFloat 25s ease-in-out infinite',
         'blob-breathe': 'blobBreathe 28s ease-in-out infinite',
         'letter-float': 'letterFloat 24s ease-in-out infinite',
@@ -75,6 +76,10 @@ export default {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        modalIn: {
+          '0%': { opacity: '0', transform: 'scale(0.96) translateY(-8px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
         },
         blobFloat: {
           '0%, 100%': { transform: 'translateY(0) scale(1)' },

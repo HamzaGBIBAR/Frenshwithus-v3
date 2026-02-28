@@ -15,6 +15,7 @@ model User {
   email     String   @unique
   password  String
   role      String   // ADMIN, PROFESSOR, STUDENT
+  avatarUrl String?  @db.Text
   createdAt DateTime @default(now())
 
   // Professor: courses they teach

@@ -7,18 +7,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api
+  const fetchUser = () => {
+    return api
       .get('/auth/me')
       .then((r) => setUser(r.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+      .catch(() => setUser(null));
+  };
+
+  useEffect(() => {
+    fetchUser().finally(() => setLoading(false));
   }, []);
 
   const login = (data) => {
     setUser(data.user);
     setLoading(false);
   };
+
+  const refreshUser = () => fetchUser();
 
   const logout = async () => {
     try {
@@ -28,7 +33,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

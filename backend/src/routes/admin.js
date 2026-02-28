@@ -48,6 +48,15 @@ router.delete('/professors/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+router.get('/professors/:id', async (req, res) => {
+  const user = await prisma.user.findFirst({
+    where: { id: req.params.id, role: 'PROFESSOR' },
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  if (!user) return res.status(404).json({ error: 'Professor not found' });
+  res.json(user);
+});
+
 // Students CRUD
 router.get('/students', async (req, res) => {
   const users = await prisma.user.findMany({

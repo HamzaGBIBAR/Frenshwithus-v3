@@ -4,7 +4,7 @@ import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import AnimatedEye from './AnimatedEye';
 
-export default function Sidebar({ items, open = false, onClose }) {
+export default function Sidebar({ items, open = false, onClose, onProfileClick }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -45,7 +45,11 @@ export default function Sidebar({ items, open = false, onClose }) {
             <span className="font-light text-text/60 dark:text-[#f5f5f5]/70 lowercase">with</span>
             <AnimatedEye variant="navbar" className="ml-0.5" />
           </Link>
-          <p className="text-xs md:text-sm text-text/60 dark:text-[#f5f5f5]/80 mt-1 truncate">
+          <p
+            className={`text-xs md:text-sm text-text/60 dark:text-[#f5f5f5]/80 mt-1 truncate ${onProfileClick && user?.role === 'PROFESSOR' ? 'cursor-pointer hover:text-pink-primary dark:hover:text-pink-400 transition' : ''}`}
+            onClick={onProfileClick && user?.role === 'PROFESSOR' ? () => { onProfileClick(); onClose?.(); } : undefined}
+            role={onProfileClick && user?.role === 'PROFESSOR' ? 'button' : undefined}
+          >
             {user?.name}
           </p>
         </div>

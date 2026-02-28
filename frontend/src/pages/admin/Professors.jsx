@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
+import ProfessorProfileModal from '../../components/ProfessorProfileModal';
 
 export default function Professors() {
   const { t } = useTranslation();
@@ -8,6 +9,7 @@ export default function Professors() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [viewingProfile, setViewingProfile] = useState(null);
 
   const load = () => api.get('/admin/professors').then((r) => setList(r.data));
 
@@ -127,6 +129,7 @@ export default function Professors() {
           </tbody>
         </table>
       </div>
+      {viewingProfile && <ProfessorProfileModal professorId={viewingProfile} onClose={() => setViewingProfile(null)} />}
     </div>
   );
 }

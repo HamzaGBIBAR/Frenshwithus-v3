@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import MobileMenuButton from '../components/MobileMenuButton';
+import ProfessorProfileModal from '../components/ProfessorProfileModal';
 import ProfessorDashboard from '../pages/professor/Dashboard';
 import ProfessorCourses from '../pages/professor/Courses';
 import ProfessorMessages from '../pages/professor/Messages';
@@ -15,9 +16,11 @@ const navItems = [
 
 export default function ProfessorLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   return (
     <div className="flex min-h-screen">
-      <Sidebar items={navItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar items={navItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onProfileClick={() => setProfileOpen(true)} />
+      {profileOpen && <ProfessorProfileModal onClose={() => setProfileOpen(false)} />}
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm border-b border-pink-soft/50 dark:border-white/10">
           <MobileMenuButton onClick={() => setSidebarOpen(true)} />

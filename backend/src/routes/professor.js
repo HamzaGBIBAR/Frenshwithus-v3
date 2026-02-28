@@ -1,12 +1,46 @@
 import { Router } from 'express';
+import bcrypt from 'bcryptjs';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { validate, messageValidation, availabilityValidation } from '../middleware/validate.js';
+import { validate, messageValidation, availabilityValidation, profileUpdateValidation, passwordChangeValidation } from '../middleware/validate.js';
 
 const router = Router();
 
 router.use(authenticate);
 router.use(requireRole('PROFESSOR'));
+
+// My profile
+router.get('/profile', async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  res.json(user);
+});
+
+router.put('/profile', profileUpdateValidation, validate, async (req, res) => {
+  const { name, avatarUrl } = req.body;
+  const data = {};
+  if (name !== undefined) data.name = name;
+  if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data,
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  res.json(user);
+});
+
+router.put('/password', passwordChangeValidation, validate, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const valid = await bcrypt.compare(currentPassword, user.password);
+  if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+  const hashed = bcrypt.hashSync(newPassword, 10);
+  await prisma.user.update({ where: { id: req.user.id }, data: { password: hashed } });
+  res.json({ ok: true });
+});
 
 // My courses – inclut sessionEnded et sessionEndedAt
 router.get('/courses', async (req, res) => {
