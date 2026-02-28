@@ -123,13 +123,18 @@ export default function ProfessorCourses() {
     return evts;
   }, [allProfsAvailability, user?.id]);
 
-  const courseEvents = courses.map((c) => ({
-    id: c.id,
-    date: c.date,
-    title: c.student?.name || t('dashboard.professor.course'),
-    time: formatTimeAMPM(c.time),
-    type: 'course',
-  }));
+  const courseEvents = courses.map((c) => {
+    const d = new Date(`${c.date}T${c.time}`);
+    const isPast = d < new Date();
+    return {
+      id: c.id,
+      date: c.date,
+      title: c.student?.name || t('dashboard.professor.course'),
+      time: formatTimeAMPM(c.time),
+      type: 'course',
+      isPast,
+    };
+  });
 
   const filteredAvailabilityEvents = showOtherProfs ? availabilityEvents : availabilityEvents.filter((e) => e.type === 'my-availability');
   const calendarEvents = [...courseEvents, ...filteredAvailabilityEvents];
@@ -407,7 +412,7 @@ export default function ProfessorCourses() {
                                 {status === 'live' ? t('dashboard.professor.live') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
                               </span>
                             </div>
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-2 justify-center items-center">
                               {editingLink === c.id ? (
                                 <div className="flex gap-2 flex-1">
                                   <input

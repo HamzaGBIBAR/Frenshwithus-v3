@@ -814,6 +814,10 @@ textarea::placeholder {
   box-shadow: 0 0 20px rgba(244, 114, 182, 0.5), 0 0 40px rgba(244, 114, 182, 0.2);
   border: 1px solid rgba(244, 114, 182, 0.4);
 }
+.dark .calendar-event-tooltip--past {
+  box-shadow: 0 0 16px rgba(148, 163, 184, 0.4), 0 0 30px rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
 
 /* Chatbot – message slide-in + typewriter cursor */
 .chat-message-enter {

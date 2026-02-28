@@ -19,13 +19,18 @@ export default function StudentDashboard() {
     api.get('/student/payments').then((r) => setPayments(r.data));
   }, []);
 
-  const calendarEvents = courses.map((c) => ({
-    id: c.id,
-    date: c.date,
-    title: c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse'),
-    time: formatTimeAMPM(c.time),
-    type: 'course',
-  }));
+  const calendarEvents = courses.map((c) => {
+    const d = new Date(`${c.date}T${c.time}`);
+    const isPast = d < new Date();
+    return {
+      id: c.id,
+      date: c.date,
+      title: c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse'),
+      time: formatTimeAMPM(c.time),
+      type: 'course',
+      isPast,
+    };
+  });
 
   const upcoming = courses.filter((c) => {
     const d = new Date(`${c.date}T${c.time}`);

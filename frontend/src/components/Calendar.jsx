@@ -75,6 +75,7 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
     const base = `transition-colors duration-200 ${cursor}`;
     if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white hover:bg-emerald-500 ${base}`;
     if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-500/90 ${base}`;
+    if (type === 'course' && evt.isPast) return `bg-slate-500/80 dark:bg-slate-600/90 text-white/95 hover:bg-slate-500 dark:hover:bg-slate-500/95 border border-slate-400/30 dark:border-slate-500/50 ${base}`;
     return `bg-pink-primary/90 dark:bg-pink-400/90 text-white hover:bg-pink-primary dark:hover:bg-pink-400 ${base}`;
   };
 
@@ -195,15 +196,19 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                             className={`text-xs rounded-xl px-2 py-1.5 truncate ${getEventStyle(evt)} ${evt.type === 'course' ? 'block' : ''}`}
                             title={evt.type === 'course' ? undefined : `${evt.title} - ${evt.time}`}
                           >
+                            {evt.type === 'course' && evt.isPast && (
+                              <span className="mr-1 opacity-90" aria-hidden>✓</span>
+                            )}
                             <span className="font-medium">{evt.time}</span>
                             <span className="opacity-90 mx-1">·</span>
                             {evt.title}
                           </div>
                           {evt.type === 'course' && (
                             <div
-                              className="calendar-event-tooltip absolute left-0 top-full mt-1 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap min-w-max z-50 bg-pink-primary dark:bg-pink-400 text-white shadow-lg"
+                              className={`calendar-event-tooltip absolute left-0 top-full mt-1 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap min-w-max z-50 shadow-lg ${evt.isPast ? 'bg-slate-600 dark:bg-slate-500 text-white calendar-event-tooltip--past' : 'bg-pink-primary dark:bg-pink-400 text-white'}`}
                               aria-hidden
                             >
+                              {evt.isPast && <span className="mr-1.5 opacity-90">✓</span>}
                               <span className="font-semibold">{evt.time}</span>
                               <span className="opacity-90 mx-1.5">·</span>
                               {evt.title}
@@ -276,15 +281,19 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                               className={`rounded-xl px-3 py-2 text-sm truncate ${getEventStyle(evt)} ${evt.type === 'course' ? 'block' : ''}`}
                               title={evt.type === 'course' ? undefined : `${evt.title} - ${evt.time}`}
                             >
+                              {evt.type === 'course' && evt.isPast && (
+                                <span className="mr-1 opacity-90" aria-hidden>✓</span>
+                              )}
                               <span className="font-medium">{evt.time}</span>
                               <span className="opacity-90 mx-1">·</span>
                               {evt.title}
                             </div>
                             {evt.type === 'course' && (
                               <div
-                                className="calendar-event-tooltip absolute left-0 top-full mt-1 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap min-w-max z-50 bg-pink-primary dark:bg-pink-400 text-white shadow-lg"
+                                className={`calendar-event-tooltip absolute left-0 top-full mt-1 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap min-w-max z-50 shadow-lg ${evt.isPast ? 'bg-slate-600 dark:bg-slate-500 text-white calendar-event-tooltip--past' : 'bg-pink-primary dark:bg-pink-400 text-white'}`}
                                 aria-hidden
                               >
+                                {evt.isPast && <span className="mr-1.5 opacity-90">✓</span>}
                                 <span className="font-semibold">{evt.time}</span>
                                 <span className="opacity-90 mx-1.5">·</span>
                                 {evt.title}
