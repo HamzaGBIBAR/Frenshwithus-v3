@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
-import { formatTimeAMPM } from '../../utils/format';
+import { formatTimeAMPM, formatProfessorName } from '../../utils/format';
 
 export default function StudentDashboard() {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ export default function StudentDashboard() {
   const calendarEvents = courses.map((c) => ({
     id: c.id,
     date: c.date,
-    title: c.professor?.name || t('dashboard.student.frenchCourse'),
+    title: c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse'),
     time: formatTimeAMPM(c.time),
     type: 'course',
   }));
@@ -103,11 +103,11 @@ export default function StudentDashboard() {
           {upcoming.length === 0 ? (
             <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noUpcoming')}</p>
           ) : (
-            upcoming.map((c) => (
-                <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-colors duration-500">
+            upcoming.map((c, i) => (
+                <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
                   <div className="flex justify-between items-start gap-4">
                     <div>
-                      <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name}</p>
+                      <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse')}</p>
                       <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
                     </div>
                     <div className="flex-shrink-0">
@@ -131,11 +131,11 @@ export default function StudentDashboard() {
           {past.length === 0 ? (
             <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noPast')}</p>
           ) : (
-            past.map((c) => (
-              <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-colors duration-500">
+            past.map((c, i) => (
+              <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name}</p>
+                    <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse')}</p>
                     <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
                   </div>
                   {c.recordingLink ? (

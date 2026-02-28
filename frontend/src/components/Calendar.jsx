@@ -71,9 +71,10 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
 
   const getEventStyle = (evt) => {
     const type = evt.type || 'course';
-    if (type === 'my-availability') return 'bg-emerald-500/90 dark:bg-emerald-500/90 text-white';
-    if (type === 'other-availability') return 'bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200';
-    return 'bg-pink-primary/90 dark:bg-pink-400/90 text-white';
+    const base = 'hover:scale-[1.02] hover:shadow-md active:scale-[0.98] transition-all duration-200 cursor-default';
+    if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white ${base}`;
+    if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 ${base}`;
+    return `bg-pink-primary/90 dark:bg-pink-400/90 text-white shadow-sm hover:shadow-pink-soft/50 ${base}`;
   };
 
   if (viewMode !== 'mois') return null;
@@ -172,10 +173,12 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                       {dayEvents.slice(0, 3).map((evt) => (
                         <div
                           key={evt.id}
-                          className={`text-xs rounded-xl px-2 py-1 truncate transition ${getEventStyle(evt)}`}
-                          title={`${evt.title} - ${evt.time}`}
+                          className={`text-xs rounded-xl px-2 py-1.5 truncate ${getEventStyle(evt)} ${evt.type === 'course' ? 'animate-fade-in' : ''}`}
+                          title={evt.type === 'course' ? `${evt.title} · ${evt.time}` : `${evt.title} - ${evt.time}`}
                         >
-                          <span className="font-medium">{evt.time}</span> {evt.title}
+                          <span className="font-medium">{evt.time}</span>
+                          <span className="opacity-90 mx-1">·</span>
+                          {evt.title}
                         </div>
                       ))}
                       {dayEvents.length > 3 && (
@@ -222,9 +225,11 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                         dayEvents.map((evt) => (
                           <div
                             key={evt.id}
-                            className={`rounded-xl px-3 py-2 text-sm ${getEventStyle(evt)}`}
+                            className={`rounded-xl px-3 py-2 text-sm ${getEventStyle(evt)} ${evt.type === 'course' ? 'animate-fade-in' : ''}`}
                           >
-                            <span className="font-medium">{evt.time}</span> {evt.title}
+                            <span className="font-medium">{evt.time}</span>
+                            <span className="opacity-90 mx-1">·</span>
+                            {evt.title}
                           </div>
                         ))
                       )}

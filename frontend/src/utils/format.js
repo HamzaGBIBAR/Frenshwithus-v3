@@ -19,3 +19,12 @@ export function formatDateToAMPM(dateOrISO) {
   if (isNaN(d.getTime())) return '';
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
+
+/**
+ * Format professor name professionally: "Prof. Anas" instead of "anas"
+ */
+export function formatProfessorName(name) {
+  if (!name) return '';
+  const capitalized = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  return `Prof. ${capitalized}`;
+}
