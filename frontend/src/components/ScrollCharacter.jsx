@@ -80,7 +80,7 @@ export default function ScrollCharacter() {
         </button>
         )}
         {contactVisible && (
-        <span className="scroll-character-label font-heading text-pink-primary dark:text-pink-400 font-bold text-sm tracking-widest uppercase" dir="auto">
+        <span className="scroll-character-label scroll-character-label--neon font-sans text-pink-primary dark:text-pink-400 font-semibold text-xs tracking-wider uppercase" dir="auto">
           {t('chatbot.logoLabel')}
         </span>
         )}
