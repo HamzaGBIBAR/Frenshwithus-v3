@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
@@ -18,17 +18,19 @@ const navItems = [
   { to: '/professor', label: 'Tableau de bord', end: true },
   { to: '/professor/courses', label: 'Planning' },
   { to: '/professor/messages', label: 'Messages' },
-  { action: 'profile', label: 'Profil' },
 ];
 
 export default function ProfessorLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const { user } = useAuth();
+
+  useEffect(() => setAvatarError(false), [user?.avatarUrl]);
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar items={navItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onProfileClick={() => setProfileOpen(true)} />
+      <Sidebar items={navItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       {profileOpen && <ProfessorProfileModal onClose={() => setProfileOpen(false)} />}
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm border-b border-pink-soft/50 dark:border-white/10">
@@ -42,11 +44,12 @@ export default function ProfessorLayout() {
             className="group relative w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden ring-2 ring-pink-soft/50 dark:ring-white/10 hover:ring-pink-primary/60 dark:hover:ring-pink-400/30 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_20px_rgba(231,84,128,0.3)] dark:hover:shadow-[0_0_20px_rgba(244,114,182,0.25)] focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111111] animate-fade-in"
             aria-label="Ouvrir le profil"
           >
-            {user?.avatarUrl ? (
+            {user?.avatarUrl && !avatarError ? (
               <img
                 src={user.avatarUrl}
                 alt=""
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={() => setAvatarError(true)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-primary to-pink-dark dark:from-pink-400 dark:to-pink-600 text-white font-semibold text-sm shadow-inner">

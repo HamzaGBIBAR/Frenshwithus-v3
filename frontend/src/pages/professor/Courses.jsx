@@ -5,7 +5,7 @@ import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
 import { formatTimeAMPM } from '../../utils/format';
-import { getCalendarStyle } from '../../utils/calendarStyles';
+import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 
@@ -410,7 +410,7 @@ export default function ProfessorCourses() {
                         return (
                           <div
                             key={c.id}
-                            className="bg-gradient-to-r from-pink-soft/50 to-transparent dark:from-white/5 dark:to-transparent rounded-xl p-3 border border-pink-soft/50 dark:border-white/10 card-hover shadow-pink-soft dark:shadow-lg"
+                            className={getWeekCourseCardClass(calendarStyle, status)}
                           >
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div>

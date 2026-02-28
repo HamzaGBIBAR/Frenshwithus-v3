@@ -77,12 +77,17 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [saving, setSaving] = useState(false);
   const [calendarStyle, setCalendarStyleState] = useState(getCalendarStyle);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     const handler = () => setCalendarStyleState(getCalendarStyle());
     window.addEventListener('calendarStyleChanged', handler);
     return () => window.removeEventListener('calendarStyleChanged', handler);
+  }, []);
+
+  useEffect(() => {
+    if (isOwnProfile) refreshUser?.();
   }, []);
 
   const isOwnProfile = !professorId;
@@ -152,14 +157,24 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
       return;
     }
     try {
-      const dataUrl = await resizeImageToDataUrl(file, 150, 0.8);
-      setForm((f) => ({ ...f, avatarUrl: dataUrl }));
-      setProfile((p) => (p ? { ...p, avatarUrl: dataUrl } : null));
-      await saveAvatar(dataUrl);
+      const dataUrl = await resizeImageToDataUrl(file, 200, 0.85);
+      setAvatarPreview(dataUrl);
     } catch {
       toast(t('profile.invalidImage'));
     }
     e.target.value = '';
+  };
+
+  const confirmAvatarPreview = async () => {
+    if (!avatarPreview) return;
+    setAvatarPreview(null);
+    setForm((f) => ({ ...f, avatarUrl: avatarPreview }));
+    setProfile((p) => (p ? { ...p, avatarUrl: avatarPreview } : null));
+    await saveAvatar(avatarPreview);
+  };
+
+  const cancelAvatarPreview = () => {
+    setAvatarPreview(null);
   };
 
   const handleAvatarRemove = async () => {
@@ -206,6 +221,35 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   if (!profile) return null;
 
   return (
+    <>
+      {avatarPreview && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-2xl p-5 animate-modal-in">
+            <p className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('profile.previewAvatar')}</p>
+            <div className="flex justify-center mb-4">
+              <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50">
+                <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={cancelAvatarPreview}
+                className="flex-1 py-2.5 rounded-xl border border-pink-soft/60 dark:border-white/20 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/10 transition"
+              >
+                {t('profile.chooseAnother')}
+              </button>
+              <button
+                type="button"
+                onClick={confirmAvatarPreview}
+                className="flex-1 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition"
+              >
+                {t('profile.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
@@ -218,8 +262,8 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
         <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-pink-soft/50 dark:border-white/10 bg-white dark:bg-[#1a1a1a] rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-pink-primary to-pink-dark dark:from-pink-400 dark:to-pink-600 flex items-center justify-center text-white font-semibold text-sm shadow-lg flex-shrink-0">
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover" />
+              {(profile.avatarUrl || form.avatarUrl) ? (
+                <img src={profile.avatarUrl || form.avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
                 getInitials(profile.name)
               )}
@@ -493,5 +537,6 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
