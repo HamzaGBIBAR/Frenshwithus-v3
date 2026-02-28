@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
@@ -10,6 +10,9 @@ export default function StudentDashboard() {
   const [courses, setCourses] = useState([]);
   const [payments, setPayments] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [highlightedCourseId, setHighlightedCourseId] = useState(null);
+  const upcomingRef = useRef(null);
+  const pastRef = useRef(null);
 
   useEffect(() => {
     api.get('/student/courses').then((r) => setCourses(r.data));
@@ -46,6 +49,17 @@ export default function StudentDashboard() {
     return d >= startOfWeek && d <= endOfWeek;
   }).length;
 
+  const handleSelectEvent = useCallback((evt) => {
+    const courseId = evt.id;
+    const isPast = past.some((c) => c.id === courseId);
+    const targetRef = isPast ? pastRef : upcomingRef;
+    if (targetRef?.current) {
+      setHighlightedCourseId(courseId);
+      targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => setHighlightedCourseId(null), 2000);
+    }
+  }, [past]);
+
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('dashboard.student.title')}</h1>
@@ -74,6 +88,7 @@ export default function StudentDashboard() {
           events={calendarEvents}
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
+          onSelectEvent={handleSelectEvent}
           viewMode="mois"
           embedded
         />
@@ -97,14 +112,14 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      <div className="mb-6">
+      <div ref={upcomingRef} className="mb-6 scroll-mt-6">
         <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('dashboard.student.upcomingCourses')}</h2>
         <div className="space-y-3">
           {upcoming.length === 0 ? (
             <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noUpcoming')}</p>
           ) : (
             upcoming.map((c, i) => (
-                <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+                <div key={c.id} className={`bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 ${highlightedCourseId === c.id ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-pink-soft/50 dark:border-white/10'}`}>
                   <div className="flex justify-between items-start gap-4">
                     <div>
                       <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse')}</p>
@@ -125,14 +140,14 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      <div>
+      <div ref={pastRef} className="scroll-mt-6">
         <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('dashboard.student.pastCourses')}</h2>
         <div className="space-y-3">
           {past.length === 0 ? (
             <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noPast')}</p>
           ) : (
             past.map((c, i) => (
-              <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+              <div key={c.id} className={`bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 ${highlightedCourseId === c.id ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-pink-soft/50 dark:border-white/10'}`}>
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse')}</p>

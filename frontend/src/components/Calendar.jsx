@@ -25,7 +25,7 @@ function getMonthWeeks(year, month) {
   return weeks;
 }
 
-export default function Calendar({ events = [], selectedDate, onSelectDate, viewMode = 'mois', onViewModeChange, embedded }) {
+export default function Calendar({ events = [], selectedDate, onSelectDate, onSelectEvent, viewMode = 'mois', onViewModeChange, embedded }) {
   const { t } = useTranslation();
   const days = t('calendar.days', { returnObjects: true });
   const months = t('calendar.months', { returnObjects: true });
@@ -71,7 +71,8 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
 
   const getEventStyle = (evt) => {
     const type = evt.type || 'course';
-    const base = 'hover:scale-[1.02] hover:shadow-md active:scale-[0.98] transition-all duration-200 cursor-default';
+    const cursor = type === 'course' && onSelectEvent ? 'cursor-pointer' : 'cursor-default';
+    const base = `hover:scale-[1.02] hover:shadow-md active:scale-[0.98] transition-all duration-200 ${cursor}`;
     if (type === 'my-availability') return `bg-emerald-500/90 dark:bg-emerald-500/90 text-white ${base}`;
     if (type === 'other-availability') return `bg-slate-300/90 dark:bg-slate-600/90 text-slate-800 dark:text-slate-200 ${base}`;
     return `bg-pink-primary/90 dark:bg-pink-400/90 text-white shadow-sm hover:shadow-pink-soft/50 ${base}`;
@@ -173,7 +174,22 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                       {dayEvents.slice(0, 3).map((evt) => (
                         <div
                           key={evt.id}
-                          className={`text-xs rounded-xl px-2 py-1.5 truncate ${getEventStyle(evt)} ${evt.type === 'course' ? 'animate-fade-in' : ''}`}
+                          role={evt.type === 'course' && onSelectEvent ? 'button' : undefined}
+                          tabIndex={evt.type === 'course' && onSelectEvent ? 0 : undefined}
+                          onClick={(e) => {
+                            if (evt.type === 'course' && onSelectEvent) {
+                              e.stopPropagation();
+                              onSelectEvent(evt);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (evt.type === 'course' && onSelectEvent && (e.key === 'Enter' || e.key === ' ')) {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              onSelectEvent(evt);
+                            }
+                          }}
+                          className={`text-xs rounded-xl px-2 py-1.5 truncate ${getEventStyle(evt)}`}
                           title={evt.type === 'course' ? `${evt.title} · ${evt.time}` : `${evt.title} - ${evt.time}`}
                         >
                           <span className="font-medium">{evt.time}</span>
@@ -225,7 +241,22 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, view
                         dayEvents.map((evt) => (
                           <div
                             key={evt.id}
-                            className={`rounded-xl px-3 py-2 text-sm ${getEventStyle(evt)} ${evt.type === 'course' ? 'animate-fade-in' : ''}`}
+                            role={evt.type === 'course' && onSelectEvent ? 'button' : undefined}
+                            tabIndex={evt.type === 'course' && onSelectEvent ? 0 : undefined}
+                            onClick={(e) => {
+                              if (evt.type === 'course' && onSelectEvent) {
+                                e.stopPropagation();
+                                onSelectEvent(evt);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (evt.type === 'course' && onSelectEvent && (e.key === 'Enter' || e.key === ' ')) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onSelectEvent(evt);
+                              }
+                            }}
+                            className={`rounded-xl px-3 py-2 text-sm ${getEventStyle(evt)}`}
                           >
                             <span className="font-medium">{evt.time}</span>
                             <span className="opacity-90 mx-1">·</span>

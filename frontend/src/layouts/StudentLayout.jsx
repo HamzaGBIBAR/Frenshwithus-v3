@@ -21,7 +21,7 @@ export default function StudentLayout() {
           <MobileMenuButton onClick={() => setSidebarOpen(true)} />
           <span className="font-semibold text-text dark:text-[#f5f5f5]">French With Us</span>
         </header>
-        <main className="flex-1 p-4 sm:p-6 overflow-auto bg-transparent transition-colors duration-500">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto bg-transparent transition-colors duration-500 scroll-smooth">
         <Routes>
           <Route index element={<StudentDashboard />} />
           <Route path="messages" element={<StudentMessages />} />
