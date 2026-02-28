@@ -8,11 +8,23 @@ import Chatbot from './Chatbot';
  * Cliquable : ouvre un chatbot AI pour poser des questions sur French With Us.
  * Design: version simplifiée (tête + béret) du HeroCharacter
  */
+const EXIT_DURATION = 500;
+
 export default function ScrollCharacter() {
   const { t } = useTranslation();
   const [contactVisible, setContactVisible] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    if (contactVisible) {
+      setContentVisible(true);
+    } else {
+      const timer = setTimeout(() => setContentVisible(false), EXIT_DURATION);
+      return () => clearTimeout(timer);
+    }
+  }, [contactVisible]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -50,14 +62,14 @@ export default function ScrollCharacter() {
           contactVisible ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 -translate-x-12 pointer-events-none'
         }`}
       >
-        {contactVisible && (
+        {contentVisible && (
         <div className="scroll-character-arrow" aria-hidden="true">
           <svg viewBox="0 0 24 32" className="w-8 h-10 lg:w-10 lg:h-12 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2v20M6 18l6 6 6-6" />
           </svg>
         </div>
         )}
-        {contactVisible && (
+        {contentVisible && (
         <button
           type="button"
           onClick={() => setChatOpen(true)}
@@ -79,7 +91,7 @@ export default function ScrollCharacter() {
           </svg>
         </button>
         )}
-        {contactVisible && (
+        {contentVisible && (
         <span className="scroll-character-label scroll-character-label--neon font-sans text-pink-primary dark:text-pink-400 font-semibold text-xs tracking-wider uppercase" dir="auto">
           {t('chatbot.logoLabel')}
         </span>
