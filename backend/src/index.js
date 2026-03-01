@@ -79,12 +79,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
 });
 
-// Avatar uploads (before catch-all)
-const uploadsPath = path.join(__dirname, '../uploads');
-const avatarsPath = path.join(uploadsPath, 'avatars');
-if (!fs.existsSync(avatarsPath)) fs.mkdirSync(avatarsPath, { recursive: true });
-app.use('/uploads', express.static(uploadsPath));
-
 // Serve frontend static files (production – public folder created during build)
 const publicPath = path.join(__dirname, '../public');
 if (fs.existsSync(publicPath)) {

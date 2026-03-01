@@ -9,6 +9,7 @@ Set in Railway dashboard:
 - `NODE_ENV` – Set to `production` in production
 - `FRONTEND_URL` – (Optional) Restrict CORS to your app URL, e.g. `https://frenshwithus-v2-production.up.railway.app`
 - `SENTRY_DSN` – (Optional) Monitoring des erreurs avec Sentry
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` – (Required for avatar uploads) Créer un compte sur cloudinary.com
 
 ## Production Migration Command
 

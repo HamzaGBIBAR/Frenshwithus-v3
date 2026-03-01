@@ -1,14 +1,13 @@
 import { Router } from 'express';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
+import streamifier from 'streamifier';
 import prisma from '../lib/db.js';
+import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, messageValidation, availabilityValidation, profileUpdateValidation, passwordChangeValidation } from '../middleware/validate.js';
+import { captureException } from '../lib/sentry.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
 router.use(authenticate);
@@ -17,20 +16,8 @@ router.use(requireRole('PROFESSOR'));
 const ALLOWED_MIMES = ['image/jpeg', 'image/jpg', 'image/png'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '../../uploads/avatars');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = file.mimetype === 'image/png' ? '.png' : '.jpg';
-    cb(null, `${req.user.id}${ext}`);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_SIZE },
   fileFilter: (req, file, cb) => {
     if (!ALLOWED_MIMES.includes(file.mimetype)) {
@@ -39,6 +26,34 @@ const upload = multer({
     cb(null, true);
   },
 });
+
+function uploadBufferToCloudinary(buffer, publicId) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'frenchwithus/avatars',
+        public_id: publicId,
+        overwrite: true,
+        resource_type: 'image',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+}
+
+function extractPublicIdFromUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  try {
+    const match = url.match(/\/v\d+\/(.+)\.(?:jpg|jpeg|png)/i);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
 
 // My profile
 router.get('/profile', async (req, res) => {
@@ -63,33 +78,50 @@ router.put('/profile', profileUpdateValidation, validate, async (req, res) => {
 });
 
 router.put('/profile/avatar', upload.single('avatar'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      captureException(new Error('Cloudinary env vars not configured'));
+      return res.status(503).json({ error: 'Avatar upload not configured' });
+    }
+    const result = await uploadBufferToCloudinary(req.file.buffer, req.user.id);
+    const avatarUrl = result.secure_url;
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { avatarUrl },
+      select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+    });
+    res.json(user);
+  } catch (err) {
+    captureException(err);
+    console.error('Avatar upload error:', err);
+    res.status(500).json({ error: err.message || 'Avatar upload failed' });
   }
-  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-  const user = await prisma.user.update({
-    where: { id: req.user.id },
-    data: { avatarUrl },
-    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
-  });
-  res.json(user);
 });
 
 router.delete('/profile/avatar', async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.id },
-    select: { avatarUrl: true },
-  });
-  if (user?.avatarUrl?.startsWith('/uploads/avatars/')) {
-    const filePath = path.join(__dirname, '../..', user.avatarUrl);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { avatarUrl: true },
+    });
+    const publicId = extractPublicIdFromUrl(user?.avatarUrl);
+    if (publicId && process.env.CLOUDINARY_API_KEY) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { avatarUrl: null },
+      select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+    });
+    res.json(updated);
+  } catch (err) {
+    captureException(err);
+    console.error('Avatar delete error:', err);
+    res.status(500).json({ error: err.message || 'Avatar delete failed' });
   }
-  const updated = await prisma.user.update({
-    where: { id: req.user.id },
-    data: { avatarUrl: null },
-    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
-  });
-  res.json(updated);
 });
 
 router.put('/password', passwordChangeValidation, validate, async (req, res) => {
