@@ -236,6 +236,8 @@ export default function ProfessorCourses() {
 
   const renderCourseDayCard = (c, i) => {
     const status = getCourseStatus(c);
+    const hasDarkBg = ['gradient', 'status'].includes(calendarStyle) || status === 'completed';
+    const nameTextClass = hasDarkBg ? 'text-white' : 'text-text dark:text-[#f5f5f5]';
     return (
       <div
         key={c.id}
@@ -244,11 +246,11 @@ export default function ProfessorCourses() {
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/20 dark:bg-black/20 shrink-0 font-mono font-bold text-sm">
+            <span className={`flex items-center justify-center w-12 h-12 rounded-xl shrink-0 font-mono font-bold text-sm ${hasDarkBg ? 'bg-white/25 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
               {formatTimeAMPM(c.time)}
             </span>
             <div>
-              <span className="font-semibold text-text dark:text-[#f5f5f5]">{c.student?.name}</span>
+              <span className={`font-semibold ${nameTextClass}`}>{c.student?.name}</span>
               <span className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium ${
                 status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
                 status === 'professor_absent' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
@@ -556,6 +558,9 @@ export default function ProfessorCourses() {
                     ) : dayCourses.length > 0 ? (
                       dayCourses.map((c) => {
                         const status = getCourseStatus(c);
+                        const weekCardDarkBg = ['gradient', 'status'].includes(calendarStyle) || status === 'completed';
+                        const weekTextClass = weekCardDarkBg ? 'text-white' : 'text-text dark:text-[#f5f5f5]';
+                        const weekTimeClass = weekCardDarkBg ? 'text-white opacity-95' : 'text-text/90 dark:text-[#f5f5f5]/90';
                         return (
                           <div
                             key={c.id}
@@ -563,8 +568,8 @@ export default function ProfessorCourses() {
                           >
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div>
-                                <span className="font-medium text-text dark:text-[#f5f5f5]">{c.student?.name}</span>
-                                <span className="text-sm text-text/60 dark:text-[#f5f5f5]/60 ml-2">{formatTimeAMPM(c.time)}</span>
+                                <span className={`font-medium ${weekTextClass}`}>{c.student?.name}</span>
+                                <span className={`text-sm ml-2 ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
                               </div>
                               <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${
                                 status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
@@ -589,7 +594,7 @@ export default function ProfessorCourses() {
                                   <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
                                 </div>
                               ) : (
-                                <button onClick={() => openEditLink(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
+                                <button onClick={() => openEditLink(c)} className={`text-xs hover:opacity-90 hover:underline ${weekTextClass}`}>
                                   {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
                                 </button>
                               )}
@@ -607,7 +612,7 @@ export default function ProfessorCourses() {
                                   <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
                                 </div>
                               ) : (
-                                <button onClick={() => openRecording(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
+                                <button onClick={() => openRecording(c)} className={`text-xs hover:opacity-90 hover:underline ${weekTextClass}`}>
                                   {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
                                 </button>
                               )}
