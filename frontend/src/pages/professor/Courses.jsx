@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
@@ -51,6 +51,7 @@ export default function ProfessorCourses() {
   const [showOtherProfs, setShowOtherProfs] = useState(true);
   const [calendarStyle, setCalendarStyle] = useState(getCalendarStyle);
   const [now, setNow] = useState(() => new Date());
+  const weekViewRef = useRef(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -329,6 +330,9 @@ export default function ProfessorCourses() {
             d.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1));
             setWeekStart(toDateStrLocal(d));
             setViewMode('semaine');
+            setTimeout(() => {
+              weekViewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
           }}
           className="px-4 py-3 rounded-xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 hover:bg-pink-soft/30 dark:hover:bg-white/10 transition text-sm font-medium text-text dark:text-[#f5f5f5]"
         >
@@ -369,7 +373,7 @@ export default function ProfessorCourses() {
         />
         </>
       ) : viewMode === 'semaine' ? (
-        <div className="space-y-4">
+        <div ref={weekViewRef} className="space-y-4 scroll-mt-6">
           <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg p-4 flex gap-2 transition-colors duration-500">
             <button onClick={() => setViewMode('mois')} className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition">
               {t('dashboard.professor.month')}
