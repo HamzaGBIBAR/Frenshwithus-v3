@@ -143,11 +143,18 @@ router.get('/courses', async (req, res) => {
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
-  const endedSessions = await prisma.liveSession.findMany({
-    where: { endedAt: { not: null } },
-    select: { roomName: true, endedAt: true, endReason: true },
-    orderBy: { endedAt: 'desc' },
-  });
+  const [endedSessions, activeSessions] = await Promise.all([
+    prisma.liveSession.findMany({
+      where: { endedAt: { not: null } },
+      select: { roomName: true, endedAt: true, endReason: true },
+      orderBy: { endedAt: 'desc' },
+    }),
+    prisma.liveSession.findMany({
+      where: { professorId: req.user.id, endedAt: null },
+      select: { roomName: true, startedAt: true },
+      orderBy: { startedAt: 'desc' },
+    }),
+  ]);
   const endedCourseIds = new Set();
   const endedAtByCourse = {};
   const endReasonByCourse = {};
@@ -160,12 +167,19 @@ router.get('/courses', async (req, res) => {
       endReasonByCourse[courseId] = s.endReason;
     }
   }
+  const sessionStartedAtByCourse = {};
+  for (const s of activeSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    const courseId = s.roomName.replace('frenchwithus-course-', '');
+    if (!sessionStartedAtByCourse[courseId]) sessionStartedAtByCourse[courseId] = s.startedAt;
+  }
 
   const coursesWithStatus = courses.map((c) => ({
     ...c,
     sessionEnded: c.isStarted && endedCourseIds.has(c.id),
     sessionEndedAt: endedAtByCourse[c.id] || null,
     endReason: endReasonByCourse[c.id] || c.absenceReason || null,
+    sessionStartedAt: sessionStartedAtByCourse[c.id] || null,
   }));
 
   res.json(coursesWithStatus);

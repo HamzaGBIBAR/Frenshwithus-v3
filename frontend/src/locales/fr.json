@@ -433,6 +433,8 @@
       "live": "En direct",
       "upcoming": "À venir",
       "completed": "Terminé",
+      "countdownTooltip": "Temps restant avant la fin du cours (15 min)",
+      "startDisabledTooltip": "Le cours peut être démarré à l'heure prévue",
       "dayViewSoon": "Vue Jour (bientôt disponible)",
       "noClassesDay": "Aucun cours ni créneau ce jour"
     },

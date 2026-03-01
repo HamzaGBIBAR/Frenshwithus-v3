@@ -433,6 +433,8 @@
       "live": "مباشر",
       "upcoming": "قادم",
       "completed": "منتهي",
+      "countdownTooltip": "الوقت المتبقي حتى نهاية الدرس (١٥ دقيقة)",
+      "startDisabledTooltip": "يمكن بدء الدرس في الوقت المحدد",
       "dayViewSoon": "عرض اليوم (قريباً)",
       "noClassesDay": "لا توجد دروس أو مواعيد في هذا اليوم"
     },

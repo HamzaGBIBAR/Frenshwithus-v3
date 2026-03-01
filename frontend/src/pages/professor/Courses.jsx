@@ -8,6 +8,23 @@ import { formatTimeAMPM } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
+const COURSE_DURATION_MINUTES = 15;
+
+function canStartCourse(course, now) {
+  const start = new Date(`${course.date}T${course.time}`).getTime();
+  return now >= start;
+}
+
+function getRemainingCountdown(sessionStartedAt, now) {
+  if (!sessionStartedAt) return null;
+  const started = new Date(sessionStartedAt).getTime();
+  const elapsed = Math.floor((now - started) / 1000);
+  const remaining = COURSE_DURATION_MINUTES * 60 - elapsed;
+  if (remaining <= 0) return '0:00';
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
 function getCourseStatus(course) {
   if (course.endReason === 'professor_absent') return 'professor_absent';
@@ -82,6 +99,12 @@ export default function ProfessorCourses() {
 
   useEffect(() => {
     load();
+  }, []);
+
+  useEffect(() => {
+    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
 
   const handleAddAvailability = async (e) => {
@@ -252,10 +275,10 @@ export default function ProfessorCourses() {
             <div>
               <span className={`font-semibold ${nameTextClass}`}>{c.student?.name}</span>
               <span className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium ${
-                status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                status === 'professor_absent' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
-                status === 'upcoming' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400' :
-                'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                status === 'live' ? (hasDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
+                status === 'professor_absent' ? (hasDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
+                status === 'upcoming' ? (hasDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
+                hasDarkBg ? 'bg-slate-500/50 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
               }`}>
                 {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
               </span>
@@ -275,7 +298,7 @@ export default function ProfessorCourses() {
                 <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
               </div>
             ) : (
-              <button onClick={() => openEditLink(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
+              <button onClick={() => openEditLink(c)} className={`text-xs hover:underline ${hasDarkBg ? 'text-white hover:text-white/90' : 'text-pink-primary dark:text-pink-400'}`}>
                 {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
               </button>
             )}
@@ -293,17 +316,35 @@ export default function ProfessorCourses() {
                 <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
               </div>
             ) : (
-              <button onClick={() => openRecording(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
+              <button onClick={() => openRecording(c)} className={`text-xs hover:underline ${hasDarkBg ? 'text-white hover:text-white/90' : 'text-pink-primary dark:text-pink-400'}`}>
                 {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
               </button>
             )}
+            {status === 'live' && (() => {
+              const countdown = getRemainingCountdown(c.sessionStartedAt, now);
+              return countdown ? (
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${hasDarkBg ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'}`} title={t('dashboard.professor.countdownTooltip')}>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {countdown}
+                </span>
+              ) : null;
+            })()}
             {(status === 'upcoming' || status === 'live') && (
-              <Link
-                to={`/live?courseId=${c.id}`}
-                className="inline-block px-2 py-1 bg-pink-primary dark:bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-dark dark:hover:bg-pink-500 transition"
-              >
-                {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
-              </Link>
+              (status === 'live' || canStartCourse(c, now)) ? (
+                <Link
+                  to={`/live?courseId=${c.id}`}
+                  className={`inline-block px-2 py-1 rounded-lg text-xs font-medium transition ${hasDarkBg ? 'bg-black/40 text-white hover:bg-black/50' : 'bg-pink-primary dark:bg-pink-400 text-white hover:bg-pink-dark dark:hover:bg-pink-500'}`}
+                >
+                  {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
+                </Link>
+              ) : (
+                <span
+                  className={`inline-block px-2 py-1 rounded-lg text-xs font-medium cursor-not-allowed opacity-60 ${hasDarkBg ? 'bg-black/20 text-white/80' : 'bg-pink-soft/60 dark:bg-white/10 text-text/70 dark:text-[#f5f5f5]/70'}`}
+                  title={t('dashboard.professor.startDisabledTooltip')}
+                >
+                  {t('dashboard.professor.startCourse')}
+                </span>
+              )
             )}
           </div>
         </div>
@@ -572,10 +613,10 @@ export default function ProfessorCourses() {
                                 <span className={`text-sm ml-2 ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
                               </div>
                               <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${
-                                status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                                status === 'professor_absent' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
-                                status === 'upcoming' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400' :
-                                'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
+                                status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
+                                status === 'upcoming' ? (weekCardDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
+                                weekCardDarkBg ? 'bg-slate-500/50 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                               }`}>
                                 {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
                               </span>
@@ -616,13 +657,31 @@ export default function ProfessorCourses() {
                                   {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
                                 </button>
                               )}
+                              {status === 'live' && (() => {
+                                const countdown = getRemainingCountdown(c.sessionStartedAt, now);
+                                return countdown ? (
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-mono font-semibold ${weekCardDarkBg ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'}`} title={t('dashboard.professor.countdownTooltip')}>
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    {countdown}
+                                  </span>
+                                ) : null;
+                              })()}
                               {(status === 'upcoming' || status === 'live') && (
-                                <Link
-                                  to={`/live?courseId=${c.id}`}
-                                  className="inline-block px-2 py-1 bg-pink-primary dark:bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-dark dark:hover:bg-pink-500 transition"
-                                >
-                                  {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
-                                </Link>
+                                (status === 'live' || canStartCourse(c, now)) ? (
+                                  <Link
+                                    to={`/live?courseId=${c.id}`}
+                                    className={`inline-block px-2 py-1 rounded-lg text-xs font-medium transition ${weekCardDarkBg ? 'bg-black/40 text-white hover:bg-black/50' : 'bg-pink-primary dark:bg-pink-400 text-white hover:bg-pink-dark dark:hover:bg-pink-500'}`}
+                                  >
+                                    {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
+                                  </Link>
+                                ) : (
+                                  <span
+                                    className={`inline-block px-2 py-1 rounded-lg text-xs font-medium cursor-not-allowed opacity-60 ${weekCardDarkBg ? 'bg-black/20 text-white/80' : 'bg-pink-soft/60 dark:bg-white/10 text-text/70 dark:text-[#f5f5f5]/70'}`}
+                                    title={t('dashboard.professor.startDisabledTooltip')}
+                                  >
+                                    {t('dashboard.professor.startCourse')}
+                                  </span>
+                                )
                               )}
                             </div>
                           </div>
