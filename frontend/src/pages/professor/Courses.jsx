@@ -246,7 +246,7 @@ export default function ProfessorCourses() {
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className={`flex items-center justify-center w-12 h-12 rounded-xl shrink-0 font-mono font-bold text-sm shadow-sm ${hasDarkBg ? 'bg-black/35 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
+            <span className={`flex items-center justify-center min-w-[4.5rem] h-12 px-2 rounded-xl shrink-0 font-mono font-bold text-sm shadow-sm whitespace-nowrap ${hasDarkBg ? 'bg-black/35 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
               {formatTimeAMPM(c.time)}
             </span>
             <div>
