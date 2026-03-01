@@ -13,9 +13,16 @@ function getCourseStatus(course) {
   if (course.endReason === 'professor_absent') return 'professor_absent';
   const now = new Date();
   const d = new Date(`${course.date}T${course.time}`);
-  if (d < now) return 'completed';
   const twoHours = 2 * 60 * 60 * 1000;
+  const fifteenMin = 15 * 60 * 1000;
+
+  if (course.sessionEnded) return 'completed';
   if (course.isStarted && d <= now && now - d < twoHours) return 'live';
+  // Heure passée mais prof n'a pas démarré : garder "upcoming" pendant 15 min pour permettre de démarrer
+  if (d < now && !course.isStarted) {
+    if (now - d < fifteenMin) return 'upcoming';
+    return 'professor_absent';
+  }
   return 'upcoming';
 }
 
