@@ -132,7 +132,10 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   };
 
   const confirmAvatarPreview = async () => {
-    if (!avatarPreview || !avatarFile) return;
+    if (!avatarPreview || !avatarFile) {
+      showToast(t('profile.selectImageFirst'));
+      return;
+    }
     const file = avatarFile;
     setAvatarLoading(true);
     try {
@@ -158,6 +161,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(null);
     setAvatarFile(null);
+    fileInputRef.current?.click();
   };
 
   const handleAvatarRemove = async () => {
@@ -220,8 +224,8 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-2xl p-5 animate-modal-in">
             <p className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('profile.previewAvatar')}</p>
             <div className="flex justify-center mb-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50">
-                <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+              <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50 bg-pink-soft/30 dark:bg-white/10 flex items-center justify-center">
+                <img src={avatarPreview} alt="" className="w-full h-full object-cover min-w-full min-h-full" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
             </div>
             <div className="flex gap-2">
@@ -314,6 +318,9 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-text dark:text-[#f5f5f5]">{t('profile.photoTitle')}</p>
                     <p className="text-xs text-text/60 dark:text-[#f5f5f5]/70 mt-0.5">{t('profile.photoDesc')}</p>
+                    {isOwnProfile && (
+                      <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mt-2 font-medium">{t('profile.photoConditions')}</p>
+                    )}
                   </div>
                 </div>
                 {isOwnProfile && (

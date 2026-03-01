@@ -15,6 +15,8 @@
     },
     "photoTitle": "Photo de profil",
     "photoDesc": "Cette photo apparaît sur la plateforme, y compris dans les messages et les événements.",
+    "photoConditions": "Format accepté : JPG, PNG. Taille max : 5 Mo.",
+    "selectImageFirst": "Veuillez sélectionner une image avant de confirmer.",
     "replace": "Remplacer",
     "remove": "Supprimer",
     "previewAvatar": "Aperçu de votre photo",
