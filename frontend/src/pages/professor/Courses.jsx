@@ -50,7 +50,14 @@ export default function ProfessorCourses() {
   const [allProfsAvailability, setAllProfsAvailability] = useState([]);
   const [showOtherProfs, setShowOtherProfs] = useState(true);
   const [calendarStyle, setCalendarStyle] = useState(getCalendarStyle);
+  const [now, setNow] = useState(() => new Date());
   const { user } = useAuth();
+
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const handler = () => setCalendarStyle(getCalendarStyle());
@@ -204,10 +211,34 @@ export default function ProfessorCourses() {
     };
   });
 
+  const dateFormatted = now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const timeFormatted = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5]">{t('dashboard.professor.title')}</h1>
+      </div>
+
+      {/* Today's date & time - live clock for teachers */}
+      <div className="mb-6 flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-pink-soft/50 to-pink-soft/20 dark:from-pink-500/15 dark:to-pink-500/5 border border-pink-soft/50 dark:border-pink-400/20 shadow-pink-soft dark:shadow-lg overflow-hidden animate-fade-in transition-all duration-500 hover:shadow-md hover:border-pink-soft/70 dark:hover:border-pink-400/30">
+        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-pink-primary/15 dark:bg-pink-400/15 shrink-0">
+          <svg className="w-7 h-7 text-pink-primary dark:text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-pink-primary dark:text-pink-400 mb-0.5">
+            {t('calendar.today')}
+          </p>
+          <p className="text-lg font-semibold text-text dark:text-[#f5f5f5] capitalize">
+            {dateFormatted}
+          </p>
+          <p className="text-lg font-mono font-bold text-pink-primary dark:text-pink-400 tabular-nums transition-all duration-300">
+            {timeFormatted}
+          </p>
+        </div>
       </div>
 
       {/* Availability - Professors set their weekly availability */}
