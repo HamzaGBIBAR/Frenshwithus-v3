@@ -234,6 +234,81 @@ export default function ProfessorCourses() {
     ...coursesForDay.map((c) => ({ type: 'course', sortTime: c.time, data: c })),
   ].sort((a, b) => a.sortTime.localeCompare(b.sortTime));
 
+  const renderCourseDayCard = (c, i) => {
+    const status = getCourseStatus(c);
+    return (
+      <div
+        key={c.id}
+        className={`p-4 transition-all duration-300 hover:shadow-md animate-fade-in ${getWeekCourseCardClass(calendarStyle, status)}`}
+        style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/20 dark:bg-black/20 shrink-0 font-mono font-bold text-sm">
+              {formatTimeAMPM(c.time)}
+            </span>
+            <div>
+              <span className="font-semibold text-text dark:text-[#f5f5f5]">{c.student?.name}</span>
+              <span className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium ${
+                status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                status === 'professor_absent' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
+                status === 'upcoming' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400' :
+                'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              }`}>
+                {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            {editingLink === c.id ? (
+              <div className="flex gap-2 flex-1 min-w-[200px]">
+                <input
+                  type="url"
+                  value={linkValue}
+                  onChange={(e) => setLinkValue(e.target.value)}
+                  className="flex-1 px-2 py-1.5 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
+                  autoFocus
+                />
+                <button onClick={() => saveMeetingLink(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
+                <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => openEditLink(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
+                {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
+              </button>
+            )}
+            {recordingFor === c.id ? (
+              <div className="flex gap-2 flex-1 min-w-[200px]">
+                <input
+                  type="url"
+                  placeholder={t('dashboard.professor.recordingUrl')}
+                  value={recordingValue}
+                  onChange={(e) => setRecordingValue(e.target.value)}
+                  className="flex-1 px-2 py-1.5 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
+                  autoFocus
+                />
+                <button onClick={() => saveRecording(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
+                <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => openRecording(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
+                {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
+              </button>
+            )}
+            {(status === 'upcoming' || status === 'live') && (
+              <Link
+                to={`/live?courseId=${c.id}`}
+                className="inline-block px-2 py-1 bg-pink-primary dark:bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-dark dark:hover:bg-pink-500 transition"
+              >
+                {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const prevDay = () => {
     const d = new Date(dayViewDate + 'T12:00:00');
     d.setDate(d.getDate() - 1);
@@ -627,82 +702,7 @@ export default function ProfessorCourses() {
                           {item.data.professorId === user?.id && <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">{t('dashboard.professor.me')}</span>}
                         </div>
                       </div>
-                    ) : (
-                      (() => {
-                      const c = item.data;
-                      const status = getCourseStatus(c);
-                      return (
-                        <div
-                          key={c.id}
-                          className={`p-4 transition-all duration-300 hover:shadow-md animate-fade-in ${getWeekCourseCardClass(calendarStyle, status)}`}
-                          style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                              <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/20 dark:bg-black/20 shrink-0 font-mono font-bold text-sm">
-                                {formatTimeAMPM(c.time)}
-                              </span>
-                              <div>
-                                <span className="font-semibold text-text dark:text-[#f5f5f5]">{c.student?.name}</span>
-                                <span className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium ${
-                                  status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                                  status === 'professor_absent' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
-                                  status === 'upcoming' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400' :
-                                  'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                                }`}>
-                                  {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 items-center">
-                              {editingLink === c.id ? (
-                                <div className="flex gap-2 flex-1 min-w-[200px]">
-                                  <input
-                                    type="url"
-                                    value={linkValue}
-                                    onChange={(e) => setLinkValue(e.target.value)}
-                                    className="flex-1 px-2 py-1.5 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
-                                    autoFocus
-                                  />
-                                  <button onClick={() => saveMeetingLink(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
-                                  <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
-                                </div>
-                              ) : (
-                                <button onClick={() => openEditLink(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
-                                  {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
-                                </button>
-                              )}
-                              {recordingFor === c.id ? (
-                                <div className="flex gap-2 flex-1 min-w-[200px]">
-                                  <input
-                                    type="url"
-                                    placeholder={t('dashboard.professor.recordingUrl')}
-                                    value={recordingValue}
-                                    onChange={(e) => setRecordingValue(e.target.value)}
-                                    className="flex-1 px-2 py-1.5 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
-                                    autoFocus
-                                  />
-                                  <button onClick={() => saveRecording(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
-                                  <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
-                                </div>
-                              ) : (
-                                <button onClick={() => openRecording(c)} className="text-xs text-pink-primary dark:text-pink-400 hover:underline">
-                                  {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
-                                </button>
-                              )}
-                              {(status === 'upcoming' || status === 'live') && (
-                                <Link
-                                  to={`/live?courseId=${c.id}`}
-                                  className="inline-block px-2 py-1 bg-pink-primary dark:bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-dark dark:hover:bg-pink-500 transition"
-                                >
-                                  {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
-                                </Link>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    ) : renderCourseDayCard(item.data, i)
                     )}
                   </div>
                 )}
