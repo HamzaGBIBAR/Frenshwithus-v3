@@ -68,6 +68,7 @@
       "minimal": "Cartes épurées et modernes",
       "border": "Cartes avec bordures colorées"
     },
+    "calendarStyleUpdated": "Style de calendrier mis à jour avec succès",
     "adminNoPassword": "Seul le professeur peut modifier son mot de passe.",
     "viewProfile": "Voir le profil",
     "errorLoad": "Erreur lors du chargement",

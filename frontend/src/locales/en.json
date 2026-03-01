@@ -68,6 +68,7 @@
       "minimal": "Clean, modern cards",
       "border": "Cards with colored borders"
     },
+    "calendarStyleUpdated": "Calendar style updated successfully",
     "adminNoPassword": "Only the professor can change their password.",
     "viewProfile": "View profile",
     "errorLoad": "Error loading profile",

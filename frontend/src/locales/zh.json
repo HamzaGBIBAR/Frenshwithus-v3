@@ -68,6 +68,7 @@
       "minimal": "简洁现代卡片",
       "border": "彩色边框卡片"
     },
+    "calendarStyleUpdated": "日历样式已更新",
     "adminNoPassword": "只有教师本人可以修改密码。",
     "viewProfile": "查看资料",
     "errorLoad": "加载失败",
