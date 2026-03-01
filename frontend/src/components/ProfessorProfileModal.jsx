@@ -224,8 +224,16 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-2xl p-5 animate-modal-in">
             <p className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('profile.previewAvatar')}</p>
             <div className="flex justify-center mb-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50 bg-pink-soft/30 dark:bg-white/10 flex items-center justify-center">
-                <img src={avatarPreview} alt="" className="w-full h-full object-cover min-w-full min-h-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <div className="relative w-32 h-32 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50 bg-pink-soft/30 dark:bg-white/10 shrink-0">
+                <img
+                  src={avatarPreview}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect fill="%23f9a8d4" width="128" height="128"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="14"%3E?%3C/text%3E%3C/svg%3E';
+                  }}
+                />
               </div>
             </div>
             <div className="flex gap-2">
@@ -306,8 +314,8 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           {activeTab === 'personal' && (
             <div className="animate-fade-in space-y-5">
               {/* Avatar section */}
-              <div className="flex flex-col sm:flex-row items-start gap-4 p-4 rounded-xl bg-pink-soft/20 dark:bg-white/5 border border-pink-soft/40 dark:border-white/10">
-                <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="p-4 rounded-xl bg-pink-soft/20 dark:bg-white/5 border border-pink-soft/40 dark:border-white/10 space-y-4">
+                <div className="flex flex-col sm:flex-row items-start gap-4">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-pink-primary to-pink-dark dark:from-pink-400 dark:to-pink-600 flex items-center justify-center text-white font-semibold text-xl shadow-lg flex-shrink-0">
                     {(profile.avatarUrl || form.avatarUrl) ? (
                       <img src={profile.avatarUrl || form.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -315,16 +323,11 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                       getInitials(profile.name)
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 w-full min-w-0 sm:min-w-[200px]">
                     <p className="font-medium text-text dark:text-[#f5f5f5]">{t('profile.photoTitle')}</p>
-                    <p className="text-xs text-text/60 dark:text-[#f5f5f5]/70 mt-0.5">{t('profile.photoDesc')}</p>
-                    {isOwnProfile && (
-                      <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mt-2 font-medium">{t('profile.photoConditions')}</p>
-                    )}
                   </div>
-                </div>
-                {isOwnProfile && (
-                  <div className="flex gap-2 w-full sm:w-auto">
+                  {isOwnProfile && (
+                    <div className="flex gap-2">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -353,7 +356,14 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                       {t('profile.remove')}
                     </button>
                   </div>
-                )}
+                  )}
+                </div>
+                <div className="w-full">
+                  <p className="text-sm text-text/80 dark:text-[#f5f5f5]/80 leading-relaxed">{t('profile.photoDesc')}</p>
+                  {isOwnProfile && (
+                    <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mt-2">{t('profile.photoConditions')}</p>
+                  )}
+                </div>
               </div>
 
               {/* Form */}
