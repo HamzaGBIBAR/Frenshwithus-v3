@@ -157,12 +157,16 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
       showToast(t('profile.imageTooLarge'));
       return;
     }
-    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    const url = URL.createObjectURL(file);
-    setAvatarPreview(url);
-    setAvatarFile(file);
-    setAvatarZoom(1);
-    setAvatarRotation(0);
+    if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatarPreview(reader.result);
+      setAvatarFile(file);
+      setAvatarZoom(1);
+      setAvatarRotation(0);
+    };
+    reader.onerror = () => showToast(t('profile.errorLoad'));
+    reader.readAsDataURL(file);
     e.target.value = '';
   };
 
@@ -180,7 +184,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
       const r = await api.put('/professor/profile/avatar', formData);
       setProfile(r.data);
       setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
-      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+      if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(null);
       setAvatarFile(null);
       refreshUser?.();
@@ -194,7 +198,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   };
 
   const cancelAvatarPreview = () => {
-    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(null);
     setAvatarFile(null);
     setAvatarZoom(1);
