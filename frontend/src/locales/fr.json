@@ -433,7 +433,8 @@
       "live": "En direct",
       "upcoming": "À venir",
       "completed": "Terminé",
-      "dayViewSoon": "Vue Jour (bientôt disponible)"
+      "dayViewSoon": "Vue Jour (bientôt disponible)",
+      "noClassesDay": "Aucun cours ni créneau ce jour"
     },
     "livePage": {
       "title": "Cours en direct",

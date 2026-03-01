@@ -433,7 +433,8 @@
       "live": "直播中",
       "upcoming": "即将开始",
       "completed": "已完成",
-      "dayViewSoon": "日视图（即将推出）"
+      "dayViewSoon": "日视图（即将推出）",
+      "noClassesDay": "当天没有课程或时段"
     },
     "student": {
       "title": "我的课程",

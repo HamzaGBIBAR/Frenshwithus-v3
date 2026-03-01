@@ -433,7 +433,8 @@
       "live": "Live",
       "upcoming": "Upcoming",
       "completed": "Completed",
-      "dayViewSoon": "Day view (coming soon)"
+      "dayViewSoon": "Day view (coming soon)",
+      "noClassesDay": "No classes or slots this day"
     },
     "livePage": {
       "title": "Live lesson",

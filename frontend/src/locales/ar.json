@@ -433,7 +433,8 @@
       "live": "مباشر",
       "upcoming": "قادم",
       "completed": "منتهي",
-      "dayViewSoon": "عرض اليوم (قريباً)"
+      "dayViewSoon": "عرض اليوم (قريباً)",
+      "noClassesDay": "لا توجد دروس أو مواعيد في هذا اليوم"
     },
     "student": {
       "title": "دروسي",
