@@ -157,6 +157,9 @@ export default function StudentDashboard() {
                   <div>
                     <p className="font-medium text-text dark:text-[#f5f5f5]">{c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse')}</p>
                     <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
+                    {c.endReason === 'professor_absent' && (
+                      <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mt-1">{t('dashboard.admin.endReasonProfessorAbsent')}</p>
+                    )}
                   </div>
                   {c.recordingLink ? (
                     <a

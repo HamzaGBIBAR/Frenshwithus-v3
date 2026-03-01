@@ -213,7 +213,7 @@ router.get('/courses', async (req, res) => {
     ...c,
     sessionEnded: c.isStarted && endedCourseIds.has(c.id),
     sessionEndedAt: endedAtByCourse[c.id] || null,
-    endReason: endReasonByCourse[c.id] || null,
+    endReason: endReasonByCourse[c.id] || c.absenceReason || null,
   }));
 
   res.json(coursesWithStatus);

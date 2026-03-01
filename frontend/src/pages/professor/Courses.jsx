@@ -10,6 +10,7 @@ import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarSt
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 
 function getCourseStatus(course) {
+  if (course.endReason === 'professor_absent') return 'professor_absent';
   const now = new Date();
   const d = new Date(`${course.date}T${course.time}`);
   if (d < now) return 'completed';
@@ -419,10 +420,11 @@ export default function ProfessorCourses() {
                               </div>
                               <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${
                                 status === 'live' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                                status === 'professor_absent' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
                                 status === 'upcoming' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400' :
                                 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                               }`}>
-                                {status === 'live' ? t('dashboard.professor.live') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
+                                {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
                               </span>
                             </div>
                             <div className="flex flex-wrap gap-2 mt-2 justify-center items-center">

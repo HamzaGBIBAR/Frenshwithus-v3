@@ -58,15 +58,16 @@ model StudentAvailability {
 }
 
 model Course {
-  id            String   @id @default(cuid())
-  professorId   String
-  studentId     String
-  date          String   // YYYY-MM-DD
-  time          String   // HH:mm
-  meetingLink   String?
-  isStarted     Boolean  @default(false)
-  recordingLink String?
-  createdAt     DateTime @default(now())
+  id             String   @id @default(cuid())
+  professorId    String
+  studentId      String
+  date           String   // YYYY-MM-DD
+  time           String   // HH:mm
+  meetingLink    String?
+  isStarted      Boolean  @default(false)
+  recordingLink  String?
+  absenceReason  String?  // professor_absent = prof n'a pas démarré après 15 min
+  createdAt      DateTime @default(now())
 
   professor User @relation("ProfessorCourses", fields: [professorId], references: [id], onDelete: Cascade)
   student  User @relation("StudentCourses", fields: [studentId], references: [id], onDelete: Cascade)

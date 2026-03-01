@@ -291,7 +291,10 @@
       "dismissAll": "Dismiss all",
       "endReasonCompleted": "Course completed successfully",
       "endReasonStudentAbsent": "Student absent",
-      "endReasonMeetingIssue": "Meeting technical issue"
+      "endReasonMeetingIssue": "Meeting technical issue",
+      "endReasonProfessorAbsent": "Professor absent",
+      "professorAbsentAlert": "Professor absence(s)",
+      "professorAbsentDesc": "The professor did not start the course within 15 minutes. Check the Courses page."
     },
     "adminCourses": {
       "title": "Weekly Courses",

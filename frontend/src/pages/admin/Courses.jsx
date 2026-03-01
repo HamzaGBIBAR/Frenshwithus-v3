@@ -236,7 +236,9 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                 <td className="p-3">
-                  {c.endReason === 'meeting_issue' ? (
+                  {c.endReason === 'professor_absent' ? (
+                    <span className="text-orange-600 dark:text-orange-400 font-medium">{t('dashboard.admin.endReasonProfessorAbsent')}</span>
+                  ) : c.endReason === 'meeting_issue' ? (
                     <span className="text-red-600 dark:text-red-400 font-medium">
                       {t('dashboard.admin.endedAt')} {c.sessionEndedAt ? formatDateToAMPM(c.sessionEndedAt) : ''}
                       <span className="block text-xs mt-0.5">{t('dashboard.admin.endReasonMeetingIssue')}</span>
@@ -269,7 +271,7 @@ export default function Courses() {
                   ) : '-'}
                 </td>
                 <td className="p-3 flex flex-wrap gap-2">
-                  {c.endReason === 'meeting_issue' && (
+                  {(c.endReason === 'meeting_issue' || c.endReason === 'professor_absent') && (
                     <button
                       onClick={() => openRelaunch(c)}
                       className="text-pink-600 dark:text-pink-400 hover:underline text-sm font-medium"

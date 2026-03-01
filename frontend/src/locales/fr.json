@@ -291,7 +291,10 @@
       "dismissAll": "Tout supprimer",
       "endReasonCompleted": "Cours bien terminé",
       "endReasonStudentAbsent": "Élève absent",
-      "endReasonMeetingIssue": "Problème au meet"
+      "endReasonMeetingIssue": "Problème au meet",
+      "endReasonProfessorAbsent": "Absence du Prof",
+      "professorAbsentAlert": "Absence(s) du professeur",
+      "professorAbsentDesc": "Le professeur n'a pas démarré le cours dans les 15 minutes. Consultez la page Cours."
     },
     "adminCourses": {
       "title": "Cours de la semaine",

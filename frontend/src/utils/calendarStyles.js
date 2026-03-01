@@ -29,13 +29,17 @@ export function setCalendarStyle(style) {
   } catch (_) {}
 }
 
-/** Week view course card classes by calendarStyle and status (completed|live|upcoming) */
+/** Week view course card classes by calendarStyle and status (completed|live|upcoming|professor_absent) */
 export function getWeekCourseCardClass(calendarStyle, status) {
   const base = 'rounded-xl p-3 card-hover transition-all duration-200';
+  const professorAbsent = status === 'professor_absent';
   const completed = status === 'completed';
   const live = status === 'live';
   const upcoming = status === 'upcoming';
 
+  if (professorAbsent) {
+    return `${base} bg-orange-500/20 dark:bg-orange-500/15 border-2 border-orange-500/50 dark:border-orange-400/50`;
+  }
   if (live) {
     return `${base} bg-emerald-500/20 dark:bg-emerald-500/15 border-2 border-emerald-500/50 dark:border-emerald-400/50`;
   }

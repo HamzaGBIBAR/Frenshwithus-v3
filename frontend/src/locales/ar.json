@@ -291,7 +291,10 @@
       "dismissAll": "إخفاء الكل",
       "endReasonCompleted": "الدرس انتهى بنجاح",
       "endReasonStudentAbsent": "الطالب غائب",
-      "endReasonMeetingIssue": "مشكلة في الاجتماع"
+      "endReasonMeetingIssue": "مشكلة في الاجتماع",
+      "endReasonProfessorAbsent": "غياب الأستاذ",
+      "professorAbsentAlert": "غياب(ات) الأستاذ",
+      "professorAbsentDesc": "الأستاذ لم يبدأ الدرس خلال 15 دقيقة. راجع صفحة الدروس."
     },
     "adminCourses": {
       "title": "دروس الأسبوع",

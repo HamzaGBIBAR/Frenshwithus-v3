@@ -19,6 +19,7 @@ import prisma from './lib/db.js';
 import { helmetMiddleware, generalLimiter, authLimiter, getAllowedOrigins } from './middleware/security.js';
 import { initSentry, captureException } from './lib/sentry.js';
 import { initLiveSocket } from './lib/liveSocket.js';
+import { startProfessorAbsenceChecker } from './lib/professorAbsenceCheck.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import professorRoutes from './routes/professor.js';
@@ -108,6 +109,7 @@ async function start() {
 
   const httpServer = http.createServer(app);
   initLiveSocket(httpServer, app);
+  startProfessorAbsenceChecker(app);
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });

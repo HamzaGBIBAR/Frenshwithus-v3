@@ -291,7 +291,10 @@
       "dismissAll": "全部删除",
       "endReasonCompleted": "课程顺利完成",
       "endReasonStudentAbsent": "学生缺席",
-      "endReasonMeetingIssue": "会议技术问题"
+      "endReasonMeetingIssue": "会议技术问题",
+      "endReasonProfessorAbsent": "教师缺席",
+      "professorAbsentAlert": "教师缺席",
+      "professorAbsentDesc": "教师未在15分钟内开始课程。请查看课程页面。"
     },
     "adminCourses": {
       "title": "本周课程",

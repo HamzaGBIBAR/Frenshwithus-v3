@@ -48,7 +48,9 @@ export default function ProfessorDashboard() {
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                   <td className="p-3">
-                    {c.sessionEnded ? (
+                    {c.endReason === 'professor_absent' ? (
+                      <span className="text-orange-600 dark:text-orange-400 font-medium">{t('dashboard.admin.endReasonProfessorAbsent')}</span>
+                    ) : c.sessionEnded ? (
                       <span className="text-amber-600 dark:text-amber-400">
                         {c.sessionEndedAt
                           ? `${t('dashboard.admin.endedAt')} ${formatDateToAMPM(c.sessionEndedAt)}`
