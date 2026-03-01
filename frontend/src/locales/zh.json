@@ -17,6 +17,8 @@
     "photoDesc": "此照片将显示在平台各处，包括消息和活动。",
     "photoConditions": "支持格式：JPG、PNG。最大 5 MB。",
     "selectImageFirst": "请先选择图片再确认。",
+    "zoom": "缩放",
+    "rotation": "旋转",
     "replace": "更换",
     "remove": "删除",
     "previewAvatar": "预览您的照片",

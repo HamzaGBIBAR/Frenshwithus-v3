@@ -17,6 +17,8 @@
     "photoDesc": "This photo appears on the platform, including in messages and events.",
     "photoConditions": "Accepted format: JPG, PNG. Max size: 5 MB.",
     "selectImageFirst": "Please select an image before confirming.",
+    "zoom": "Zoom",
+    "rotation": "Rotation",
     "replace": "Replace",
     "remove": "Remove",
     "previewAvatar": "Preview your photo",

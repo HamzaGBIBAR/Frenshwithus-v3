@@ -42,6 +42,36 @@ function getPasswordRuleResults(newPassword, currentPassword) {
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
+const PREVIEW_SIZE = 200;
+
+async function applyTransformAndGetBlob(file, zoom = 1, rotation = 0) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = PREVIEW_SIZE;
+      canvas.height = PREVIEW_SIZE;
+      const ctx = canvas.getContext('2d');
+      const rad = (rotation * Math.PI) / 180;
+      const scale = Math.min(PREVIEW_SIZE / img.width, PREVIEW_SIZE / img.height) * zoom;
+      ctx.translate(PREVIEW_SIZE / 2, PREVIEW_SIZE / 2);
+      ctx.rotate(rad);
+      ctx.scale(scale, scale);
+      ctx.translate(-img.width / 2, -img.height / 2);
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(img.src);
+        if (blob) resolve(blob);
+        else reject(new Error('Canvas export failed'));
+      }, 'image/jpeg', 0.9);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject(new Error('Image load failed'));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
 
 export default function ProfessorProfileModal({ professorId = null, onClose }) {
   const { t } = useTranslation();
@@ -57,6 +87,8 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarZoom, setAvatarZoom] = useState(1);
+  const [avatarRotation, setAvatarRotation] = useState(0);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -126,8 +158,11 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
       return;
     }
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview(URL.createObjectURL(file));
+    const url = URL.createObjectURL(file);
+    setAvatarPreview(url);
     setAvatarFile(file);
+    setAvatarZoom(1);
+    setAvatarRotation(0);
     e.target.value = '';
   };
 
@@ -136,17 +171,18 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
       showToast(t('profile.selectImageFirst'));
       return;
     }
-    const file = avatarFile;
     setAvatarLoading(true);
     try {
+      const blob = await applyTransformAndGetBlob(avatarFile, avatarZoom, avatarRotation);
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
       const formData = new FormData();
       formData.append('avatar', file);
       const r = await api.put('/professor/profile/avatar', formData);
       setProfile(r.data);
       setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(null);
       setAvatarFile(null);
-      URL.revokeObjectURL(avatarPreview);
       refreshUser?.();
       showToast(t('profile.saved'));
     } catch (err) {
@@ -161,6 +197,8 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(null);
     setAvatarFile(null);
+    setAvatarZoom(1);
+    setAvatarRotation(0);
     fileInputRef.current?.click();
   };
 
@@ -224,16 +262,36 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-2xl p-5 animate-modal-in">
             <p className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('profile.previewAvatar')}</p>
             <div className="flex justify-center mb-4">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50 bg-pink-soft/30 dark:bg-white/10 shrink-0">
+              <div className="relative w-40 h-40 rounded-full overflow-hidden ring-2 ring-pink-primary/50 dark:ring-pink-400/50 bg-pink-soft/30 dark:bg-white/10 shrink-0 flex items-center justify-center">
                 <img
+                  key={avatarPreview}
                   src={avatarPreview}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect fill="%23f9a8d4" width="128" height="128"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="14"%3E?%3C/text%3E%3C/svg%3E';
+                  className="max-w-none max-h-none transition-transform duration-150"
+                  style={{
+                    transform: `scale(${avatarZoom}) rotate(${avatarRotation}deg)`,
+                    width: 200,
+                    height: 200,
+                    objectFit: 'cover',
                   }}
                 />
+              </div>
+            </div>
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="block text-xs text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('profile.zoom')}</label>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setAvatarZoom((z) => Math.max(0.5, z - 0.25))} className="w-8 h-8 rounded-lg bg-pink-soft/50 dark:bg-white/10 flex items-center justify-center text-pink-primary dark:text-pink-400 font-bold">−</button>
+                  <input type="range" min="0.5" max="2" step="0.1" value={avatarZoom} onChange={(e) => setAvatarZoom(parseFloat(e.target.value))} className="flex-1 h-2 rounded-full accent-pink-primary" />
+                  <button type="button" onClick={() => setAvatarZoom((z) => Math.min(2, z + 0.25))} className="w-8 h-8 rounded-lg bg-pink-soft/50 dark:bg-white/10 flex items-center justify-center text-pink-primary dark:text-pink-400 font-bold">+</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('profile.rotation')}</label>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setAvatarRotation((r) => (r - 90 + 360) % 360)} className="px-3 py-1.5 rounded-lg bg-pink-soft/50 dark:bg-white/10 text-sm text-pink-primary dark:text-pink-400">↺ −90°</button>
+                  <button type="button" onClick={() => setAvatarRotation((r) => (r + 90) % 360)} className="px-3 py-1.5 rounded-lg bg-pink-soft/50 dark:bg-white/10 text-sm text-pink-primary dark:text-pink-400">↻ +90°</button>
+                </div>
               </div>
             </div>
             <div className="flex gap-2">
@@ -327,7 +385,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                     <p className="font-medium text-text dark:text-[#f5f5f5]">{t('profile.photoTitle')}</p>
                   </div>
                   {isOwnProfile && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -337,23 +395,23 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                     />
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/80 dark:bg-white/10 border border-pink-soft/60 dark:border-white/20 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/40 dark:hover:bg-white/20 transition"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                      {t('profile.replace')}
-                    </button>
-                    <button
-                      type="button"
                       onClick={handleAvatarRemove}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                       {t('profile.remove')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/80 dark:bg-white/10 border border-pink-soft/60 dark:border-white/20 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/40 dark:hover:bg-white/20 transition"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      {t('profile.replace')}
                     </button>
                   </div>
                   )}
