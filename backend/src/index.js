@@ -73,9 +73,17 @@ app.use((err, req, res, next) => {
     if (err.code === 'P2025') return res.status(404).json({ error: 'Resource not found' });
     if (err.code === 'P2002') return res.status(409).json({ error: 'Duplicate value' });
   }
+  if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'File too large (max 5MB)' });
+  if (err.message?.includes('Invalid file type')) return res.status(400).json({ error: err.message });
   console.error('Route error:', err);
   res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
 });
+
+// Avatar uploads (before catch-all)
+const uploadsPath = path.join(__dirname, '../uploads');
+const avatarsPath = path.join(uploadsPath, 'avatars');
+if (!fs.existsSync(avatarsPath)) fs.mkdirSync(avatarsPath, { recursive: true });
+app.use('/uploads', express.static(uploadsPath));
 
 // Serve frontend static files (production – public folder created during build)
 const publicPath = path.join(__dirname, '../public');

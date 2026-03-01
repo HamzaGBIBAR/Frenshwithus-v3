@@ -21,7 +21,7 @@
     "chooseAnother": "Choose another",
     "confirm": "Confirm",
     "invalidImage": "Invalid image format",
-    "imageTooLarge": "Image too large (max 2 MB)",
+    "imageTooLarge": "Image too large (max 5 MB)",
     "name": "Name",
     "email": "Email",
     "emailAdminOnly": "Managed by administrator",

@@ -1,13 +1,44 @@
 import { Router } from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, messageValidation, availabilityValidation, profileUpdateValidation, passwordChangeValidation } from '../middleware/validate.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
 router.use(authenticate);
 router.use(requireRole('PROFESSOR'));
+
+const ALLOWED_MIMES = ['image/jpeg', 'image/jpg', 'image/png'];
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../../uploads/avatars');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype === 'image/png' ? '.png' : '.jpg';
+    cb(null, `${req.user.id}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: MAX_SIZE },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_MIMES.includes(file.mimetype)) {
+      return cb(new Error('Invalid file type. Only jpg, jpeg, png allowed.'));
+    }
+    cb(null, true);
+  },
+});
 
 // My profile
 router.get('/profile', async (req, res) => {
@@ -29,6 +60,36 @@ router.put('/profile', profileUpdateValidation, validate, async (req, res) => {
     select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
   });
   res.json(user);
+});
+
+router.put('/profile/avatar', upload.single('avatar'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { avatarUrl },
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  res.json(user);
+});
+
+router.delete('/profile/avatar', async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { avatarUrl: true },
+  });
+  if (user?.avatarUrl?.startsWith('/uploads/avatars/')) {
+    const filePath = path.join(__dirname, '../..', user.avatarUrl);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+  const updated = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { avatarUrl: null },
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  res.json(updated);
 });
 
 router.put('/password', passwordChangeValidation, validate, async (req, res) => {

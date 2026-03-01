@@ -40,36 +40,13 @@ function getPasswordRuleResults(newPassword, currentPassword) {
   }));
 }
 
-function resizeImageToDataUrl(file, maxSize = 200, quality = 0.85) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let { width, height } = img;
-      if (width > maxSize || height > maxSize) {
-        if (width > height) {
-          height = (height / width) * maxSize;
-          width = maxSize;
-        } else {
-          width = (width / height) * maxSize;
-          height = maxSize;
-        }
-      }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => reject(new Error('Invalid image'));
-    img.src = URL.createObjectURL(file);
-  });
-}
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function ProfessorProfileModal({ professorId = null, onClose }) {
   const { t } = useTranslation();
   const { user: authUser, refreshUser } = useAuth();
-  const toast = useToast();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personal');
@@ -78,6 +55,8 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
   const [saving, setSaving] = useState(false);
   const [calendarStyle, setCalendarStyleState] = useState(getCalendarStyle);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -101,7 +80,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           setProfile(r.data);
           setForm({ name: r.data.name, email: r.data.email, avatarUrl: r.data.avatarUrl });
         })
-        .catch(() => toast(t('profile.errorLoad')))
+        .catch(() => showToast(t('profile.errorLoad')))
         .finally(() => setLoading(false));
       return;
     }
@@ -112,75 +91,89 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
           setProfile(r.data);
           setForm({ name: r.data.name, email: r.data.email, avatarUrl: r.data.avatarUrl });
         })
-        .catch(() => toast(t('profile.errorLoad')))
+        .catch(() => showToast(t('profile.errorLoad')))
         .finally(() => setLoading(false));
     }
-  }, [professorId, authUser, isOwnProfile, t, toast]);
+  }, [professorId, authUser, isOwnProfile, t, showToast]);
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!isOwnProfile) return;
     setSaving(true);
     try {
-      const r = await api.put('/professor/profile', { name: form.name, avatarUrl: form.avatarUrl || null });
+      const r = await api.put('/professor/profile', { name: form.name });
       setProfile(r.data);
+      setForm((f) => ({ ...f, name: r.data.name }));
       refreshUser?.();
-      toast(t('profile.saved'));
+      showToast(t('profile.saved'));
     } catch (err) {
-      toast(err.response?.data?.error || t('profile.errorSave'));
+      console.error('Profile save error:', err);
+      showToast(err.response?.data?.error || t('profile.errorSave'));
     } finally {
       setSaving(false);
     }
   };
 
-  const saveAvatar = async (avatarUrl) => {
-    if (!isOwnProfile) return;
-    try {
-      const r = await api.put('/professor/profile', { avatarUrl });
-      setProfile(r.data);
-      setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
-      refreshUser?.();
-      toast(t('profile.saved'));
-    } catch {
-      toast(t('profile.errorSave'));
-    }
-  };
-
-  const handleAvatarChange = async (e) => {
+  const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) {
-      toast(t('profile.invalidImage'));
+    if (!file) return;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      showToast(t('profile.invalidImage'));
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast(t('profile.imageTooLarge'));
+    if (file.size > MAX_AVATAR_SIZE) {
+      showToast(t('profile.imageTooLarge'));
       return;
     }
-    try {
-      const dataUrl = await resizeImageToDataUrl(file, 200, 0.85);
-      setAvatarPreview(dataUrl);
-    } catch {
-      toast(t('profile.invalidImage'));
-    }
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarFile(file);
     e.target.value = '';
   };
 
   const confirmAvatarPreview = async () => {
-    if (!avatarPreview) return;
-    setAvatarPreview(null);
-    setForm((f) => ({ ...f, avatarUrl: avatarPreview }));
-    setProfile((p) => (p ? { ...p, avatarUrl: avatarPreview } : null));
-    await saveAvatar(avatarPreview);
+    if (!avatarPreview || !avatarFile) return;
+    const file = avatarFile;
+    setAvatarLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const r = await api.put('/professor/profile/avatar', formData);
+      setProfile(r.data);
+      setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
+      setAvatarPreview(null);
+      setAvatarFile(null);
+      URL.revokeObjectURL(avatarPreview);
+      refreshUser?.();
+      showToast(t('profile.saved'));
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      showToast(err.response?.data?.error || t('profile.errorSave'));
+    } finally {
+      setAvatarLoading(false);
+    }
   };
 
   const cancelAvatarPreview = () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(null);
+    setAvatarFile(null);
   };
 
   const handleAvatarRemove = async () => {
-    setForm((f) => ({ ...f, avatarUrl: null }));
-    setProfile((p) => (p ? { ...p, avatarUrl: null } : null));
-    await saveAvatar(null);
+    setAvatarLoading(true);
+    try {
+      const r = await api.delete('/professor/profile/avatar');
+      setProfile(r.data);
+      setForm((f) => ({ ...f, avatarUrl: null }));
+      refreshUser?.();
+      showToast(t('profile.saved'));
+    } catch (err) {
+      console.error('Avatar remove error:', err);
+      showToast(err.response?.data?.error || t('profile.errorSave'));
+    } finally {
+      setAvatarLoading(false);
+    }
   };
 
   const handleChangePassword = async (e) => {
@@ -188,11 +181,11 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
     const rules = getPasswordRuleResults(passwordForm.newPassword, passwordForm.currentPassword);
     const allMet = rules.every((r) => r.met);
     if (!allMet) {
-      toast(t('profile.passwordRequirementsNotMet'));
+      showToast(t('profile.passwordRequirementsNotMet'));
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast(t('profile.passwordMismatch'));
+      showToast(t('profile.passwordMismatch'));
       return;
     }
     setSaving(true);
@@ -202,9 +195,9 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
         newPassword: passwordForm.newPassword,
       });
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      toast(t('profile.passwordChanged'));
+      showToast(t('profile.passwordChanged'));
     } catch (err) {
-      toast(err.response?.data?.error || t('profile.errorPassword'));
+      showToast(err.response?.data?.error || t('profile.errorPassword'));
     } finally {
       setSaving(false);
     }
@@ -242,9 +235,10 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
               <button
                 type="button"
                 onClick={confirmAvatarPreview}
-                className="flex-1 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition"
+                disabled={avatarLoading}
+                className="flex-1 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition disabled:opacity-60"
               >
-                {t('profile.confirm')}
+                {avatarLoading ? t('profile.saving') : t('profile.confirm')}
               </button>
             </div>
           </div>
@@ -327,7 +321,7 @@ export default function ProfessorProfileModal({ professorId = null, onClose }) {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png"
                       className="hidden"
                       onChange={handleAvatarChange}
                     />

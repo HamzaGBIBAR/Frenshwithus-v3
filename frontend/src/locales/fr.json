@@ -21,7 +21,7 @@
     "chooseAnother": "Choisir une autre",
     "confirm": "Confirmer",
     "invalidImage": "Format d'image invalide",
-    "imageTooLarge": "Image trop volumineuse (max 2 Mo)",
+    "imageTooLarge": "Image trop volumineuse (max 5 Mo)",
     "name": "Nom",
     "email": "Email",
     "emailAdminOnly": "Géré par l'administrateur",
