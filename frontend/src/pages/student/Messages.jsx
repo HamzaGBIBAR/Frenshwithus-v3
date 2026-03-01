@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 
 export default function StudentMessages() {
   const { user } = useAuth();
@@ -46,7 +47,7 @@ export default function StudentMessages() {
                 onClick={() => setSelectedProfessor(p.id)}
                 className={`w-full p-4 text-left hover:bg-pink-soft/30 transition ${selectedProfessor === p.id ? 'bg-pink-soft/60 text-pink-dark font-medium border-l-4 border-pink-primary' : 'text-text'}`}
               >
-                {p.name}
+                <TeacherProfileTooltip teacher={p}>{p.name}</TeacherProfileTooltip>
               </button>
             ))}
             {professors.length === 0 && (
@@ -58,7 +59,16 @@ export default function StudentMessages() {
           {selectedProfessor ? (
             <>
               <div className="p-4 border-b border-pink-soft/50 font-medium text-text">
-                {professors.find((p) => p.id === selectedProfessor)?.name}
+                {(() => {
+                  const prof = professors.find((p) => p.id === selectedProfessor);
+                  return prof ? (
+                    <TeacherProfileTooltip teacher={prof}>
+                      <span className="cursor-default">{prof.name}</span>
+                    </TeacherProfileTooltip>
+                  ) : (
+                    <span>—</span>
+                  );
+                })()}
               </div>
               <div className="flex-1 p-4 overflow-y-auto space-y-3">
                 {conversation.map((m) => (

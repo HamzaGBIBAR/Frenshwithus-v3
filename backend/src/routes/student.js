@@ -12,7 +12,7 @@ router.use(requireRole('STUDENT'));
 router.get('/courses', async (req, res) => {
   const courses = await prisma.course.findMany({
     where: { studentId: req.user.id },
-    include: { professor: { select: { id: true, name: true } } },
+    include: { professor: { select: { id: true, name: true, email: true, avatarUrl: true } } },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
@@ -87,7 +87,7 @@ router.post('/messages', messageValidation, validate, async (req, res) => {
 router.get('/professors', async (req, res) => {
   const professors = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, avatarUrl: true },
     orderBy: { name: 'asc' },
   });
   res.json(professors);
