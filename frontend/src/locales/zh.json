@@ -457,6 +457,7 @@
       "getLink": "获取链接",
       "join": "加入",
       "waitingForProfessor": "等待老师",
+      "profNotInMeet": "老师还没有加入课堂",
       "live": "直播",
       "liveCourses": "直播课程",
       "viewRecording": "查看录制",

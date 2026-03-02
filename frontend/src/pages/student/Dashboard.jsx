@@ -59,9 +59,13 @@ function categorizeCourses(courses) {
     const d = new Date(`${c.date}T${c.time}`);
     if (isNaN(d.getTime())) continue;
 
-    if (d >= now) {
+    const timeReached = now >= d;
+    const withinWindow = now - d < TWO_HOURS_MS;
+    const ended = c.sessionEnded || c.endReason === 'professor_absent';
+
+    if (!timeReached) {
       upcoming.push(c);
-    } else if (c.isStarted && !c.sessionEnded && now - d < TWO_HOURS_MS) {
+    } else if (!ended && withinWindow) {
       live.push(c);
     } else {
       past.push(c);
@@ -184,12 +188,19 @@ export default function StudentDashboard() {
       );
     }
     return (
-      <span
-        className="inline-flex items-center px-4 py-2 bg-gray-200/80 dark:bg-white/15 text-gray-500 dark:text-[#f5f5f5]/50 rounded-xl text-sm cursor-not-allowed"
-        title={t('dashboard.student.waitingForProfessor')}
-      >
-        {t('dashboard.student.join')}
-      </span>
+      <div className="flex flex-col items-end gap-1.5">
+        <span
+          className="inline-flex items-center px-4 py-2 bg-gray-200/80 dark:bg-white/15 text-gray-500 dark:text-[#f5f5f5]/50 rounded-xl text-sm cursor-not-allowed"
+        >
+          {t('dashboard.student.join')}
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+          <svg className="w-3.5 h-3.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {t('dashboard.student.profNotInMeet')}
+        </span>
+      </div>
     );
   };
 

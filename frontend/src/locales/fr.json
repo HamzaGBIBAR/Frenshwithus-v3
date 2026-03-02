@@ -482,6 +482,7 @@
       "getLink": "Obtenir le lien",
       "join": "Rejoindre",
       "waitingForProfessor": "En attente du professeur",
+      "profNotInMeet": "Le professeur n'a pas encore rejoint le cours",
       "live": "En direct",
       "liveCourses": "Cours en direct",
       "viewRecording": "Voir l'enregistrement",

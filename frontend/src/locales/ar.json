@@ -457,6 +457,7 @@
       "getLink": "الحصول على الرابط",
       "join": "انضم",
       "waitingForProfessor": "في انتظار الأستاذ",
+      "profNotInMeet": "الأستاذ لم ينضم إلى الحصة بعد",
       "live": "مباشر",
       "liveCourses": "الدروس المباشرة",
       "viewRecording": "عرض التسجيل",
