@@ -10,6 +10,7 @@ export default function StudentDashboard() {
   const { t } = useTranslation();
   const [courses, setCourses] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [highlightedCourseId, setHighlightedCourseId] = useState(null);
   const upcomingRef = useRef(null);
@@ -17,12 +18,20 @@ export default function StudentDashboard() {
   const pastRef = useRef(null);
 
   const fetchCourses = useCallback(() => {
-    api.get('/student/courses').then((r) => setCourses(r.data));
+    setError(null);
+    api.get('/student/courses')
+      .then((r) => setCourses(r.data || []))
+      .catch((err) => {
+        setCourses([]);
+        setError(err.response?.data?.error || err.message || 'Erreur de chargement');
+      });
   }, []);
 
   useEffect(() => {
     fetchCourses();
-    api.get('/student/payments').then((r) => setPayments(r.data));
+    api.get('/student/payments')
+      .then((r) => setPayments(r.data || []))
+      .catch(() => setPayments([]));
   }, [fetchCourses]);
 
   // Rafraîchir les cours pour mettre à jour professorOnline (bouton Rejoindre)
@@ -110,6 +119,23 @@ export default function StudentDashboard() {
       </span>
     );
   };
+
+  if (error) {
+    return (
+      <div className="animate-fade-in">
+        <div className="p-6 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
+          <p className="text-red-700 dark:text-red-400 font-medium mb-2">{t('dashboard.student.errorLoading') || 'Erreur de chargement'}</p>
+          <p className="text-sm text-red-600/80 dark:text-red-400/80 mb-4">{error}</p>
+          <button
+            onClick={fetchCourses}
+            className="px-4 py-2 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/60 transition"
+          >
+            {t('dashboard.student.retry') || 'Réessayer'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">

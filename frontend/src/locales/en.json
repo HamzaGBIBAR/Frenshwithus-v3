@@ -473,6 +473,8 @@
       "noPayment": "No payments",
       "noUpcoming": "No upcoming courses",
       "noPast": "No past courses",
+      "errorLoading": "Loading error",
+      "retry": "Retry",
       "getLink": "Get link",
       "join": "Join",
       "waitingForProfessor": "Waiting for professor",

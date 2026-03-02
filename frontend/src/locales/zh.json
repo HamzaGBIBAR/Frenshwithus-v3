@@ -448,6 +448,8 @@
       "noPayment": "暂无支付",
       "noUpcoming": "暂无即将开始的课程",
       "noPast": "暂无已结束课程",
+      "errorLoading": "加载错误",
+      "retry": "重试",
       "getLink": "获取链接",
       "join": "加入",
       "waitingForProfessor": "等待老师",

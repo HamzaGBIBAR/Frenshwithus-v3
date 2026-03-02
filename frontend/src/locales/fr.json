@@ -473,6 +473,8 @@
       "noPayment": "Aucun paiement",
       "noUpcoming": "Aucun cours à venir",
       "noPast": "Aucun cours passé",
+      "errorLoading": "Erreur de chargement",
+      "retry": "Réessayer",
       "getLink": "Obtenir le lien",
       "join": "Rejoindre",
       "waitingForProfessor": "En attente du professeur",

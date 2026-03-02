@@ -24,8 +24,9 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       login(data);
-      if (data.user.role === 'ADMIN') navigate('/admin');
-      else navigate('/');
+      // Redirection après mise à jour du state (évite écran noir / redirect loop)
+      const path = data.user.role === 'ADMIN' ? '/admin' : data.user.role === 'PROFESSOR' ? '/professor' : data.user.role === 'STUDENT' ? '/student' : '/';
+      setTimeout(() => navigate(path, { replace: true }), 0);
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {
