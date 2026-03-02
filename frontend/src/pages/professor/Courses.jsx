@@ -679,6 +679,7 @@ export default function ProfessorCourses() {
                                 </span>
                               </div>
                             </div>
+                            {status !== 'professor_absent' && (
                             <div className="flex flex-wrap gap-2 mt-2.5 justify-start items-center">
                               {editingLink === c.id ? (
                                 <div className="flex gap-2 flex-1">
@@ -742,6 +743,7 @@ export default function ProfessorCourses() {
                                 )
                               )}
                             </div>
+                            )}
                           </div>
                         );
                       })
