@@ -402,6 +402,7 @@
       "selectStudent": "Select a student to view messages"
     },
     "professor": {
+      "message": "Messages",
       "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       "title": "Schedule",
       "myAvailability": "My Weekly Availability",

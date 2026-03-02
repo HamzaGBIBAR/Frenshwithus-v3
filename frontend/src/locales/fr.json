@@ -402,6 +402,7 @@
       "selectStudent": "Sélectionnez un élève pour voir les messages"
     },
     "professor": {
+      "message": "Messages",
       "days": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
       "title": "Planning",
       "myAvailability": "Ma disponibilité par semaine",

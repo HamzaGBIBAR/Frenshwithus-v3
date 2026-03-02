@@ -402,6 +402,7 @@
       "selectStudent": "选择一个学生以查看消息"
     },
     "professor": {
+      "message": "消息",
       "days": ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
       "title": "课程表",
       "myAvailability": "我的每周可用时间",
