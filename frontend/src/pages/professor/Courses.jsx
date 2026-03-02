@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
@@ -29,18 +30,33 @@ function getRemainingCountdown(sessionStartedAt, now) {
 
 function StudentNameTooltip({ student, children, className, locale }) {
   const [show, setShow] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const ref = useRef(null);
+
+  const handleEnter = useCallback(() => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ x: rect.left, y: rect.bottom + 6 });
+    }
+    setShow(true);
+  }, []);
+
   if (!student?.country) return <span className={className}>{children}</span>;
   const country = COUNTRIES.find((c) => c.code === student.country);
   const local = show ? getLocalDateTime(student.country, locale || 'fr') : null;
   return (
     <span
-      className={`relative ${className}`}
-      onMouseEnter={() => setShow(true)}
+      ref={ref}
+      className={className}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
     >
       {children}
-      {show && local && (
-        <span className="absolute z-50 left-0 top-full mt-2 w-52 p-3 rounded-xl bg-[#1a1a1a] dark:bg-[#222] text-white text-xs shadow-xl border border-white/10 animate-fade-in pointer-events-none">
+      {show && local && createPortal(
+        <span
+          className="fixed z-[9999] w-52 p-3 rounded-xl bg-[#1a1a1a] text-white text-xs shadow-2xl border border-white/10 animate-fade-in pointer-events-none"
+          style={{ left: pos.x, top: pos.y }}
+        >
           <span className="flex items-center gap-2 mb-1.5">
             <svg className="w-3.5 h-3.5 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             <span className="font-medium">{country?.name || student.country}</span>
@@ -50,7 +66,8 @@ function StudentNameTooltip({ student, children, className, locale }) {
             <span className="font-mono font-bold">{local.time}</span>
             <span className="text-white/50 text-[10px] ml-auto">{local.tz}</span>
           </span>
-        </span>
+        </span>,
+        document.body
       )}
     </span>
   );
