@@ -6,6 +6,7 @@ import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
 import { formatTimeAMPM } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
+import COUNTRIES, { getLocalDateTime } from '../../utils/countries';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 const COURSE_DURATION_MINUTES = 15;
@@ -24,6 +25,35 @@ function getRemainingCountdown(sessionStartedAt, now) {
   const m = Math.floor(remaining / 60);
   const s = remaining % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function StudentNameTooltip({ student, children, className, locale }) {
+  const [show, setShow] = useState(false);
+  if (!student?.country) return <span className={className}>{children}</span>;
+  const country = COUNTRIES.find((c) => c.code === student.country);
+  const local = show ? getLocalDateTime(student.country, locale || 'fr') : null;
+  return (
+    <span
+      className={`relative ${className}`}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && local && (
+        <span className="absolute z-50 left-0 top-full mt-2 w-52 p-3 rounded-xl bg-[#1a1a1a] dark:bg-[#222] text-white text-xs shadow-xl border border-white/10 animate-fade-in pointer-events-none">
+          <span className="flex items-center gap-2 mb-1.5">
+            <svg className="w-3.5 h-3.5 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <span className="font-medium">{country?.name || student.country}</span>
+          </span>
+          <span className="flex items-center gap-2">
+            <svg className="w-3.5 h-3.5 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2" /><path strokeLinecap="round" strokeWidth="2" d="M12 6v6l4 2" /></svg>
+            <span className="font-mono font-bold">{local.time}</span>
+            <span className="text-white/50 text-[10px] ml-auto">{local.tz}</span>
+          </span>
+        </span>
+      )}
+    </span>
+  );
 }
 
 function getCourseStatus(course) {
@@ -276,7 +306,7 @@ export default function ProfessorCourses() {
               {formatTimeAMPM(c.time)}
             </span>
             <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
-              <span className={`font-semibold break-words ${nameTextClass}`}>{t('dashboard.admin.student')} {c.student?.name}</span>
+              <StudentNameTooltip student={c.student} className={`font-semibold break-words cursor-default ${nameTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium shrink-0 w-fit ${
                 status === 'live' ? (hasDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
                 status === 'professor_absent' ? (hasDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
@@ -619,7 +649,7 @@ export default function ProfessorCourses() {
                             style={{ animationDelay: `${dayCourses.indexOf(c) * 60}ms`, animationFillMode: 'both' }}
                           >
                             <div className="space-y-1.5">
-                              <div className={`font-semibold text-sm leading-snug break-words ${weekTextClass}`}>{t('dashboard.admin.student')} {c.student?.name}</div>
+                              <StudentNameTooltip student={c.student} className={`font-semibold text-sm leading-snug break-words block cursor-default ${weekTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
                               <div className="flex items-center justify-between gap-2">
                                 <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
                                 <span className={`shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${

@@ -139,7 +139,7 @@ router.put('/password', passwordChangeValidation, validate, async (req, res) => 
 router.get('/courses', async (req, res) => {
   const courses = await prisma.course.findMany({
     where: { professorId: req.user.id },
-    include: { student: { select: { id: true, name: true, email: true } } },
+    include: { student: { select: { id: true, name: true, email: true, country: true } } },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
