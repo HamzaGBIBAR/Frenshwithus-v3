@@ -518,7 +518,11 @@ export default function ProfessorCourses() {
           events={calendarEvents}
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
-          onSelectEvent={(evt) => evt.type === 'course' && navigate(`/live?courseId=${evt.id}`)}
+          onSelectEvent={(evt) => {
+            if (evt.type !== 'course') return;
+            if (evt.isPast) return;
+            navigate(`/live?courseId=${evt.id}`);
+          }}
           viewMode="mois"
           onViewModeChange={setViewMode}
           calendarStyle={calendarStyle}

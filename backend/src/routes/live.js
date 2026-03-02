@@ -20,7 +20,7 @@ router.get('/live-access', authenticate, async (req, res) => {
 
   const course = await prisma.course.findUnique({
     where: { id: courseId },
-    select: { id: true, professorId: true, studentId: true },
+    select: { id: true, professorId: true, studentId: true, isStarted: true },
   });
   if (!course) {
     return res.status(404).json({ error: 'Cours introuvable' });
@@ -32,6 +32,14 @@ router.get('/live-access', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Ce cours ne vous est pas assigné' });
   }
 
+  const endedSession = await prisma.liveSession.findFirst({
+    where: {
+      roomName: `frenchwithus-course-${courseId}`,
+      endedAt: { not: null },
+    },
+  });
+  const sessionEnded = !!endedSession && course.isStarted;
+
   const courseProfessorOnline = req.app.locals?.courseProfessorOnline ?? {};
   const professorOnline = !!courseProfessorOnline[courseId];
   const roomName = `frenchwithus-course-${courseId}`;
@@ -42,12 +50,14 @@ router.get('/live-access', authenticate, async (req, res) => {
     roomName,
     role,
     courseId,
+    sessionEnded,
   });
 });
 
 /**
  * POST /live/session/start
  * Professeur démarre une session pour un cours (isStarted + session DB)
+ * Refuse si le cours a déjà été terminé.
  */
 router.post('/live/session/start', authenticate, async (req, res) => {
   if (req.user.role !== 'PROFESSOR') {
@@ -63,6 +73,16 @@ router.post('/live/session/start', authenticate, async (req, res) => {
   });
   if (!course) {
     return res.status(404).json({ error: 'Cours introuvable' });
+  }
+
+  const endedSession = await prisma.liveSession.findFirst({
+    where: {
+      roomName: `frenchwithus-course-${courseId}`,
+      endedAt: { not: null },
+    },
+  });
+  if (endedSession) {
+    return res.status(403).json({ error: 'Ce cours est déjà terminé. Vous ne pouvez pas le redémarrer.' });
   }
 
   await prisma.course.update({

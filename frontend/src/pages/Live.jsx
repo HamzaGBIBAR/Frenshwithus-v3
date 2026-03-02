@@ -56,7 +56,9 @@ export default function Live() {
         setAccess(data);
         setProfessorOnline(data.professorOnline);
 
-        if (data.role === 'PROFESSOR') {
+        if (data.sessionEnded && data.role === 'PROFESSOR') {
+          setSessionEnded(true);
+        } else if (data.role === 'PROFESSOR') {
           setShowMeeting(true);
         } else if (data.professorOnline) {
           setShowMeeting(true);
