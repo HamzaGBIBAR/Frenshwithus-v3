@@ -275,7 +275,7 @@ export default function ProfessorCourses() {
               {formatTimeAMPM(c.time)}
             </span>
             <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
-              <span className={`font-semibold truncate ${nameTextClass}`}>{c.student?.name}</span>
+              <span className={`font-semibold break-words ${nameTextClass}`}>{c.student?.name}</span>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium shrink-0 w-fit ${
                 status === 'live' ? (hasDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
                 status === 'professor_absent' ? (hasDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
@@ -617,7 +617,7 @@ export default function ProfessorCourses() {
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-baseline gap-2 flex-wrap">
-                                  <span className={`font-medium truncate ${weekTextClass}`}>{c.student?.name}</span>
+                                  <span className={`font-medium break-words ${weekTextClass}`}>{c.student?.name}</span>
                                   <span className={`text-sm shrink-0 whitespace-nowrap font-mono ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
                                 </div>
                               </div>
