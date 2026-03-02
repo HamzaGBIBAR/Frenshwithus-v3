@@ -13,12 +13,25 @@ export default function StudentDashboard() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [highlightedCourseId, setHighlightedCourseId] = useState(null);
   const upcomingRef = useRef(null);
+  const liveRef = useRef(null);
   const pastRef = useRef(null);
 
-  useEffect(() => {
+  const fetchCourses = useCallback(() => {
     api.get('/student/courses').then((r) => setCourses(r.data));
-    api.get('/student/payments').then((r) => setPayments(r.data));
   }, []);
+
+  useEffect(() => {
+    fetchCourses();
+    api.get('/student/payments').then((r) => setPayments(r.data));
+  }, [fetchCourses]);
+
+  // Rafraîchir les cours pour mettre à jour professorOnline (bouton Rejoindre)
+  useEffect(() => {
+    const hasJoinable = upcoming.length > 0 || live.length > 0;
+    if (!hasJoinable) return;
+    const interval = setInterval(fetchCourses, 10000); // toutes les 10 s
+    return () => clearInterval(interval);
+  }, [fetchCourses, upcoming.length, live.length]);
 
   const calendarEvents = courses.map((c) => {
     const d = new Date(`${c.date}T${c.time}`);
@@ -33,14 +46,23 @@ export default function StudentDashboard() {
     };
   });
 
+  const now = new Date();
+  const twoHours = 2 * 60 * 60 * 1000;
+
   const upcoming = courses.filter((c) => {
     const d = new Date(`${c.date}T${c.time}`);
-    return d >= new Date();
+    return d >= now;
+  });
+
+  // Cours en direct : démarré par le prof, pas encore terminé, dans les 2h
+  const live = courses.filter((c) => {
+    const d = new Date(`${c.date}T${c.time}`);
+    return d < now && c.isStarted && !c.sessionEnded && now - d < twoHours;
   });
 
   const past = courses.filter((c) => {
     const d = new Date(`${c.date}T${c.time}`);
-    return d < new Date();
+    return d < now && (c.sessionEnded || !c.isStarted || now - d >= twoHours);
   });
 
   const coursesThisWeek = courses.filter((c) => {
@@ -57,14 +79,37 @@ export default function StudentDashboard() {
 
   const handleSelectEvent = useCallback((evt) => {
     const courseId = evt.id;
-    const isPast = past.some((c) => c.id === courseId);
-    const targetRef = isPast ? pastRef : upcomingRef;
+    const inLive = live.some((c) => c.id === courseId);
+    const inPast = past.some((c) => c.id === courseId);
+    const targetRef = inPast ? pastRef : inLive ? liveRef : upcomingRef;
     if (targetRef?.current) {
       setHighlightedCourseId(courseId);
       targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setTimeout(() => setHighlightedCourseId(null), 2000);
     }
-  }, [past]);
+  }, [past, live]);
+
+  const renderJoinButton = (c) => {
+    const canJoin = c.professorOnline;
+    if (canJoin) {
+      return (
+        <Link
+          to={`/live?courseId=${c.id}`}
+          className="inline-block px-4 py-2 bg-pink-primary dark:bg-pink-400 text-white rounded-xl text-sm hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
+        >
+          {t('dashboard.student.join')}
+        </Link>
+      );
+    }
+    return (
+      <span
+        className="inline-block px-4 py-2 bg-gray-300 dark:bg-white/20 text-gray-500 dark:text-[#f5f5f5]/60 rounded-xl text-sm cursor-not-allowed"
+        title={t('dashboard.student.waitingForProfessor')}
+      >
+        {t('dashboard.student.join')}
+      </span>
+    );
+  };
 
   return (
     <div className="animate-fade-in">
@@ -118,36 +163,55 @@ export default function StudentDashboard() {
         </div>
       </div>
 
+      {live.length > 0 && (
+        <div ref={liveRef} className="mb-6 scroll-mt-6">
+          <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('dashboard.student.liveCourses')}</h2>
+          <div className="space-y-3">
+            {live.map((c) => (
+              <div key={c.id} className={`bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 ${highlightedCourseId === c.id ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-green-500/50 dark:border-green-400/50'}`}>
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium mb-2">{t('dashboard.student.live')}</span>
+                    <p className="font-medium text-text dark:text-[#f5f5f5]">
+                      {c.professor?.name ? (
+                        <TeacherProfileTooltip teacher={c.professor}>{formatProfessorName(c.professor.name)}</TeacherProfileTooltip>
+                      ) : (
+                        t('dashboard.student.frenchCourse')
+                      )}
+                    </p>
+                    <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
+                  </div>
+                  <div className="flex-shrink-0">{renderJoinButton(c)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div ref={upcomingRef} className="mb-6 scroll-mt-6">
         <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-3">{t('dashboard.student.upcomingCourses')}</h2>
         <div className="space-y-3">
           {upcoming.length === 0 ? (
             <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noUpcoming')}</p>
           ) : (
-            upcoming.map((c, i) => (
-                <div key={c.id} className={`bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 ${highlightedCourseId === c.id ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-pink-soft/50 dark:border-white/10'}`}>
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <p className="font-medium text-text dark:text-[#f5f5f5]">
-                        {c.professor?.name ? (
-                          <TeacherProfileTooltip teacher={c.professor}>{formatProfessorName(c.professor.name)}</TeacherProfileTooltip>
-                        ) : (
-                          t('dashboard.student.frenchCourse')
-                        )}
-                      </p>
-                      <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <Link
-                        to={`/live?courseId=${c.id}`}
-                        className="inline-block px-4 py-2 bg-pink-primary dark:bg-pink-400 text-white rounded-xl text-sm hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
-                      >
-                        {t('dashboard.student.join')}
-                      </Link>
-                    </div>
+            upcoming.map((c) => (
+              <div key={c.id} className={`bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border shadow-pink-soft dark:shadow-lg card-hover transition-all duration-500 hover:shadow-md hover:-translate-y-0.5 ${highlightedCourseId === c.id ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-pink-soft/50 dark:border-white/10'}`}>
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <p className="font-medium text-text dark:text-[#f5f5f5]">
+                      {c.professor?.name ? (
+                        <TeacherProfileTooltip teacher={c.professor}>{formatProfessorName(c.professor.name)}</TeacherProfileTooltip>
+                      ) : (
+                        t('dashboard.student.frenchCourse')
+                      )}
+                    </p>
+                    <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">{c.date} {t('dashboard.student.at')} {formatTimeAMPM(c.time)}</p>
                   </div>
+                  <div className="flex-shrink-0">{renderJoinButton(c)}</div>
                 </div>
-              ))
+              </div>
+            ))
           )}
         </div>
       </div>

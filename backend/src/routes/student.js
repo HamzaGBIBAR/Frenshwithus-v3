@@ -34,12 +34,21 @@ router.get('/courses', async (req, res) => {
     }
   }
 
-  const coursesWithStatus = courses.map((c) => ({
-    ...c,
-    sessionEnded: c.isStarted && endedCourseIds.has(c.id),
-    sessionEndedAt: endedAtByCourse[c.id] || null,
-    endReason: endReasonByCourse[c.id] || c.absenceReason || null,
-  }));
+  const courseProfessorOnline = req.app.locals?.courseProfessorOnline ?? {};
+
+  const coursesWithStatus = courses.map((c) => {
+    const sessionEnded = c.isStarted && endedCourseIds.has(c.id);
+    return {
+      ...c,
+      sessionEnded,
+      sessionEndedAt: endedAtByCourse[c.id] || null,
+      endReason: endReasonByCourse[c.id] || c.absenceReason || null,
+      // L'enregistrement n'est accessible qu'après que le prof ait terminé le cours
+      recordingLink: sessionEnded ? c.recordingLink : null,
+      // Le prof est-il dans la réunion ? (pour activer le bouton Rejoindre)
+      professorOnline: !!courseProfessorOnline[c.id],
+    };
+  });
 
   res.json(coursesWithStatus);
 });
