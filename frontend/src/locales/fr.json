@@ -466,11 +466,13 @@
     },
     "student": {
       "title": "Mes cours",
+      "subtitle": "Vos cours et votre planning",
       "coursesThisWeek": "{{count}} cours cette semaine",
       "upcoming": "{{count}} à venir",
       "planning": "Planning",
       "payments": "Paiements",
       "noPayment": "Aucun paiement",
+      "paymentsCount": "paiement(s)",
       "noUpcoming": "Aucun cours à venir",
       "noPast": "Aucun cours passé",
       "errorLoading": "Erreur de chargement",

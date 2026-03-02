@@ -441,11 +441,13 @@
     },
     "student": {
       "title": "دروسي",
+      "subtitle": "دروسك وجدولك",
       "coursesThisWeek": "{{count}} دروس هذا الأسبوع",
       "upcoming": "{{count}} قادمة",
       "planning": "الجدول",
       "payments": "المدفوعات",
       "noPayment": "لا توجد مدفوعات",
+      "paymentsCount": "مدفوعة",
       "noUpcoming": "لا توجد دروس قادمة",
       "noPast": "لا توجد دروس سابقة",
       "errorLoading": "خطأ في التحميل",

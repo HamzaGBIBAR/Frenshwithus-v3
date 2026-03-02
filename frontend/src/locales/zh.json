@@ -441,11 +441,13 @@
     },
     "student": {
       "title": "我的课程",
+      "subtitle": "您的课程和安排",
       "coursesThisWeek": "本周 {{count}} 节课",
       "upcoming": "{{count}} 节即将开始",
       "planning": "课程表",
       "payments": "支付",
       "noPayment": "暂无支付",
+      "paymentsCount": "笔支付",
       "noUpcoming": "暂无即将开始的课程",
       "noPast": "暂无已结束课程",
       "errorLoading": "加载错误",
