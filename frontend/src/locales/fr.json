@@ -398,7 +398,8 @@
       "dateFilterHour": "Heure",
       "yearPlaceholder": "Année",
       "hourPlaceholder": "Heure",
-      "empty": "Aucun message"
+      "empty": "Aucun message",
+      "selectStudent": "Sélectionnez un élève pour voir les messages"
     },
     "professor": {
       "days": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],

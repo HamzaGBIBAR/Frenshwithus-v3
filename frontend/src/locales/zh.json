@@ -398,7 +398,8 @@
       "dateFilterHour": "小时",
       "yearPlaceholder": "年份",
       "hourPlaceholder": "小时",
-      "empty": "暂无消息"
+      "empty": "暂无消息",
+      "selectStudent": "选择一个学生以查看消息"
     },
     "professor": {
       "days": ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],

@@ -101,12 +101,12 @@ export default function Pricing() {
               key={plan.id}
               className={`pricing-card relative group ${
                 plan.highlight
-                  ? 'bg-pink-dark dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg dark:ring-1 dark:ring-pink-400/30'
-                  : 'bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10'
+                  ? 'bg-pink-dark/90 dark:bg-white/[0.06] backdrop-blur-xl rounded-2xl p-6 shadow-pink-soft dark:shadow-lg dark:ring-1 dark:ring-pink-400/30'
+                  : 'bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-white/40 dark:border-white/10'
               } transition-all duration-300 ease-out hover:-translate-y-3 hover:scale-[1.02] hover:shadow-[0_16px_40px_rgba(231,84,128,0.25)] dark:hover:shadow-[0_16px_40px_rgba(231,84,128,0.15)] ${
                 plan.highlight
                   ? 'hover:ring-2 hover:ring-pink-400/40 dark:hover:ring-pink-400/50'
-                  : 'hover:border-pink-primary/60 dark:hover:border-pink-400/40'
+                  : 'hover:border-pink-primary/60 dark:hover:border-white/20'
               } ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
               style={{ transitionDelay: visible ? `${150 + index * 100}ms` : '0ms' }}
             >
@@ -116,8 +116,8 @@ export default function Pricing() {
                 </span>
               )}
 
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${
-                plan.highlight ? 'bg-pink-primary/30 dark:bg-pink-400/20' : 'bg-pink-soft dark:bg-white/10'
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm ${
+                plan.highlight ? 'bg-white/20 dark:bg-pink-400/20' : 'bg-pink-soft/80 dark:bg-white/10'
               }`}>
                 <svg className={`w-5 h-5 ${plan.highlight ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -149,10 +149,12 @@ export default function Pricing() {
 
               <ul className="space-y-2 mb-6">
                 {plan.features.map((feature) => (
-                  <li key={feature} className={`text-sm flex items-center gap-2 ${plan.highlight ? 'text-white/90 dark:text-[#f5f5f5]/90' : 'text-text/80 dark:text-[#f5f5f5]/80'}`}>
-                    <svg className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                  <li key={feature} className={`text-sm flex items-center gap-2.5 ${plan.highlight ? 'text-white/90 dark:text-[#f5f5f5]/90' : 'text-text/80 dark:text-[#f5f5f5]/80'}`}>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? 'bg-white/20 dark:bg-pink-400/20' : 'bg-pink-primary/15 dark:bg-pink-400/15'}`}>
+                      <svg className={`w-3 h-3 ${plan.highlight ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
                     {feature}
                   </li>
                 ))}
@@ -162,8 +164,8 @@ export default function Pricing() {
                 to={getCtaLink()}
                 className={`block w-full py-2.5 rounded-xl text-center font-medium transition-all duration-300 btn-hover ${
                   plan.highlight
-                    ? 'bg-white dark:bg-[#f5f5f5] text-pink-dark dark:text-[#111111] border-2 border-white dark:border-[#f5f5f5] hover:bg-pink-soft dark:hover:bg-white/90 hover:border-pink-soft'
-                    : 'bg-pink-primary dark:bg-pink-400 text-white hover:bg-pink-dark dark:hover:bg-pink-500 btn-glow'
+                    ? 'bg-white/90 dark:bg-white/10 backdrop-blur-sm text-pink-dark dark:text-[#f5f5f5] border-2 border-white/60 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 hover:border-white'
+                    : 'bg-pink-primary/90 dark:bg-pink-400/80 backdrop-blur-sm text-white hover:bg-pink-primary dark:hover:bg-pink-400 btn-glow'
                 }`}
               >
                 {t('pricing.freeSession')}
