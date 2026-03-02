@@ -12,6 +12,7 @@ import ScrollReveal from '../components/ScrollReveal';
 import TestimonialsCarousel from '../components/TestimonialsCarousel';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import LogoutButton from '../components/LogoutButton';
 import AnimatedEye from '../components/AnimatedEye';
 
 function getSampleEvents(t) {
@@ -28,7 +29,11 @@ function getSampleEvents(t) {
 
 export default function Landing() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
   const [selectedDate, setSelectedDate] = useState(null);
   const [logoState, setLogoState] = useState('french');
   const hasReachedAll = useRef(false);
@@ -100,6 +105,12 @@ export default function Landing() {
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <LanguageSwitcher className="rounded-full" />
             <ThemeToggle className="rounded-full" />
+            {user && (
+              <LogoutButton
+                onClick={handleLogout}
+                className="w-auto px-4 sm:px-5 py-2 sm:py-2.5 rounded-full min-h-[44px] border-red-300/50 dark:border-red-500/40"
+              />
+            )}
             <Link
               to={getDashboardLink()}
               className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
