@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-export default function LogoutButton({ onClick, className = '' }) {
+export default function LogoutButton({ onClick, className = '', compact = false }) {
   const { t } = useTranslation();
 
   return (
@@ -10,9 +10,9 @@ export default function LogoutButton({ onClick, className = '' }) {
       aria-label={t('nav.logout')}
       className={`
         group relative overflow-hidden
-        w-full px-4 py-2.5 rounded-xl
-        flex items-center justify-center gap-2.5
-        text-sm font-medium
+        ${compact ? 'w-auto px-3 py-1.5 gap-1.5 rounded-full' : 'w-full px-4 py-2.5 rounded-xl gap-2.5'}
+        flex items-center justify-center
+        ${compact ? 'text-xs font-medium' : 'text-sm font-medium'}
         border-2 border-red-200/60 dark:border-red-500/30
         transition-all duration-300 ease-out
         hover:scale-[1.02] active:scale-[0.98]
@@ -27,7 +27,7 @@ export default function LogoutButton({ onClick, className = '' }) {
     >
       {/* Icône sortie avec animation */}
       <svg
-        className="w-5 h-5 transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-110"
+        className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-110`}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

@@ -108,15 +108,26 @@ export default function Landing() {
             {user && (
               <LogoutButton
                 onClick={handleLogout}
-                className="w-auto px-4 sm:px-5 py-2 sm:py-2.5 rounded-full min-h-[44px] border-red-300/50 dark:border-red-500/40"
+                compact
+                className="border-red-300/50 dark:border-red-500/40"
               />
             )}
-            <Link
-              to={getDashboardLink()}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
-            >
-              {user ? t('nav.dashboard') : t('nav.login')}
-            </Link>
+            {user ? (
+              <button
+                type="button"
+                onClick={() => { window.location.href = getDashboardLink(); }}
+                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
+              >
+                {t('nav.dashboard')}
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
+              >
+                {t('nav.login')}
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -147,12 +158,22 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-<Link
-              to={getDashboardLink()}
-              className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"
-            >
-                {user ? t('nav.dashboard') : t('hero.getStarted')}
-              </Link>
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = getDashboardLink(); }}
+                  className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"
+                >
+                  {t('nav.dashboard')}
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"
+                >
+                  {t('hero.getStarted')}
+                </Link>
+              )}
               <a
                 href="mailto:frenchwithus.noreply@gmail.com"
                 className="px-6 py-3 border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 rounded-xl hover:bg-pink-soft/50 dark:hover:bg-white/10 transition-all duration-300 btn-hover text-center font-medium min-h-[48px] flex items-center justify-center"
