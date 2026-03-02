@@ -31,7 +31,7 @@ export function setCalendarStyle(style) {
 
 /** Week view course card classes by calendarStyle and status (completed|live|upcoming|professor_absent) */
 export function getWeekCourseCardClass(calendarStyle, status) {
-  const base = 'rounded-xl p-3 card-hover transition-all duration-200';
+  const base = 'rounded-xl p-3 card-hover transition-all duration-300 ease-out';
   const professorAbsent = status === 'professor_absent';
   const completed = status === 'completed';
   const live = status === 'live';

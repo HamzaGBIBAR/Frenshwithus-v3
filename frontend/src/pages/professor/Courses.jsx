@@ -266,17 +266,17 @@ export default function ProfessorCourses() {
     return (
       <div
         key={c.id}
-        className={`p-4 transition-all duration-300 hover:shadow-md animate-fade-in ${getWeekCourseCardClass(calendarStyle, status)}`}
+        className={`p-4 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5 animate-fade-in ${getWeekCourseCardClass(calendarStyle, status)}`}
         style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <span className={`flex items-center justify-center min-w-[4.5rem] h-12 px-2 rounded-xl shrink-0 font-mono font-bold text-sm shadow-sm whitespace-nowrap ${hasDarkBg ? 'bg-black/35 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
               {formatTimeAMPM(c.time)}
             </span>
-            <div>
-              <span className={`font-semibold ${nameTextClass}`}>{c.student?.name}</span>
-              <span className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium ${
+            <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
+              <span className={`font-semibold truncate ${nameTextClass}`}>{c.student?.name}</span>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium shrink-0 w-fit ${
                 status === 'live' ? (hasDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
                 status === 'professor_absent' ? (hasDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
                 status === 'upcoming' ? (hasDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
@@ -286,7 +286,7 @@ export default function ProfessorCourses() {
               </span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center justify-end">
             {editingLink === c.id ? (
               <div className="flex gap-2 flex-1 min-w-[200px]">
                 <input
@@ -300,7 +300,7 @@ export default function ProfessorCourses() {
                 <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
               </div>
             ) : (
-              <button onClick={() => openEditLink(c)} className={`text-xs hover:underline ${hasDarkBg ? 'text-white hover:text-white/90' : 'text-pink-primary dark:text-pink-400'}`}>
+              <button onClick={() => openEditLink(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${hasDarkBg ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`}>
                 {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
               </button>
             )}
@@ -318,7 +318,7 @@ export default function ProfessorCourses() {
                 <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
               </div>
             ) : (
-              <button onClick={() => openRecording(c)} className={`text-xs hover:underline ${hasDarkBg ? 'text-white hover:text-white/90' : 'text-pink-primary dark:text-pink-400'}`}>
+              <button onClick={() => openRecording(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${hasDarkBg ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`}>
                 {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
               </button>
             )}
@@ -581,10 +581,10 @@ export default function ProfessorCourses() {
             {coursesByDay.map(({ day, dateStr, isToday, courses: dayCourses, availability: dayAvail }) => (
                 <div
                   key={day}
-                  className={`min-h-[140px] rounded-2xl p-4 transition ${isToday ? 'calendar-today-cell bg-pink-primary/20 dark:bg-pink-400/25 border-2 border-pink-primary/50 dark:border-pink-400/50' : 'bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10'}`}
+                  className={`min-h-[140px] rounded-2xl p-4 transition-all duration-300 ${isToday ? 'calendar-today-cell bg-pink-primary/20 dark:bg-pink-400/25 border-2 border-pink-primary/50 dark:border-pink-400/50' : 'bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 hover:border-pink-soft/70 dark:hover:border-white/20'}`}
                 >
-                  <div className="font-medium text-text dark:text-[#f5f5f5] mb-1">{day}</div>
-                  <div className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mb-3">{dateStr}</div>
+                  <div className="font-semibold text-text dark:text-[#f5f5f5] mb-0.5 tracking-tight">{day}</div>
+                  <div className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mb-3 font-medium">{dateStr}</div>
                   <div className="space-y-2">
                     {dayAvail.map((slot) => {
                       const isMySlot = slot.professorId === user?.id;
@@ -612,14 +612,16 @@ export default function ProfessorCourses() {
                         return (
                           <div
                             key={c.id}
-                            className={getWeekCourseCardClass(calendarStyle, status)}
+                            className={`${getWeekCourseCardClass(calendarStyle, status)} transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5`}
                           >
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div>
-                                <span className={`font-medium ${weekTextClass}`}>{c.student?.name}</span>
-                                <span className={`text-sm ml-2 ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-baseline gap-2 flex-wrap">
+                                  <span className={`font-medium truncate ${weekTextClass}`}>{c.student?.name}</span>
+                                  <span className={`text-sm shrink-0 whitespace-nowrap font-mono ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
+                                </div>
                               </div>
-                              <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${
+                              <span className={`shrink-0 px-2 py-0.5 rounded-lg text-xs font-medium ${
                                 status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
                                 status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
                                 status === 'upcoming' ? (weekCardDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
@@ -628,7 +630,7 @@ export default function ProfessorCourses() {
                                 {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
                               </span>
                             </div>
-                            <div className="flex flex-wrap gap-2 mt-2 justify-center items-center">
+                            <div className="flex flex-wrap gap-2 mt-2.5 justify-start items-center">
                               {editingLink === c.id ? (
                                 <div className="flex gap-2 flex-1">
                                   <input
@@ -642,7 +644,7 @@ export default function ProfessorCourses() {
                                   <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
                                 </div>
                               ) : (
-                                <button onClick={() => openEditLink(c)} className={`text-xs hover:opacity-90 hover:underline ${weekTextClass}`}>
+                                <button onClick={() => openEditLink(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${weekTextClass}`}>
                                   {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
                                 </button>
                               )}
@@ -660,7 +662,7 @@ export default function ProfessorCourses() {
                                   <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
                                 </div>
                               ) : (
-                                <button onClick={() => openRecording(c)} className={`text-xs hover:opacity-90 hover:underline ${weekTextClass}`}>
+                                <button onClick={() => openRecording(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${weekTextClass}`}>
                                   {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
                                 </button>
                               )}
