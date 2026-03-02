@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
@@ -74,6 +74,7 @@ export default function ProfessorCourses() {
   const [now, setNow] = useState(() => new Date());
   const weekViewRef = useRef(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const tick = () => setNow(new Date());
@@ -180,7 +181,8 @@ export default function ProfessorCourses() {
 
   const courseEvents = courses.map((c) => {
     const d = new Date(`${c.date}T${c.time}`);
-    const isPast = d < new Date();
+    // Rester en couleur active jusqu'à ce que le prof termine la réunion
+    const isPast = c.sessionEnded || c.endReason === 'professor_absent';
     return {
       id: c.id,
       date: c.date,
@@ -516,6 +518,7 @@ export default function ProfessorCourses() {
           events={calendarEvents}
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
+          onSelectEvent={(evt) => evt.type === 'course' && navigate(`/live?courseId=${evt.id}`)}
           viewMode="mois"
           onViewModeChange={setViewMode}
           calendarStyle={calendarStyle}
