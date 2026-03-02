@@ -186,7 +186,7 @@ export default function ProfessorCourses() {
     return {
       id: c.id,
       date: c.date,
-      title: c.student?.name || t('dashboard.professor.course'),
+      title: c.student?.name ? `${t('dashboard.admin.student')} ${c.student.name}` : t('dashboard.professor.course'),
       time: formatTimeAMPM(c.time),
       type: 'course',
       isPast,
@@ -275,7 +275,7 @@ export default function ProfessorCourses() {
               {formatTimeAMPM(c.time)}
             </span>
             <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
-              <span className={`font-semibold break-words ${nameTextClass}`}>{c.student?.name}</span>
+              <span className={`font-semibold break-words ${nameTextClass}`}>{t('dashboard.admin.student')} {c.student?.name}</span>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium shrink-0 w-fit ${
                 status === 'live' ? (hasDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
                 status === 'professor_absent' ? (hasDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
@@ -612,23 +612,22 @@ export default function ProfessorCourses() {
                         return (
                           <div
                             key={c.id}
-                            className={`${getWeekCourseCardClass(calendarStyle, status)} transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5`}
+                            className={`${getWeekCourseCardClass(calendarStyle, status)} transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5 animate-fade-in`}
+                            style={{ animationDelay: `${dayCourses.indexOf(c) * 60}ms`, animationFillMode: 'both' }}
                           >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-baseline gap-2 flex-wrap">
-                                  <span className={`font-medium break-words ${weekTextClass}`}>{c.student?.name}</span>
-                                  <span className={`text-sm shrink-0 whitespace-nowrap font-mono ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
-                                </div>
+                            <div className="space-y-1.5">
+                              <div className={`font-semibold text-sm leading-snug break-words ${weekTextClass}`}>{t('dashboard.admin.student')} {c.student?.name}</div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
+                                <span className={`shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${
+                                  status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white animate-pulse' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 animate-pulse') :
+                                  status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
+                                  status === 'upcoming' ? (weekCardDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
+                                  weekCardDarkBg ? 'bg-slate-500/50 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                }`}>
+                                  {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
+                                </span>
                               </div>
-                              <span className={`shrink-0 px-2 py-0.5 rounded-lg text-xs font-medium ${
-                                status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
-                                status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
-                                status === 'upcoming' ? (weekCardDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
-                                weekCardDarkBg ? 'bg-slate-500/50 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                              }`}>
-                                {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
-                              </span>
                             </div>
                             <div className="flex flex-wrap gap-2 mt-2.5 justify-start items-center">
                               {editingLink === c.id ? (
