@@ -11,7 +11,7 @@ export default function Courses() {
   const [students, setStudents] = useState([]);
   const [professorsWithAvailability, setProfessorsWithAvailability] = useState([]);
   const [studentsWithAvailability, setStudentsWithAvailability] = useState([]);
-  const [form, setForm] = useState({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' });
+  const [form, setForm] = useState({ professorId: '', studentId: '', date: '', time: '', meetingLink: '', durationMin: '60' });
   const [error, setError] = useState('');
   const [relaunchCourse, setRelaunchCourse] = useState(null);
 
@@ -32,7 +32,7 @@ export default function Courses() {
     setError('');
     try {
       await api.post('/admin/courses', form);
-      setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' });
+      setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '', durationMin: '60' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminCourses.errorCreate'));
@@ -47,7 +47,7 @@ export default function Courses() {
 
   const openRelaunch = (c) => {
     setRelaunchCourse(c);
-    setForm({ professorId: c.professorId, studentId: c.studentId, date: '', time: '', meetingLink: '' });
+    setForm({ professorId: c.professorId, studentId: c.studentId, date: '', time: '', meetingLink: '', durationMin: String(c.durationMin || 60) });
     setError('');
   };
 
@@ -57,7 +57,7 @@ export default function Courses() {
     try {
       await api.post('/admin/courses', form);
       setRelaunchCourse(null);
-      setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' });
+      setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '', durationMin: '60' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminCourses.errorCreate'));
@@ -181,6 +181,18 @@ export default function Courses() {
                 required
               />
             </div>
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.duration')}</label>
+              <select
+                value={form.durationMin}
+                onChange={(e) => setForm((f) => ({ ...f, durationMin: e.target.value }))}
+                className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+              >
+                {[30, 45, 60, 90, 120].map((m) => (
+                  <option key={m} value={m}>{m} min</option>
+                ))}
+              </select>
+            </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.meetingLink')}</label>
               <div className="flex flex-wrap gap-2">
@@ -223,6 +235,7 @@ export default function Courses() {
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.student')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.date')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.time')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminCourses.duration')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.started')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.link')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]"></th>
@@ -235,6 +248,7 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5]">{c.durationMin || 60} min</td>
                 <td className="p-3">
                   {c.endReason === 'professor_absent' ? (
                     <span className="text-orange-600 dark:text-orange-400 font-medium">{t('dashboard.admin.endReasonProfessorAbsent')}</span>
@@ -342,7 +356,7 @@ export default function Courses() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => { setRelaunchCourse(null); setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '' }); }}
+                  onClick={() => { setRelaunchCourse(null); setForm({ professorId: '', studentId: '', date: '', time: '', meetingLink: '', durationMin: '60' }); }}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-pink-soft dark:border-white/20 text-text dark:text-[#f5f5f5] font-medium hover:bg-pink-soft/30 dark:hover:bg-white/10 transition"
                 >
                   {t('dashboard.livePage.cancel')}

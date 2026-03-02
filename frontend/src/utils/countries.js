@@ -63,3 +63,47 @@ export function getLocalDateTime(countryCode, locale = 'fr') {
   });
   return { date, time, tz };
 }
+
+/**
+ * Convert a date+time stored in Morocco timezone to a student's local timezone.
+ * Returns { date: 'YYYY-MM-DD', time: 'HH:mm', display: 'formatted string' }
+ */
+export function convertMoroccoToLocal(dateStr, timeStr, studentCountryCode, locale = 'fr') {
+  const moroccoTz = 'Africa/Casablanca';
+  const studentTz = getTimezoneByCountry(studentCountryCode);
+
+  const moroccoDate = new Date(`${dateStr}T${timeStr}:00`);
+
+  const moroccoOffset = getOffsetMinutes(moroccoDate, moroccoTz);
+  const utc = new Date(moroccoDate.getTime() + moroccoOffset * 60000);
+
+  const studentOffset = getOffsetMinutes(utc, studentTz);
+  const studentLocal = new Date(utc.getTime() - studentOffset * 60000);
+
+  const localDate = studentLocal.toLocaleDateString(locale, {
+    timeZone: studentTz,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const localTime = studentLocal.toLocaleTimeString(locale, {
+    timeZone: studentTz,
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const yyyy = String(studentLocal.getFullYear());
+  const mm = String(studentLocal.getMonth() + 1).padStart(2, '0');
+  const dd = String(studentLocal.getDate()).padStart(2, '0');
+  const hh = String(studentLocal.getHours()).padStart(2, '0');
+  const min = String(studentLocal.getMinutes()).padStart(2, '0');
+
+  return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`, displayDate: localDate, displayTime: localTime };
+}
+
+function getOffsetMinutes(date, tz) {
+  const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
+  const tzStr = date.toLocaleString('en-US', { timeZone: tz });
+  return (new Date(utcStr) - new Date(tzStr)) / 60000;
+}

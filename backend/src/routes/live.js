@@ -94,6 +94,7 @@ router.post('/live/session/start', authenticate, async (req, res) => {
     data: {
       roomName: `frenchwithus-course-${courseId}`,
       professorId: req.user.id,
+      courseId,
     },
   });
 

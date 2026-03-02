@@ -225,7 +225,7 @@ router.get('/courses', async (req, res) => {
 
 // Create course (admin assigns professor and student)
 router.post('/courses', courseCreateValidation, validate, async (req, res) => {
-  const { professorId, studentId, date, time, meetingLink } = req.body;
+  const { professorId, studentId, date, time, meetingLink, durationMin } = req.body;
   const course = await prisma.course.create({
     data: {
       professorId,
@@ -233,6 +233,7 @@ router.post('/courses', courseCreateValidation, validate, async (req, res) => {
       date,
       time,
       meetingLink: meetingLink || null,
+      durationMin: durationMin ? parseInt(durationMin, 10) : 60,
     },
     include: {
       professor: { select: { id: true, name: true } },
@@ -244,13 +245,14 @@ router.post('/courses', courseCreateValidation, validate, async (req, res) => {
 
 // Update course (e.g. change professor)
 router.put('/courses/:id', async (req, res) => {
-  const { professorId, studentId, date, time, meetingLink } = req.body;
+  const { professorId, studentId, date, time, meetingLink, durationMin } = req.body;
   const data = {};
   if (professorId !== undefined) data.professorId = professorId;
   if (studentId !== undefined) data.studentId = studentId;
   if (date !== undefined) data.date = date;
   if (time !== undefined) data.time = time;
   if (meetingLink !== undefined) data.meetingLink = meetingLink;
+  if (durationMin !== undefined) data.durationMin = parseInt(durationMin, 10);
   const course = await prisma.course.update({
     where: { id: req.params.id },
     data,
@@ -331,6 +333,109 @@ router.get('/revenue', async (req, res) => {
     _sum: { amount: true },
   });
   res.json({ total: paid._sum.amount || 0 });
+});
+
+// Student statistics overview
+router.get('/statistics', async (req, res) => {
+  const students = await prisma.user.findMany({
+    where: { role: 'STUDENT' },
+    select: { id: true, name: true, email: true, country: true },
+  });
+
+  const courses = await prisma.course.findMany({
+    select: { id: true, studentId: true, durationMin: true, date: true, time: true },
+  });
+
+  const endedSessions = await prisma.liveSession.findMany({
+    where: { endedAt: { not: null } },
+    select: { roomName: true, startedAt: true, endedAt: true, endReason: true },
+  });
+
+  const endedCourseIds = new Set();
+  const sessionDurations = {};
+  for (const s of endedSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    const cid = s.roomName.replace('frenchwithus-course-', '');
+    endedCourseIds.add(cid);
+    if (s.startedAt && s.endedAt) {
+      const mins = Math.round((new Date(s.endedAt) - new Date(s.startedAt)) / 60000);
+      sessionDurations[cid] = mins > 0 ? mins : 0;
+    }
+  }
+
+  const stats = students.map((st) => {
+    const studentCourses = courses.filter((c) => c.studentId === st.id);
+    const attendedCourses = studentCourses.filter((c) => endedCourseIds.has(c.id));
+    const totalLessons = attendedCourses.length;
+    let totalMinutes = 0;
+    for (const c of attendedCourses) {
+      totalMinutes += sessionDurations[c.id] ?? c.durationMin;
+    }
+    return {
+      id: st.id,
+      name: st.name,
+      email: st.email,
+      country: st.country,
+      totalLessons,
+      totalMinutes,
+      totalCourses: studentCourses.length,
+    };
+  });
+
+  res.json(stats);
+});
+
+// Session history for a specific student
+router.get('/students/:id/sessions', async (req, res) => {
+  const studentId = req.params.id;
+
+  const courses = await prisma.course.findMany({
+    where: { studentId },
+    select: {
+      id: true,
+      date: true,
+      time: true,
+      durationMin: true,
+      isStarted: true,
+      absenceReason: true,
+      professor: { select: { id: true, name: true } },
+    },
+    orderBy: [{ date: 'desc' }, { time: 'desc' }],
+  });
+
+  const endedSessions = await prisma.liveSession.findMany({
+    where: { endedAt: { not: null } },
+    select: { roomName: true, startedAt: true, endedAt: true, endReason: true },
+  });
+
+  const sessionMap = {};
+  for (const s of endedSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    const cid = s.roomName.replace('frenchwithus-course-', '');
+    if (!sessionMap[cid]) {
+      const mins = s.startedAt && s.endedAt
+        ? Math.round((new Date(s.endedAt) - new Date(s.startedAt)) / 60000)
+        : 0;
+      sessionMap[cid] = { actualMin: mins > 0 ? mins : 0, endReason: s.endReason };
+    }
+  }
+
+  const sessions = courses.map((c) => {
+    const session = sessionMap[c.id];
+    const attended = !!session;
+    return {
+      courseId: c.id,
+      date: c.date,
+      time: c.time,
+      durationMin: c.durationMin,
+      professor: c.professor,
+      attended,
+      actualMin: session?.actualMin ?? 0,
+      endReason: session?.endReason || c.absenceReason || null,
+    };
+  });
+
+  res.json(sessions);
 });
 
 export default router;

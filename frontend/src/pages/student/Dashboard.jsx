@@ -6,7 +6,7 @@ import Calendar from '../../components/Calendar';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { formatTimeAMPM, formatProfessorName } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
-import { getLocalDateTime } from '../../utils/countries';
+import { getLocalDateTime, convertMoroccoToLocal } from '../../utils/countries';
 import COUNTRIES from '../../utils/countries';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -75,12 +75,15 @@ function categorizeCourses(courses) {
   return { upcoming, live, past };
 }
 
-function CourseCard({ course, variant, onJoin, onViewRecording, highlighted }) {
+function CourseCard({ course, variant, onJoin, onViewRecording, highlighted, localInfo }) {
   const { t } = useTranslation();
   const professorName = course.professor?.name ? formatProfessorName(course.professor.name) : t('dashboard.student.frenchCourse');
-  const timeStr = course.time ? formatTimeAMPM(course.time) : '';
   const borderClass = highlighted ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-pink-soft/50 dark:border-white/10';
   const liveBorder = variant === 'live' ? 'border-green-500/50 dark:border-green-400/50' : borderClass;
+
+  const displayDate = localInfo ? localInfo.displayDate : course.date;
+  const displayTime = localInfo ? localInfo.displayTime : (course.time ? formatTimeAMPM(course.time) : '');
+  const durationMin = course.durationMin || 60;
 
   return (
     <div
@@ -101,7 +104,10 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted }) {
             )}
           </p>
           <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">
-            {course.date} {t('dashboard.student.at')} {timeStr}
+            {displayDate} {t('dashboard.student.at')} {displayTime}
+          </p>
+          <p className="text-xs text-text/40 dark:text-[#f5f5f5]/40 mt-0.5">
+            {durationMin} min
           </p>
           {course.endReason === 'professor_absent' && (
             <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mt-1">{t('dashboard.admin.endReasonProfessorAbsent')}</p>
@@ -130,6 +136,11 @@ export default function StudentDashboard() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [user?.country, i18n.language]);
+
+  const getLocalInfo = (c) => {
+    if (!user?.country || !c?.date || !c?.time) return null;
+    return convertMoroccoToLocal(c.date, c.time, user.country, i18n.language);
+  };
 
   const { upcoming, live, past } = categorizeCourses(courses);
 
@@ -327,7 +338,7 @@ export default function StudentDashboard() {
           <div className="space-y-3">
             {live.map((c) => (
               <div key={c.id} id={`course-${c.id}`}>
-                <CourseCard course={c} variant="live" onJoin={renderJoinButton} highlighted={highlightedId === c.id} />
+                <CourseCard course={c} variant="live" onJoin={renderJoinButton} highlighted={highlightedId === c.id} localInfo={getLocalInfo(c)} />
               </div>
             ))}
           </div>
@@ -345,7 +356,7 @@ export default function StudentDashboard() {
           <div className="space-y-3">
             {upcoming.map((c) => (
               <div key={c.id} id={`course-${c.id}`}>
-                <CourseCard course={c} variant="upcoming" onJoin={renderJoinButton} highlighted={highlightedId === c.id} />
+                <CourseCard course={c} variant="upcoming" onJoin={renderJoinButton} highlighted={highlightedId === c.id} localInfo={getLocalInfo(c)} />
               </div>
             ))}
           </div>
@@ -363,7 +374,7 @@ export default function StudentDashboard() {
           <div className="space-y-3">
             {past.map((c) => (
               <div key={c.id} id={`course-${c.id}`}>
-                <CourseCard course={c} variant="past" onViewRecording={renderRecordingButton} highlighted={highlightedId === c.id} />
+                <CourseCard course={c} variant="past" onViewRecording={renderRecordingButton} highlighted={highlightedId === c.id} localInfo={getLocalInfo(c)} />
               </div>
             ))}
           </div>

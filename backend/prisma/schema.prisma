@@ -62,8 +62,9 @@ model Course {
   id             String   @id @default(cuid())
   professorId    String
   studentId      String
-  date           String   // YYYY-MM-DD
-  time           String   // HH:mm
+  date           String   // YYYY-MM-DD (Morocco time)
+  time           String   // HH:mm (Morocco time)
+  durationMin    Int      @default(60) // lesson duration in minutes
   meetingLink    String?
   isStarted      Boolean  @default(false)
   recordingLink  String?
@@ -100,6 +101,7 @@ model LiveSession {
   id            String    @id @default(cuid())
   roomName      String
   professorId   String
+  courseId       String?   // links session to a course for attendance tracking
   startedAt     DateTime  @default(now())
   endedAt       DateTime?
   recordingUrl  String?
