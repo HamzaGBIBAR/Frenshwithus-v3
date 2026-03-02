@@ -181,15 +181,16 @@ export default function ProfessorCourses() {
 
   const courseEvents = courses.map((c) => {
     const d = new Date(`${c.date}T${c.time}`);
-    // Rester en couleur active jusqu'à ce que le prof termine la réunion
     const isPast = c.sessionEnded || c.endReason === 'professor_absent';
     return {
       id: c.id,
       date: c.date,
       title: c.student?.name ? `${t('dashboard.admin.student')} ${c.student.name}` : t('dashboard.professor.course'),
       time: formatTimeAMPM(c.time),
+      rawTime: c.time,
       type: 'course',
       isPast,
+      isStarted: c.isStarted,
     };
   });
 
@@ -521,6 +522,8 @@ export default function ProfessorCourses() {
           onSelectEvent={(evt) => {
             if (evt.type !== 'course') return;
             if (evt.isPast) return;
+            const courseStart = new Date(`${evt.date}T${evt.rawTime}`).getTime();
+            if (!evt.isStarted && Date.now() < courseStart) return;
             navigate(`/live?courseId=${evt.id}`);
           }}
           viewMode="mois"
