@@ -5,6 +5,9 @@ import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { formatTimeAMPM, formatProfessorName } from '../../utils/format';
+import { useAuth } from '../../context/AuthContext';
+import { getLocalDateTime } from '../../utils/countries';
+import COUNTRIES from '../../utils/countries';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 const POLL_INTERVAL_MS = 15000;
@@ -109,10 +112,20 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted }) {
 }
 
 export default function StudentDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   const { courses, payments, loading, error, fetchCourses, fetchAll } = useStudentData();
   const [selectedDate, setSelectedDate] = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
+  const [localTime, setLocalTime] = useState(() => user?.country ? getLocalDateTime(user.country, i18n.language) : null);
+
+  useEffect(() => {
+    if (!user?.country) return;
+    const tick = () => setLocalTime(getLocalDateTime(user.country, i18n.language));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [user?.country, i18n.language]);
 
   const { upcoming, live, past } = categorizeCourses(courses);
 
@@ -229,6 +242,25 @@ export default function StudentDashboard() {
         <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5]">{t('dashboard.student.title')}</h1>
         <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mt-1">{t('dashboard.student.subtitle')}</p>
       </header>
+
+      {localTime && user?.country && (
+        <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-pink-soft/40 to-pink-soft/10 dark:from-pink-500/15 dark:to-pink-500/5 border border-pink-soft/50 dark:border-pink-400/20 shadow-pink-soft dark:shadow-lg transition-all duration-500">
+          <div className="w-12 h-12 rounded-xl bg-pink-primary/15 dark:bg-pink-400/15 flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" strokeWidth="2" />
+              <path strokeLinecap="round" strokeWidth="2" d="M12 6v6l4 2" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-lg font-bold font-mono text-pink-primary dark:text-pink-400 tracking-tight tabular-nums">{localTime.time}</p>
+            <p className="text-sm text-text/70 dark:text-[#f5f5f5]/70 capitalize truncate">{localTime.date}</p>
+          </div>
+          <div className="hidden sm:block text-right shrink-0">
+            <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{COUNTRIES.find((c) => c.code === user.country)?.name}</p>
+            <p className="text-[10px] text-text/40 dark:text-[#f5f5f5]/40 font-mono">{localTime.tz}</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

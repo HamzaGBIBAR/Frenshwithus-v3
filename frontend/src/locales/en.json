@@ -337,7 +337,9 @@
       "deleteConfirm": "Delete this student?",
       "edit": "Edit",
       "actions": "Actions",
-      "errorDefault": "Error"
+      "errorDefault": "Error",
+      "selectCountry": "Country",
+      "country": "Country"
     },
     "adminProfessors": {
       "title": "Professors",

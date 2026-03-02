@@ -66,6 +66,7 @@ router.get('/students', async (req, res) => {
       name: true,
       email: true,
       professorId: true,
+      country: true,
       professor: { select: { id: true, name: true } },
     },
   });
@@ -73,25 +74,28 @@ router.get('/students', async (req, res) => {
 });
 
 router.post('/students', userCreateValidation, validate, async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, country } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
+  const data = { name, email, password: hashPassword(password), role: 'STUDENT' };
+  if (country) data.country = country;
   const user = await prisma.user.create({
-    data: { name, email, password: hashPassword(password), role: 'STUDENT' },
-    select: { id: true, name: true, email: true },
+    data,
+    select: { id: true, name: true, email: true, country: true },
   });
   res.json(user);
 });
 
 router.put('/students/:id', userUpdateValidation, validate, async (req, res) => {
-  const { name, email, password, professorId } = req.body;
+  const { name, email, password, professorId, country } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);
   if (professorId !== undefined) data.professorId = professorId || null;
+  if (country !== undefined) data.country = country || null;
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'STUDENT' },
     data,
-    select: { id: true, name: true, email: true, professorId: true },
+    select: { id: true, name: true, email: true, professorId: true, country: true },
   });
   res.json(user);
 });

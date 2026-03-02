@@ -28,6 +28,7 @@ router.get('/me', authenticate, async (req, res) => {
       professorId: true,
       createdAt: true,
       avatarUrl: true,
+      country: true,
       professor: { select: { id: true, name: true } },
     },
   });

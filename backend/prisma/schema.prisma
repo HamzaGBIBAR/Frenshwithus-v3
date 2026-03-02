@@ -16,6 +16,7 @@ model User {
   password  String
   role      String   // ADMIN, PROFESSOR, STUDENT
   avatarUrl String?  @db.Text
+  country   String?  // ISO country code (e.g. "MA", "FR", "US")
   createdAt DateTime @default(now())
 
   // Professor: courses they teach

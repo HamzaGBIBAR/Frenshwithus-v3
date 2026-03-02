@@ -337,7 +337,9 @@
       "deleteConfirm": "Supprimer cet élève ?",
       "edit": "Modifier",
       "actions": "Actions",
-      "errorDefault": "Erreur"
+      "errorDefault": "Erreur",
+      "selectCountry": "Pays",
+      "country": "Pays"
     },
     "adminProfessors": {
       "title": "Professeurs",
