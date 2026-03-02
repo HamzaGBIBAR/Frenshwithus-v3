@@ -2,6 +2,7 @@
   "nav": {
     "login": "登录",
     "dashboard": "控制面板",
+    "logout": "退出登录",
     "tagline": "法语学习"
   },
   "profile": {

@@ -2,6 +2,7 @@
   "nav": {
     "login": "Login",
     "dashboard": "Dashboard",
+    "logout": "Logout",
     "tagline": "French learning"
   },
   "profile": {

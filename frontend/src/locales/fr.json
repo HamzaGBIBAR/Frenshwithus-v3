@@ -2,6 +2,7 @@
   "nav": {
     "login": "Connexion",
     "dashboard": "Tableau de bord",
+    "logout": "Déconnexion",
     "tagline": "Apprentissage du français"
   },
   "profile": {

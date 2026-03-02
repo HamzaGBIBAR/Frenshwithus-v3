@@ -2,6 +2,7 @@ import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
+import LogoutButton from './LogoutButton';
 import AnimatedEye from './AnimatedEye';
 
 export default function Sidebar({ items, open = false, onClose, onProfileClick }) {
@@ -71,12 +72,7 @@ export default function Sidebar({ items, open = false, onClose, onProfileClick }
         <div className="p-3 md:p-4 border-t border-pink-soft/50 dark:border-white/10 space-y-2">
           <LanguageSwitcher className="w-full justify-center" />
           <ThemeToggle className="w-full justify-center" />
-          <button
-            onClick={handleLogout}
-            className="w-full px-3 md:px-4 py-2.5 text-left rounded-xl hover:bg-pink-soft/40 dark:hover:bg-white/5 text-text/70 dark:text-[#f5f5f5]/70 hover:text-pink-dark dark:hover:text-pink-400 transition text-sm md:text-base"
-          >
-            Logout
-          </button>
+          <LogoutButton onClick={handleLogout} />
         </div>
       </aside>
     </>
