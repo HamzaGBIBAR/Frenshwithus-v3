@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +15,6 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,9 +23,9 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       login(data);
-      // Redirection après mise à jour du state (évite écran noir / redirect loop)
       const path = data.user.role === 'ADMIN' ? '/admin' : data.user.role === 'PROFESSOR' ? '/professor' : data.user.role === 'STUDENT' ? '/student' : '/';
-      setTimeout(() => navigate(path, { replace: true }), 0);
+      // Redirection complète pour garantir cookies + auth state corrects
+      window.location.href = path;
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {
