@@ -667,9 +667,9 @@ export default function ProfessorCourses() {
                           >
                             <div className="space-y-1.5">
                               <StudentNameTooltip student={c.student} className={`font-semibold text-sm leading-snug break-words block cursor-default ${weekTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
-                              <div className="flex items-center justify-between gap-2">
+                              <div className="flex flex-col gap-1">
                                 <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
-                                <span className={`shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${
+                                <span className={`inline-block w-fit px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${
                                   status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white animate-pulse' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 animate-pulse') :
                                   status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
                                   status === 'upcoming' ? (weekCardDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
