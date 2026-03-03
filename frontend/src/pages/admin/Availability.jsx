@@ -6,14 +6,15 @@ import { formatTimeAMPM } from '../../utils/format';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
-const REFERENCE_MONDAY_UTC = new Date(Date.UTC(2026, 0, 5)); // Monday
 
 function dateStrFromDayOfWeek(dayOfWeek) {
-  const d = new Date(REFERENCE_MONDAY_UTC);
-  d.setUTCDate(d.getUTCDate() + (dayOfWeek - 1));
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const targetJsDay = dayOfWeek === 7 ? 0 : dayOfWeek; // 1..7 (Mon..Sun) -> JS day
+  const d = new Date();
+  const diff = (targetJsDay - d.getDay() + 7) % 7;
+  d.setDate(d.getDate() + diff);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
 }
 
