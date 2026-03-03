@@ -463,7 +463,8 @@
       "countdownTooltip": "Temps restant avant la fin du cours (15 min)",
       "startDisabledTooltip": "Le cours peut être démarré à l'heure prévue",
       "dayViewSoon": "Vue Jour (bientôt disponible)",
-      "noClassesDay": "Aucun cours ni créneau ce jour"
+      "noClassesDay": "Aucun cours ni créneau ce jour",
+      "clockCountry": "Pays pour l'heure affichée"
     },
     "livePage": {
       "title": "Cours en direct",
@@ -514,7 +515,8 @@
       "upcomingCourses": "Prochains cours",
       "pastCourses": "Cours passés",
       "frenchCourse": "Cours de français",
-      "at": "à"
+      "at": "à",
+      "moroccoTime": "Heure Maroc"
     }
   }
 }

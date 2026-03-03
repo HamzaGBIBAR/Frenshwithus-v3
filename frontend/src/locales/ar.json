@@ -463,7 +463,8 @@
       "countdownTooltip": "الوقت المتبقي حتى نهاية الدرس (١٥ دقيقة)",
       "startDisabledTooltip": "يمكن بدء الدرس في الوقت المحدد",
       "dayViewSoon": "عرض اليوم (قريباً)",
-      "noClassesDay": "لا توجد دروس أو مواعيد في هذا اليوم"
+      "noClassesDay": "لا توجد دروس أو مواعيد في هذا اليوم",
+      "clockCountry": "الدولة لعرض الوقت"
     },
     "student": {
       "title": "دروسي",
@@ -489,7 +490,8 @@
       "upcomingCourses": "الدروس القادمة",
       "pastCourses": "الدروس السابقة",
       "frenchCourse": "درس فرنسي",
-      "at": "في"
+      "at": "في",
+      "moroccoTime": "توقيت المغرب"
     }
   }
 }

@@ -248,6 +248,11 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                               <span className="font-semibold">{evt.time}</span>
                               <span className="opacity-90 mx-1.5">·</span>
                               {evt.title}
+                              {evt.hoverDetails && (
+                                <div className="mt-1 text-[11px] font-medium opacity-90 whitespace-normal">
+                                  {evt.hoverDetails}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -333,6 +338,11 @@ export default function Calendar({ events = [], selectedDate, onSelectDate, onSe
                                 <span className="font-semibold">{evt.time}</span>
                                 <span className="opacity-90 mx-1.5">·</span>
                                 {evt.title}
+                                {evt.hoverDetails && (
+                                  <div className="mt-1 text-[11px] font-medium opacity-90 whitespace-normal">
+                                    {evt.hoverDetails}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>

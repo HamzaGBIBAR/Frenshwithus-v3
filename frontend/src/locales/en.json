@@ -463,7 +463,8 @@
       "countdownTooltip": "Time remaining until course ends (15 min)",
       "startDisabledTooltip": "The course can be started at the scheduled time",
       "dayViewSoon": "Day view (coming soon)",
-      "noClassesDay": "No classes or slots this day"
+      "noClassesDay": "No classes or slots this day",
+      "clockCountry": "Country for displayed time"
     },
     "livePage": {
       "title": "Live lesson",
@@ -514,7 +515,8 @@
       "upcomingCourses": "Upcoming courses",
       "pastCourses": "Past courses",
       "frenchCourse": "French course",
-      "at": "at"
+      "at": "at",
+      "moroccoTime": "Morocco time"
     }
   }
 }

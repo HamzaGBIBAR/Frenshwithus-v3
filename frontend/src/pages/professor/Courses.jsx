@@ -119,9 +119,16 @@ export default function ProfessorCourses() {
   const [showOtherProfs, setShowOtherProfs] = useState(true);
   const [calendarStyle, setCalendarStyle] = useState(getCalendarStyle);
   const [now, setNow] = useState(() => new Date());
+  const [selectedClockCountry, setSelectedClockCountry] = useState('MA');
+  const [clockAnimKey, setClockAnimKey] = useState(0);
   const weekViewRef = useRef(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user?.country) return;
+    setSelectedClockCountry((prev) => prev || user.country);
+  }, [user?.country]);
 
   useEffect(() => {
     const tick = () => setNow(new Date());
@@ -289,8 +296,14 @@ export default function ProfessorCourses() {
     };
   });
 
-  const dateFormatted = now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const timeFormatted = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const selectedCountryName = useMemo(
+    () => COUNTRIES.find((c) => c.code === selectedClockCountry)?.name || selectedClockCountry,
+    [selectedClockCountry]
+  );
+  const localClock = useMemo(
+    () => getLocalDateTime(selectedClockCountry, locale),
+    [selectedClockCountry, locale, now]
+  );
 
   // Day view: selected date data
   const dayViewDateObj = new Date(dayViewDate + 'T12:00:00');
@@ -421,22 +434,55 @@ export default function ProfessorCourses() {
       </div>
 
       {/* Today's date & time - live clock for teachers */}
-      <div className="mb-6 flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-pink-soft/50 to-pink-soft/20 dark:from-pink-500/15 dark:to-pink-500/5 border border-pink-soft/50 dark:border-pink-400/20 shadow-pink-soft dark:shadow-lg overflow-hidden animate-fade-in transition-all duration-500 hover:shadow-md hover:border-pink-soft/70 dark:hover:border-pink-400/30">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-pink-soft/50 to-pink-soft/20 dark:from-pink-500/15 dark:to-pink-500/5 border border-pink-soft/50 dark:border-pink-400/20 shadow-pink-soft dark:shadow-lg overflow-hidden animate-fade-in transition-all duration-500 hover:shadow-md hover:border-pink-soft/70 dark:hover:border-pink-400/30">
         <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-pink-primary/15 dark:bg-pink-400/15 shrink-0">
           <svg className="w-7 h-7 text-pink-primary dark:text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
-        <div className="flex-1 min-w-0">
+        <div key={clockAnimKey} className="flex-1 min-w-0 animate-fade-in">
           <p className="text-xs font-medium uppercase tracking-wider text-pink-primary dark:text-pink-400 mb-0.5">
             {t('calendar.today')}
           </p>
           <p className="text-lg font-semibold text-text dark:text-[#f5f5f5] capitalize">
-            {dateFormatted}
+            {localClock.date}
           </p>
           <p className="text-lg font-mono font-bold text-pink-primary dark:text-pink-400 tabular-nums transition-all duration-300">
-            {timeFormatted}
+            {localClock.time}
+          </p>
+        </div>
+        <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[340px] md:ml-auto">
+          <label className="block text-xs font-medium text-text/70 dark:text-[#f5f5f5]/70 mb-1.5">
+            {t('dashboard.professor.clockCountry')}
+          </label>
+          <div className="relative">
+            <select
+              value={selectedClockCountry}
+              onChange={(e) => {
+                setSelectedClockCountry(e.target.value);
+                setClockAnimKey((k) => k + 1);
+              }}
+              className="w-full appearance-none px-3.5 py-2.5 pr-10 rounded-xl border border-pink-soft/70 dark:border-white/20 bg-white/70 dark:bg-[#151515]/80 text-sm text-text dark:text-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-pink-primary/40 dark:focus:ring-pink-400/50 transition-all duration-300"
+            >
+              {COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+            <svg
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-primary dark:text-pink-400"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M6 8l4 4 4-4" />
+            </svg>
+          </div>
+          <p className="mt-1.5 text-[11px] text-text/50 dark:text-[#f5f5f5]/50">
+            {selectedCountryName} · {localClock.tz}
           </p>
         </div>
       </div>

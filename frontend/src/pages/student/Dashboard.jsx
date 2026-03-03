@@ -168,11 +168,13 @@ export default function StudentDashboard() {
     if (!c?.date || !c?.time) return null;
     const d = new Date(`${c.date}T${c.time}`);
     const sessionEnded = c.isStarted && c.sessionEnded;
+    const localInfo = getLocalInfo(c);
     return {
       id: c.id,
-      date: c.date,
+      date: localInfo?.date || c.date,
       title: c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse'),
-      time: formatTimeAMPM(c.time),
+      time: localInfo?.displayTime || formatTimeAMPM(c.time),
+      hoverDetails: `${t('dashboard.student.moroccoTime')}: ${c.date} ${formatTimeAMPM(c.time)}`,
       type: 'course',
       isPast: sessionEnded || !!c.endReason,
     };
