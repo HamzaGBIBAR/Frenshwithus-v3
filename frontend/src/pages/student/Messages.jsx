@@ -178,7 +178,6 @@ export default function StudentMessages() {
                       </svg>
                     </button>
                     {openMenuId === m.id && (
-                      <div className="absolute right-1.5 top-8 z-10 bg-white border border-pink-soft/40 rounded-lg shadow-lg min-w-[120px]">
                       <div className="absolute right-1.5 top-8 z-10 bg-white dark:bg-[#1a1a1a] border border-pink-soft/40 dark:border-white/10 rounded-lg shadow-lg min-w-[120px]">
                         {m.senderId !== user.id && !m.isSeen && (
                           <button
@@ -214,7 +213,6 @@ export default function StudentMessages() {
                         {m.attachmentName || 'Attachment'}
                       </a>
                     )}
-                    <p className="text-xs opacity-70 mt-1">{new Date(m.createdAt).toLocaleString()}</p>
                     <p className="text-xs opacity-70 mt-1">{formatMessageDate(m.createdAt)}</p>
                     {m.senderId === user.id && (
                       <p className="text-[10px] opacity-80 mt-0.5">
