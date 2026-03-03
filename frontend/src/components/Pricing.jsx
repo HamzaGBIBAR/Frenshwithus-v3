@@ -55,7 +55,11 @@ export default function Pricing() {
             visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
-          {t('pricing.title')}
+          {t('pricing.titlePrefix')}
+          <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-pink-dark to-pink-primary dark:from-pink-500 dark:to-pink-400 text-white font-bold shadow-pink-soft">
+            {t('pricing.titleHighlight')}
+          </span>
+          {t('pricing.titleSuffix')}
         </h2>
         <p
           className={`text-text/70 dark:text-[#f5f5f5]/70 text-center text-sm mb-8 transition-all duration-500 ${
@@ -162,10 +166,10 @@ export default function Pricing() {
 
               <Link
                 to={getCtaLink()}
-                className={`block w-full py-2.5 rounded-xl text-center font-medium transition-all duration-300 btn-hover ${
+                className={`block w-full py-2.5 rounded-xl text-center font-medium transition-all duration-300 btn-hover shadow-pink-soft ${
                   plan.highlight
                     ? 'bg-white/90 dark:bg-white/10 backdrop-blur-sm text-pink-dark dark:text-[#f5f5f5] border-2 border-white/60 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 hover:border-white'
-                    : 'bg-pink-primary/90 dark:bg-pink-400/80 backdrop-blur-sm text-white hover:bg-pink-primary dark:hover:bg-pink-400 btn-glow'
+                    : 'bg-gradient-to-r from-pink-dark to-pink-primary dark:from-pink-500 dark:to-pink-400 text-white hover:from-pink-primary hover:to-pink-dark dark:hover:from-pink-400 dark:hover:to-pink-600 btn-glow'
                 }`}
               >
                 {t('pricing.freeSession')}

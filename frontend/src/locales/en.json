@@ -172,6 +172,9 @@
   },
   "pricing": {
     "title": "Simple Pricing",
+    "titlePrefix": "Simple ",
+    "titleHighlight": "Pricing",
+    "titleSuffix": "",
     "subtitle": "Each pack is designed to optimize your learning experience.",
     "monthly": "Monthly",
     "annual": "Annual",

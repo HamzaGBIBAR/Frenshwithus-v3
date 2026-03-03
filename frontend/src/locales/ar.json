@@ -172,6 +172,9 @@
   },
   "pricing": {
     "title": "تسعير بسيط",
+    "titlePrefix": "",
+    "titleHighlight": "تسعير",
+    "titleSuffix": " بسيط",
     "subtitle": "كل باقة مصممة لتحسين تجربة التعلم لديك.",
     "monthly": "شهري",
     "annual": "سنوي",

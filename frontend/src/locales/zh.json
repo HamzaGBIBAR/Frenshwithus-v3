@@ -172,6 +172,9 @@
   },
   "pricing": {
     "title": "简单定价",
+    "titlePrefix": "简单",
+    "titleHighlight": "定价",
+    "titleSuffix": "",
     "subtitle": "每个套餐旨在优化您的学习体验。",
     "monthly": "月付",
     "annual": "年付",

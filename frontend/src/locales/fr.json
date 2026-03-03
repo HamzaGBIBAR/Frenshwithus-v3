@@ -172,6 +172,9 @@
   },
   "pricing": {
     "title": "Tarification Simple",
+    "titlePrefix": "",
+    "titleHighlight": "Tarification",
+    "titleSuffix": " Simple",
     "subtitle": "Chaque pack est conçu pour optimiser votre expérience d'apprentissage.",
     "monthly": "Mensuel",
     "annual": "Annuel",
