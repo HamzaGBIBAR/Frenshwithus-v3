@@ -264,30 +264,42 @@ router.get('/planning/availability-all', async (req, res) => {
 // Update meeting link
 router.put('/courses/:id/meeting-link', async (req, res) => {
   const { meetingLink } = req.body;
-  const course = await prisma.course.update({
+  const course = await prisma.course.findFirst({
     where: { id: req.params.id, professorId: req.user.id },
+  });
+  if (!course) return res.status(404).json({ error: 'Course not found' });
+  const updated = await prisma.course.update({
+    where: { id: course.id },
     data: { meetingLink },
   });
-  res.json(course);
+  res.json(updated);
 });
 
 // Start course
 router.put('/courses/:id/start', async (req, res) => {
-  const course = await prisma.course.update({
+  const course = await prisma.course.findFirst({
     where: { id: req.params.id, professorId: req.user.id },
+  });
+  if (!course) return res.status(404).json({ error: 'Course not found' });
+  const updated = await prisma.course.update({
+    where: { id: course.id },
     data: { isStarted: true },
   });
-  res.json(course);
+  res.json(updated);
 });
 
 // Add recording link
 router.put('/courses/:id/recording', async (req, res) => {
   const { recordingLink } = req.body;
-  const course = await prisma.course.update({
+  const course = await prisma.course.findFirst({
     where: { id: req.params.id, professorId: req.user.id },
+  });
+  if (!course) return res.status(404).json({ error: 'Course not found' });
+  const updated = await prisma.course.update({
+    where: { id: course.id },
     data: { recordingLink },
   });
-  res.json(course);
+  res.json(updated);
 });
 
 // Students: all students (assigned ones listed first, so prof can message anyone)

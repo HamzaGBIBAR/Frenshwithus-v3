@@ -175,17 +175,27 @@ export default function ProfessorCourses() {
   };
 
   const saveMeetingLink = async (id) => {
-    await api.put(`/professor/courses/${id}/meeting-link`, { meetingLink: linkValue });
-    setEditingLink(null);
-    setLinkValue('');
-    load();
+    try {
+      await api.put(`/professor/courses/${id}/meeting-link`, { meetingLink: linkValue });
+      setEditingLink(null);
+      setLinkValue('');
+      load();
+    } catch (err) {
+      console.error('saveMeetingLink error:', err);
+      alert(t('dashboard.professor.linkSaveError') || 'Erreur lors de la sauvegarde du lien');
+    }
   };
 
   const saveRecording = async (id) => {
-    await api.put(`/professor/courses/${id}/recording`, { recordingLink: recordingValue });
-    setRecordingFor(null);
-    setRecordingValue('');
-    load();
+    try {
+      await api.put(`/professor/courses/${id}/recording`, { recordingLink: recordingValue });
+      setRecordingFor(null);
+      setRecordingValue('');
+      load();
+    } catch (err) {
+      console.error('saveRecording error:', err);
+      alert(t('dashboard.professor.recordingSaveError') || "Erreur lors de la sauvegarde de l'enregistrement");
+    }
   };
 
   const openEditLink = (c) => {

@@ -27,14 +27,13 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const panelRef = useRef(null);
   const navigate = useNavigate();
-
   const hasUnread = unreadCount > 0;
 
   const loadNotifications = () =>
     api.get('/notifications').then((r) => {
       setItems(r.data?.notifications || []);
       setUnreadCount(r.data?.unreadCount || 0);
-    });
+    }).catch(() => {});
 
   useEffect(() => {
     loadNotifications();
@@ -70,6 +69,13 @@ export default function NotificationBell() {
     loadNotifications();
   };
 
+  const archiveAll = async () => {
+    for (const n of items) {
+      await api.delete(`/notifications/${n.id}`).catch(() => {});
+    }
+    loadNotifications();
+  };
+
   return (
     <div className="relative" ref={panelRef}>
       <button
@@ -94,13 +100,24 @@ export default function NotificationBell() {
         <div className="absolute right-0 mt-3 w-[340px] max-w-[90vw] z-50 rounded-2xl border border-pink-soft/50 dark:border-white/10 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-xl shadow-2xl animate-fade-in overflow-hidden">
           <div className="px-4 py-3 border-b border-pink-soft/40 dark:border-white/10 flex items-center justify-between">
             <h3 className="font-semibold text-text dark:text-[#f5f5f5]">Notifications</h3>
-            <button
-              type="button"
-              onClick={markAllRead}
-              className="text-xs text-pink-primary dark:text-pink-300 hover:underline"
-            >
-              Tout lire
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="text-xs text-pink-primary dark:text-pink-300 hover:underline"
+              >
+                Tout lire
+              </button>
+              {items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={archiveAll}
+                  className="text-xs text-red-500 dark:text-red-400 hover:underline"
+                >
+                  Tout supprimer
+                </button>
+              )}
+            </div>
           </div>
           <div className="max-h-[420px] overflow-y-auto">
             {sortedItems.length === 0 ? (
@@ -129,7 +146,7 @@ export default function NotificationBell() {
                         {new Date(n.createdAt).toLocaleString()}
                       </p>
                     </button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {!n.isRead && (
                         <button
                           type="button"
@@ -142,9 +159,13 @@ export default function NotificationBell() {
                       <button
                         type="button"
                         onClick={() => archiveNotification(n.id)}
-                        className="text-[11px] text-text/60 dark:text-[#f5f5f5]/60 hover:underline"
+                        className="w-6 h-6 flex items-center justify-center rounded-full text-text/50 dark:text-[#f5f5f5]/50 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        title="Supprimer"
                       >
-                        Archiver
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
                       </button>
                     </div>
                   </div>

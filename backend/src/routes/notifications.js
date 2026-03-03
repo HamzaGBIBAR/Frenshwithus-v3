@@ -80,6 +80,7 @@ async function generateProfessorNotifications(userId) {
   const now = new Date();
   const in24h = new Date(now.getTime() + DAY_MS);
   const today = now.toISOString().slice(0, 10);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * DAY_MS);
 
   const [courses, unreadMessages] = await Promise.all([
     prisma.course.findMany({
@@ -95,6 +96,18 @@ async function generateProfessorNotifications(userId) {
       orderBy: { createdAt: 'desc' },
     }),
   ]);
+
+  for (const c of courses) {
+    if (c.createdAt >= sevenDaysAgo) {
+      await ensureNotification(userId, {
+        dedupeKey: `prof-new-course-${c.id}`,
+        title: 'Nouveau cours assigne',
+        body: `${c.student?.name || 'Eleve'} - ${c.date} ${c.time}`,
+        type: 'info',
+        link: '/professor/courses',
+      });
+    }
+  }
 
   const upcoming = courses.filter((c) => {
     const dt = parseCourseDateTime(c);
@@ -136,6 +149,7 @@ async function generateStudentNotifications(userId) {
   const now = new Date();
   const in24h = new Date(now.getTime() + DAY_MS);
   const today = now.toISOString().slice(0, 10);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * DAY_MS);
 
   const [courses, unreadMessages, unpaid] = await Promise.all([
     prisma.course.findMany({
@@ -156,6 +170,18 @@ async function generateStudentNotifications(userId) {
       take: 5,
     }),
   ]);
+
+  for (const c of courses) {
+    if (c.createdAt >= sevenDaysAgo) {
+      await ensureNotification(userId, {
+        dedupeKey: `student-new-course-${c.id}`,
+        title: 'Nouveau cours programme',
+        body: `${c.professor?.name || 'Prof'} - ${c.date} ${c.time}`,
+        type: 'info',
+        link: '/student',
+      });
+    }
+  }
 
   const upcoming = courses.filter((c) => {
     const dt = parseCourseDateTime(c);
