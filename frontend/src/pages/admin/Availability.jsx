@@ -64,10 +64,10 @@ export default function AdminAvailability() {
 
   const selectedStudentData = students.find((s) => s.id === selectedStudent) || null;
   const selectedStudentCountry = selectedStudentData?.country || null;
-  const selectedStudentCountryName = useMemo(
-    () => COUNTRIES.find((c) => c.code === selectedStudentCountry)?.name || selectedStudentCountry,
-    [selectedStudentCountry]
-  );
+  const selectedStudentCountryName = useMemo(() => {
+    const found = COUNTRIES.find((c) => c.code === selectedStudentCountry);
+    return found?.name || selectedStudentCountry;
+  }, [selectedStudentCountry]);
   const selectedStudentTz = useMemo(
     () => (selectedStudentCountry ? getTimezoneByCountry(selectedStudentCountry) : null),
     [selectedStudentCountry]
@@ -78,11 +78,17 @@ export default function AdminAvailability() {
     return `${timeStr} (${formatTimeAMPM(timeStr)})`;
   };
 
-  const getStudentLocalSlot = (slot) => {
-    if (!selectedStudentTz) return null;
+  const getStudentCountryName = (countryCode) => {
+    if (!countryCode) return '-';
+    const found = COUNTRIES.find((c) => c.code === countryCode);
+    return found?.name || countryCode;
+  };
+
+  const getStudentLocalSlot = (slot, studentTz) => {
+    if (!studentTz) return null;
     const dateStr = dateStrFromDayOfWeek(slot.dayOfWeek);
-    const localStart = convertTimeBetweenTimezones(dateStr, slot.startTime, MOROCCO_TZ, selectedStudentTz);
-    const localEnd = convertTimeBetweenTimezones(dateStr, slot.endTime, MOROCCO_TZ, selectedStudentTz);
+    const localStart = convertTimeBetweenTimezones(dateStr, slot.startTime, MOROCCO_TZ, studentTz);
+    const localEnd = convertTimeBetweenTimezones(dateStr, slot.endTime, MOROCCO_TZ, studentTz);
     if (!localStart || !localEnd) return null;
     return { localStart, localEnd };
   };
@@ -92,9 +98,9 @@ export default function AdminAvailability() {
     return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
   };
 
-  const formatStudentLocalSlot = (slot) => {
+  const formatStudentLocalSlot = (slot, studentTz) => {
     const day = dayLabels[slot.dayOfWeek - 1] || '-';
-    const local = getStudentLocalSlot(slot);
+    const local = getStudentLocalSlot(slot, studentTz);
     if (!local) return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
 
     const startDayLabel = dayLabels[local.localStart.dayOfWeek - 1] || '-';
@@ -199,7 +205,7 @@ export default function AdminAvailability() {
                       className="flex items-start justify-between gap-3 px-3 py-2 rounded-xl bg-emerald-100/80 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-200/70 dark:border-emerald-400/30 animate-fade-in"
                     >
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold">{t('dashboard.adminAvailability.slotLocalLabel')}: {formatStudentLocalSlot(slot)}</p>
+                        <p className="text-xs font-semibold">{t('dashboard.adminAvailability.slotLocalLabel')}: {formatStudentLocalSlot(slot, selectedStudentTz)}</p>
                         <p className="text-[11px] text-emerald-700/80 dark:text-emerald-100/80 mt-0.5">
                           {t('dashboard.adminAvailability.slotMoroccoRef')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
                         </p>
@@ -223,6 +229,56 @@ export default function AdminAvailability() {
               </div>
             </div>
           )}
+          <div className="p-4 border-t border-pink-soft/50 dark:border-white/10 space-y-3 max-h-[420px] overflow-y-auto scrollbar-hide">
+            <h3 className="text-sm font-semibold text-text dark:text-[#f5f5f5]">
+              {t('dashboard.adminAvailability.allStudentsAvailability')}
+            </h3>
+            {students.length === 0 ? (
+              <p className="text-sm text-text/60 dark:text-[#f5f5f5]/70">
+                {t('dashboard.adminAvailability.noStudents')}
+              </p>
+            ) : (
+              students.map((student, idx) => {
+                const studentTz = student?.country ? getTimezoneByCountry(student.country) : null;
+                const slots = student?.studentAvailability || [];
+                return (
+                  <div
+                    key={student.id}
+                    className="p-3 rounded-xl border border-pink-soft/40 dark:border-white/10 bg-pink-soft/15 dark:bg-white/5 hover:bg-pink-soft/25 dark:hover:bg-white/10 transition-all duration-300 animate-fade-in"
+                    style={{ animationDelay: `${idx * 40}ms`, animationFillMode: 'both' }}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <p className="text-sm font-semibold text-text dark:text-[#f5f5f5] truncate">{student.name}</p>
+                      <span className="text-[11px] text-text/50 dark:text-[#f5f5f5]/60 shrink-0">
+                        {getStudentCountryName(student.country)}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/60 mb-2">
+                      {t('dashboard.adminAvailability.timezone')}: {studentTz || '-'}
+                    </p>
+                    {slots.length === 0 ? (
+                      <p className="text-xs text-text/50 dark:text-[#f5f5f5]/60 italic">
+                        {t('dashboard.adminAvailability.noSlots')}
+                      </p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {slots.map((slot) => (
+                          <div key={`${student.id}-${slot.id}`} className="rounded-lg bg-emerald-100/70 dark:bg-emerald-500/15 border border-emerald-200/70 dark:border-emerald-400/25 px-2.5 py-2">
+                            <p className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-200">
+                              {t('dashboard.adminAvailability.slotLocalLabel')}: {formatStudentLocalSlot(slot, studentTz)}
+                            </p>
+                            <p className="text-[10px] text-emerald-700/85 dark:text-emerald-100/80 mt-0.5">
+                              {t('dashboard.adminAvailability.slotMoroccoRef')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {/* Professor availability (announcement / view) */}

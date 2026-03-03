@@ -372,7 +372,9 @@
     "adminPayments": {
       "title": "المدفوعات",
       "student": "الطالب",
+      "selectStudent": "اختر",
       "amount": "المبلغ",
+      "pack": "الباقة",
       "status": "الحالة",
       "nextDue": "الموعد القادم",
       "addPayment": "إضافة دفعة",
@@ -385,7 +387,20 @@
       "dueSoonDesc": "طلاب لديهم دفعة مستحقة خلال 7 أيام",
       "overdue": "متأخر",
       "dueIn": "مستحق خلال {{days}} أيام",
-      "dueToday": "مستحق اليوم"
+      "dueToday": "مستحق اليوم",
+      "empty": "لا توجد مدفوعات حالياً",
+      "errorAmount": "يجب أن يكون المبلغ أكبر من 0",
+      "errorStudentRequired": "يرجى اختيار طالب",
+      "errorCreate": "خطأ أثناء إضافة الدفعة",
+      "errorUpdate": "خطأ أثناء تحديث الدفعة",
+      "errorDelete": "خطأ أثناء حذف الدفعة",
+      "packs": {
+        "custom": "مبلغ مخصص",
+        "individuel": "الباقة الفردية - 25€",
+        "groups_monthly": "باقة المجموعات (شهري) - 59€",
+        "groups_annual": "باقة المجموعات (سنوي) - 590€",
+        "preparation": "باقة التحضير - 380€"
+      }
     },
     "adminAvailability": {
       "title": "التوفر",
@@ -403,7 +418,9 @@
       "timezone": "المنطقة الزمنية",
       "slotLocalLabel": "توقيت الطالب المحلي",
       "slotMoroccoRef": "مرجع توقيت المغرب",
-      "slotInputHint": "إدخال الوقت يتم حسب التوقيت المحلي للطالب."
+      "slotInputHint": "إدخال الوقت يتم حسب التوقيت المحلي للطالب.",
+      "allStudentsAvailability": "توفر جميع الطلاب",
+      "noStudents": "لا يوجد طلاب"
     },
     "adminMessages": {
       "title": "الرسائل",

@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 
+const PACK_OPTIONS = [
+  { id: 'custom', amount: null },
+  { id: 'individuel', amount: 25 },
+  { id: 'groups_monthly', amount: 59 },
+  { id: 'groups_annual', amount: 590 },
+  { id: 'preparation', amount: 380 },
+];
+
 const formatNextDue = (dateStr, t) => {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
@@ -20,9 +28,11 @@ export default function Payments() {
   const [payments, setPayments] = useState([]);
   const [students, setStudents] = useState([]);
   const [dueSoon, setDueSoon] = useState([]);
-  const [form, setForm] = useState({ studentId: '', amount: 0 });
+  const [form, setForm] = useState({ studentId: '', packId: 'custom', amount: 0 });
+  const [errorMsg, setErrorMsg] = useState('');
 
   const load = () => {
+    setErrorMsg('');
     api.get('/admin/payments').then((r) => setPayments(r.data));
     api.get('/admin/students').then((r) => setStudents(r.data));
     api.get('/admin/payments/due-soon').then((r) => setDueSoon(r.data)).catch(() => setDueSoon([]));
@@ -34,21 +44,44 @@ export default function Payments() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    await api.post('/admin/payments', { ...form, status: 'unpaid' });
-    setForm({ studentId: '', amount: 0 });
-    load();
+    setErrorMsg('');
+    if (!form.studentId) {
+      setErrorMsg(t('dashboard.adminPayments.errorStudentRequired'));
+      return;
+    }
+    if (!Number.isFinite(form.amount) || form.amount <= 0) {
+      setErrorMsg(t('dashboard.adminPayments.errorAmount'));
+      return;
+    }
+    try {
+      await api.post('/admin/payments', { studentId: form.studentId, amount: form.amount, status: 'unpaid' });
+      setForm({ studentId: '', packId: 'custom', amount: 0 });
+      load();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || t('dashboard.adminPayments.errorCreate'));
+    }
   };
 
   const toggleStatus = async (id, current) => {
     const next = current === 'paid' ? 'unpaid' : 'paid';
-    await api.put(`/admin/payments/${id}/status`, { status: next });
-    load();
+    setErrorMsg('');
+    try {
+      await api.put(`/admin/payments/${id}/status`, { status: next });
+      load();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || t('dashboard.adminPayments.errorUpdate'));
+    }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm(t('dashboard.adminPayments.deleteConfirm'))) return;
-    await api.delete(`/admin/payments/${id}`);
-    load();
+    setErrorMsg('');
+    try {
+      await api.delete(`/admin/payments/${id}`);
+      load();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || t('dashboard.adminPayments.errorDelete'));
+    }
   };
 
   return (
@@ -77,6 +110,12 @@ export default function Payments() {
         </div>
       )}
 
+      {errorMsg && (
+        <div className="mb-4 p-3 rounded-xl border border-red-200 dark:border-red-700/50 bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300">
+          {errorMsg}
+        </div>
+      )}
+
       <form
         onSubmit={handleCreate}
         className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg mb-6 flex flex-wrap gap-4 items-end transition-all duration-500 hover:shadow-pink-soft/80"
@@ -89,20 +128,41 @@ export default function Payments() {
             className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required
           >
-            <option value="">{t('dashboard.adminCourses.select')}</option>
+            <option value="">{t('dashboard.adminPayments.selectStudent')}</option>
             {students.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminPayments.amount')} ($)</label>
+          <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminPayments.pack')}</label>
+          <select
+            value={form.packId}
+            onChange={(e) => {
+              const selectedPack = PACK_OPTIONS.find((p) => p.id === e.target.value);
+              setForm((f) => ({
+                ...f,
+                packId: e.target.value,
+                amount: selectedPack?.amount ?? f.amount,
+              }));
+            }}
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5] min-w-[220px]"
+          >
+            {PACK_OPTIONS.map((pack) => (
+              <option key={pack.id} value={pack.id}>
+                {t(`dashboard.adminPayments.packs.${pack.id}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminPayments.amount')} (€)</label>
           <input
             type="number"
             step="0.01"
             value={form.amount || ''}
             onChange={(e) => setForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
-            className="px-4 py-2.5 border border-pink-soft rounded-xl w-24 focus:ring-2 focus:ring-pink-primary"
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl w-28 focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required
           />
         </div>
@@ -127,7 +187,7 @@ export default function Payments() {
             {payments.map((p) => (
               <tr key={p.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.student?.name}</td>
-                <td className="p-3 text-text dark:text-[#f5f5f5]">${p.amount.toFixed(2)}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5]">€{Number(p.amount || 0).toFixed(2)}</td>
                 <td className="p-3">
                   <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${p.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'}`}>
                     {p.status === 'paid' ? t('dashboard.adminPayments.paid') : t('dashboard.adminPayments.unpaid')}
@@ -151,6 +211,13 @@ export default function Payments() {
                 </td>
               </tr>
             ))}
+            {payments.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-text/60 dark:text-[#f5f5f5]/60">
+                  {t('dashboard.adminPayments.empty')}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

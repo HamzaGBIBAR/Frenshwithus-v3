@@ -372,7 +372,9 @@
     "adminPayments": {
       "title": "Paiements",
       "student": "Élève",
+      "selectStudent": "Sélectionner",
       "amount": "Montant",
+      "pack": "Pack",
       "status": "Statut",
       "nextDue": "Prochain échéance",
       "addPayment": "Ajouter un paiement",
@@ -385,7 +387,20 @@
       "dueSoonDesc": "Élèves avec paiement dû dans les 7 prochains jours",
       "overdue": "En retard",
       "dueIn": "Dû dans {{days}} jours",
-      "dueToday": "Dû aujourd'hui"
+      "dueToday": "Dû aujourd'hui",
+      "empty": "Aucun paiement pour le moment",
+      "errorAmount": "Le montant doit être supérieur à 0",
+      "errorStudentRequired": "Veuillez sélectionner un élève",
+      "errorCreate": "Erreur lors de l'ajout du paiement",
+      "errorUpdate": "Erreur lors de la mise à jour du paiement",
+      "errorDelete": "Erreur lors de la suppression du paiement",
+      "packs": {
+        "custom": "Montant personnalisé",
+        "individuel": "Pack Individuel - 25€",
+        "groups_monthly": "Pack Groupes (mensuel) - 59€",
+        "groups_annual": "Pack Groupes (annuel) - 590€",
+        "preparation": "Pack Préparation - 380€"
+      }
     },
     "adminAvailability": {
       "title": "Disponibilités",
@@ -403,7 +418,9 @@
       "timezone": "Fuseau horaire",
       "slotLocalLabel": "Heure locale élève",
       "slotMoroccoRef": "Référence Maroc",
-      "slotInputHint": "La saisie se fait en heure locale de l'élève."
+      "slotInputHint": "La saisie se fait en heure locale de l'élève.",
+      "allStudentsAvailability": "Disponibilité de tous les élèves",
+      "noStudents": "Aucun élève"
     },
     "adminMessages": {
       "title": "Messages",

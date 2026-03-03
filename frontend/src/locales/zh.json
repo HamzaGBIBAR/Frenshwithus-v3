@@ -372,7 +372,9 @@
     "adminPayments": {
       "title": "支付",
       "student": "学生",
+      "selectStudent": "选择",
       "amount": "金额",
+      "pack": "套餐",
       "status": "状态",
       "nextDue": "下次到期",
       "addPayment": "添加支付",
@@ -385,7 +387,20 @@
       "dueSoonDesc": "7天内到期的学生支付",
       "overdue": "已逾期",
       "dueIn": "{{days}}天后到期",
-      "dueToday": "今日到期"
+      "dueToday": "今日到期",
+      "empty": "暂无支付记录",
+      "errorAmount": "金额必须大于 0",
+      "errorStudentRequired": "请选择学生",
+      "errorCreate": "添加支付失败",
+      "errorUpdate": "更新支付失败",
+      "errorDelete": "删除支付失败",
+      "packs": {
+        "custom": "自定义金额",
+        "individuel": "一对一套餐 - 25€",
+        "groups_monthly": "小组套餐（月付）- 59€",
+        "groups_annual": "小组套餐（年付）- 590€",
+        "preparation": "备考套餐 - 380€"
+      }
     },
     "adminAvailability": {
       "title": "可用时间",
@@ -403,7 +418,9 @@
       "timezone": "时区",
       "slotLocalLabel": "学生当地时间",
       "slotMoroccoRef": "摩洛哥参考时间",
-      "slotInputHint": "输入按学生当地时间。"
+      "slotInputHint": "输入按学生当地时间。",
+      "allStudentsAvailability": "所有学生可用时间",
+      "noStudents": "暂无学生"
     },
     "adminMessages": {
       "title": "消息",

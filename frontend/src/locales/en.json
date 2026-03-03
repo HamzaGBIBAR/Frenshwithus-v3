@@ -372,7 +372,9 @@
     "adminPayments": {
       "title": "Payments",
       "student": "Student",
+      "selectStudent": "Select",
       "amount": "Amount",
+      "pack": "Pack",
       "status": "Status",
       "nextDue": "Next due",
       "addPayment": "Add Payment",
@@ -385,7 +387,20 @@
       "dueSoonDesc": "Students with payments due in the next 7 days",
       "overdue": "Overdue",
       "dueIn": "Due in {{days}} days",
-      "dueToday": "Due today"
+      "dueToday": "Due today",
+      "empty": "No payments yet",
+      "errorAmount": "Amount must be greater than 0",
+      "errorStudentRequired": "Please select a student",
+      "errorCreate": "Error adding payment",
+      "errorUpdate": "Error updating payment",
+      "errorDelete": "Error deleting payment",
+      "packs": {
+        "custom": "Custom amount",
+        "individuel": "Individual Pack - 25€",
+        "groups_monthly": "Group Pack (monthly) - 59€",
+        "groups_annual": "Group Pack (annual) - 590€",
+        "preparation": "Preparation Pack - 380€"
+      }
     },
     "adminAvailability": {
       "title": "Availability",
@@ -403,7 +418,9 @@
       "timezone": "Time zone",
       "slotLocalLabel": "Student local time",
       "slotMoroccoRef": "Morocco reference",
-      "slotInputHint": "Input is in the student's local time."
+      "slotInputHint": "Input is in the student's local time.",
+      "allStudentsAvailability": "All students availability",
+      "noStudents": "No students"
     },
     "adminMessages": {
       "title": "Messages",
