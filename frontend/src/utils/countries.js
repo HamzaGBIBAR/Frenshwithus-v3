@@ -71,39 +71,92 @@ export function getLocalDateTime(countryCode, locale = 'fr') {
 export function convertMoroccoToLocal(dateStr, timeStr, studentCountryCode, locale = 'fr') {
   const moroccoTz = 'Africa/Casablanca';
   const studentTz = getTimezoneByCountry(studentCountryCode);
+  const utcDate = zonedDateTimeToUtc(dateStr, timeStr, moroccoTz);
+  if (!utcDate) {
+    return { date: dateStr, time: timeStr, displayDate: dateStr, displayTime: timeStr };
+  }
 
-  const moroccoDate = new Date(`${dateStr}T${timeStr}:00`);
-
-  const moroccoOffset = getOffsetMinutes(moroccoDate, moroccoTz);
-  const utc = new Date(moroccoDate.getTime() + moroccoOffset * 60000);
-
-  const studentOffset = getOffsetMinutes(utc, studentTz);
-  const studentLocal = new Date(utc.getTime() - studentOffset * 60000);
-
-  const localDate = studentLocal.toLocaleDateString(locale, {
+  const localDate = utcDate.toLocaleDateString(locale, {
     timeZone: studentTz,
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   });
-  const localTime = studentLocal.toLocaleTimeString(locale, {
+  const localTime = utcDate.toLocaleTimeString(locale, {
     timeZone: studentTz,
     hour: '2-digit',
     minute: '2-digit',
   });
 
-  const yyyy = String(studentLocal.getFullYear());
-  const mm = String(studentLocal.getMonth() + 1).padStart(2, '0');
-  const dd = String(studentLocal.getDate()).padStart(2, '0');
-  const hh = String(studentLocal.getHours()).padStart(2, '0');
-  const min = String(studentLocal.getMinutes()).padStart(2, '0');
+  const parts = getZonedParts(utcDate, studentTz);
+  const yyyy = String(parts.year);
+  const mm = String(parts.month).padStart(2, '0');
+  const dd = String(parts.day).padStart(2, '0');
+  const hh = String(parts.hour).padStart(2, '0');
+  const min = String(parts.minute).padStart(2, '0');
 
   return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`, displayDate: localDate, displayTime: localTime };
 }
 
-function getOffsetMinutes(date, tz) {
-  const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
-  const tzStr = date.toLocaleString('en-US', { timeZone: tz });
-  return (new Date(utcStr) - new Date(tzStr)) / 60000;
+function getZonedParts(date, tz) {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
+
+  const map = {};
+  for (const part of formatter.formatToParts(date)) {
+    if (part.type !== 'literal') map[part.type] = part.value;
+  }
+
+  return {
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hour: Number(map.hour),
+    minute: Number(map.minute),
+    second: Number(map.second || 0),
+  };
+}
+
+function zonedDateTimeToUtc(dateStr, timeStr, timeZone) {
+  const [year, month, day] = (dateStr || '').split('-').map(Number);
+  const [hour, minute] = (timeStr || '').split(':').map(Number);
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day) ||
+    !Number.isFinite(hour) ||
+    !Number.isFinite(minute)
+  ) {
+    return null;
+  }
+
+  const desiredWallClockMs = Date.UTC(year, month - 1, day, hour, minute, 0);
+  let utcMs = desiredWallClockMs;
+
+  // Iterate to account for timezone offset and DST rules.
+  for (let i = 0; i < 4; i += 1) {
+    const parts = getZonedParts(new Date(utcMs), timeZone);
+    const renderedWallClockMs = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      parts.second || 0
+    );
+    const diff = desiredWallClockMs - renderedWallClockMs;
+    utcMs += diff;
+    if (Math.abs(diff) < 1000) break;
+  }
+
+  return new Date(utcMs);
 }
