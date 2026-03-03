@@ -1,8 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
+import COUNTRIES, { convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
+import { formatTimeAMPM } from '../../utils/format';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MOROCCO_TZ = 'Africa/Casablanca';
+const REFERENCE_MONDAY_UTC = new Date(Date.UTC(2026, 0, 5)); // Monday
+
+function dateStrFromDayOfWeek(dayOfWeek) {
+  const d = new Date(REFERENCE_MONDAY_UTC);
+  d.setUTCDate(d.getUTCDate() + (dayOfWeek - 1));
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 export default function AdminAvailability() {
   const { t } = useTranslation();
@@ -25,7 +38,20 @@ export default function AdminAvailability() {
   const handleAddSlot = async (e) => {
     e.preventDefault();
     if (!selectedStudent) return;
-    await api.post(`/admin/students/${selectedStudent}/availability`, form);
+    let payload = { ...form };
+    if (selectedStudentTz) {
+      const dateStr = dateStrFromDayOfWeek(form.dayOfWeek);
+      const startMorocco = convertTimeBetweenTimezones(dateStr, form.startTime, selectedStudentTz, MOROCCO_TZ);
+      const endMorocco = convertTimeBetweenTimezones(dateStr, form.endTime, selectedStudentTz, MOROCCO_TZ);
+      if (startMorocco && endMorocco) {
+        payload = {
+          dayOfWeek: startMorocco.dayOfWeek,
+          startTime: startMorocco.time,
+          endTime: endMorocco.time,
+        };
+      }
+    }
+    await api.post(`/admin/students/${selectedStudent}/availability`, payload);
     setForm({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' });
     load();
   };
@@ -36,9 +62,44 @@ export default function AdminAvailability() {
   };
 
   const selectedStudentData = students.find((s) => s.id === selectedStudent) || null;
-  const formatSlot = (slot) => {
+  const selectedStudentCountry = selectedStudentData?.country || null;
+  const selectedStudentCountryName = useMemo(
+    () => COUNTRIES.find((c) => c.code === selectedStudentCountry)?.name || selectedStudentCountry,
+    [selectedStudentCountry]
+  );
+  const selectedStudentTz = useMemo(
+    () => (selectedStudentCountry ? getTimezoneByCountry(selectedStudentCountry) : null),
+    [selectedStudentCountry]
+  );
+
+  const formatSlotTime = (timeStr) => {
+    if (!timeStr) return '';
+    return `${timeStr} (${formatTimeAMPM(timeStr)})`;
+  };
+
+  const getStudentLocalSlot = (slot) => {
+    if (!selectedStudentTz) return null;
+    const dateStr = dateStrFromDayOfWeek(slot.dayOfWeek);
+    const localStart = convertTimeBetweenTimezones(dateStr, slot.startTime, MOROCCO_TZ, selectedStudentTz);
+    const localEnd = convertTimeBetweenTimezones(dateStr, slot.endTime, MOROCCO_TZ, selectedStudentTz);
+    if (!localStart || !localEnd) return null;
+    return { localStart, localEnd };
+  };
+
+  const formatBasicSlot = (slot) => {
     const day = dayLabels[slot.dayOfWeek - 1] || '-';
-    return `${day} ${slot.startTime}-${slot.endTime}`;
+    return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
+  };
+
+  const formatStudentLocalSlot = (slot) => {
+    const day = dayLabels[slot.dayOfWeek - 1] || '-';
+    const local = getStudentLocalSlot(slot);
+    if (!local) return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
+
+    const startDayLabel = dayLabels[local.localStart.dayOfWeek - 1] || '-';
+    const endDayLabel = dayLabels[local.localEnd.dayOfWeek - 1] || '-';
+    const dayRange = startDayLabel === endDayLabel ? startDayLabel : `${startDayLabel} → ${endDayLabel}`;
+    return `${dayRange} ${formatSlotTime(local.localStart.time)} - ${formatSlotTime(local.localEnd.time)}`;
   };
 
   return (
@@ -76,6 +137,15 @@ export default function AdminAvailability() {
           </div>
           {selectedStudent && (
             <div className="p-4 space-y-4">
+              <div className="rounded-xl border border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5 px-3 py-2.5">
+                <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60">
+                  {t('dashboard.adminAvailability.studentCountry')}:
+                  <span className="ml-1 font-medium text-text dark:text-[#f5f5f5]">{selectedStudentCountryName || '-'}</span>
+                </p>
+                <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50 mt-0.5">
+                  {t('dashboard.adminAvailability.timezone')}: {selectedStudentTz || '-'}
+                </p>
+              </div>
               <form onSubmit={handleAddSlot} className="flex flex-wrap gap-3 items-end">
                 <div>
                   <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminAvailability.day')}</label>
@@ -114,26 +184,34 @@ export default function AdminAvailability() {
                   {t('dashboard.adminAvailability.add')}
                 </button>
               </form>
+              <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50 -mt-1">
+                {t('dashboard.adminAvailability.slotInputHint')}
+              </p>
               <div className="space-y-2">
                 <span className="text-sm text-text/60 dark:text-[#f5f5f5]/60">
                   {t('dashboard.adminAvailability.currentSlots')}:
                 </span>
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2">
                   {(selectedStudentData?.studentAvailability || []).map((slot) => (
-                    <span
+                    <div
                       key={slot.id}
-                      className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-400/30 transition-transform duration-200 hover:scale-105 animate-fade-in"
+                      className="flex items-start justify-between gap-3 px-3 py-2 rounded-xl bg-emerald-100/80 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-200/70 dark:border-emerald-400/30 animate-fade-in"
                     >
-                      {formatSlot(slot)}
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold">{t('dashboard.adminAvailability.slotLocalLabel')}: {formatStudentLocalSlot(slot)}</p>
+                        <p className="text-[11px] text-emerald-700/80 dark:text-emerald-100/80 mt-0.5">
+                          {t('dashboard.adminAvailability.slotMoroccoRef')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
+                        </p>
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleDeleteSlot(selectedStudent, slot.id)}
-                        className="text-red-600 dark:text-red-400 hover:underline text-xs"
+                        className="text-red-600 dark:text-red-400 hover:underline text-xs shrink-0"
                         aria-label="Remove"
                       >
                         ×
                       </button>
-                    </span>
+                    </div>
                   ))}
                   {(!selectedStudentData?.studentAvailability?.length) && (
                     <span className="text-sm text-text/60 dark:text-[#f5f5f5]/80">
@@ -169,7 +247,7 @@ export default function AdminAvailability() {
                       key={slot.id}
                       className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-300 border border-pink-soft/50 dark:border-pink-400/30 transition-transform duration-200 hover:scale-105 animate-fade-in"
                     >
-                      {formatSlot(slot)}
+                      {formatBasicSlot(slot)}
                     </span>
                   ))}
                   {(!p.availability?.length) && (

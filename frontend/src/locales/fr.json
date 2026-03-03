@@ -398,7 +398,12 @@
       "to": "À",
       "add": "Ajouter un créneau",
       "currentSlots": "Créneaux actuels",
-      "noSlots": "Aucun créneau"
+      "noSlots": "Aucun créneau",
+      "studentCountry": "Pays de l'élève",
+      "timezone": "Fuseau horaire",
+      "slotLocalLabel": "Heure locale élève",
+      "slotMoroccoRef": "Référence Maroc",
+      "slotInputHint": "La saisie se fait en heure locale de l'élève."
     },
     "adminMessages": {
       "title": "Messages",

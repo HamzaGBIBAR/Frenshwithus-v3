@@ -398,7 +398,12 @@
       "to": "إلى",
       "add": "إضافة وقت",
       "currentSlots": "الأوقات الحالية",
-      "noSlots": "لا توجد أوقات"
+      "noSlots": "لا توجد أوقات",
+      "studentCountry": "بلد الطالب",
+      "timezone": "المنطقة الزمنية",
+      "slotLocalLabel": "توقيت الطالب المحلي",
+      "slotMoroccoRef": "مرجع توقيت المغرب",
+      "slotInputHint": "إدخال الوقت يتم حسب التوقيت المحلي للطالب."
     },
     "adminMessages": {
       "title": "الرسائل",

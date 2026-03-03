@@ -277,6 +277,7 @@ router.get('/students/availability', async (req, res) => {
       id: true,
       name: true,
       email: true,
+      country: true,
       professorId: true,
       professor: { select: { id: true, name: true } },
       studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },

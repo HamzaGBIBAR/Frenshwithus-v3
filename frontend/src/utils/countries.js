@@ -99,6 +99,46 @@ export function convertMoroccoToLocal(dateStr, timeStr, studentCountryCode, loca
   return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}`, displayDate: localDate, displayTime: localTime };
 }
 
+/**
+ * Convert a wall-clock datetime from one timezone to another.
+ * Returns { date: 'YYYY-MM-DD', time: 'HH:mm', dayOfWeek: 1..7 (Mon..Sun), displayDate, displayTime }.
+ */
+export function convertTimeBetweenTimezones(dateStr, timeStr, fromTz, toTz, locale = 'fr') {
+  const utcDate = zonedDateTimeToUtc(dateStr, timeStr, fromTz);
+  if (!utcDate) return null;
+
+  const parts = getZonedParts(utcDate, toTz);
+  const yyyy = String(parts.year);
+  const mm = String(parts.month).padStart(2, '0');
+  const dd = String(parts.day).padStart(2, '0');
+  const hh = String(parts.hour).padStart(2, '0');
+  const min = String(parts.minute).padStart(2, '0');
+
+  const jsDow = new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay();
+  const dayOfWeek = jsDow === 0 ? 7 : jsDow;
+
+  const displayDate = utcDate.toLocaleDateString(locale, {
+    timeZone: toTz,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const displayTime = utcDate.toLocaleTimeString(locale, {
+    timeZone: toTz,
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return {
+    date: `${yyyy}-${mm}-${dd}`,
+    time: `${hh}:${min}`,
+    dayOfWeek,
+    displayDate,
+    displayTime,
+  };
+}
+
 function getZonedParts(date, tz) {
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: tz,

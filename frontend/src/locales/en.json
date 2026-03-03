@@ -398,7 +398,12 @@
       "to": "To",
       "add": "Add slot",
       "currentSlots": "Current slots",
-      "noSlots": "No slots"
+      "noSlots": "No slots",
+      "studentCountry": "Student country",
+      "timezone": "Time zone",
+      "slotLocalLabel": "Student local time",
+      "slotMoroccoRef": "Morocco reference",
+      "slotInputHint": "Input is in the student's local time."
     },
     "adminMessages": {
       "title": "Messages",

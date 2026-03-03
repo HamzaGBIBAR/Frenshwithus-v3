@@ -398,7 +398,12 @@
       "to": "结束",
       "add": "添加时段",
       "currentSlots": "当前时段",
-      "noSlots": "无时段"
+      "noSlots": "无时段",
+      "studentCountry": "学生国家",
+      "timezone": "时区",
+      "slotLocalLabel": "学生当地时间",
+      "slotMoroccoRef": "摩洛哥参考时间",
+      "slotInputHint": "输入按学生当地时间。"
     },
     "adminMessages": {
       "title": "消息",
