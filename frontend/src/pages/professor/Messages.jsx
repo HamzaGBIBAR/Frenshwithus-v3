@@ -10,10 +10,14 @@ export default function ProfessorMessages() {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [content, setContent] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
   const bottomRef = useRef(null);
+  const fileInputRef = useRef(null);
 
+  const refreshMessages = () => api.get('/professor/messages').then((r) => setMessages(r.data));
   useEffect(() => {
-    api.get('/professor/messages').then((r) => setMessages(r.data));
+    refreshMessages();
     api.get('/professor/students').then((r) => setStudents(r.data));
   }, []);
 
@@ -27,10 +31,27 @@ export default function ProfessorMessages() {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!content.trim() || !selectedStudent) return;
-    await api.post('/professor/messages', { receiverId: selectedStudent, content });
-    setContent('');
-    api.get('/professor/messages').then((r) => setMessages(r.data));
+    setErrorMsg('');
+    if ((!content.trim() && !selectedFile) || !selectedStudent) return;
+    try {
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('receiverId', selectedStudent);
+        formData.append('content', content);
+        formData.append('file', selectedFile);
+        await api.post('/professor/messages/attachment', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } else {
+        await api.post('/professor/messages', { receiverId: selectedStudent, content });
+      }
+      setContent('');
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      refreshMessages();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || 'Message send failed');
+    }
   };
 
   const selectedName = students.find((s) => s.id === selectedStudent)?.name;
@@ -91,7 +112,22 @@ export default function ProfessorMessages() {
                           : 'bg-white dark:bg-[#252525] text-text dark:text-[#f5f5f5] border border-pink-soft/30 dark:border-white/10 rounded-bl-md shadow-sm'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed">{m.content}</p>
+                      {m.content && <p className="text-sm leading-relaxed">{m.content}</p>}
+                      {m.attachmentUrl && (
+                        <a
+                          href={m.attachmentUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className={`inline-flex items-center gap-2 mt-2 text-xs underline ${
+                            isMe ? 'text-white/90' : 'text-pink-primary dark:text-pink-300'
+                          }`}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.657-5.657L5.757 10.757a6 6 0 108.486 8.486L20 13" />
+                          </svg>
+                          {m.attachmentName || 'Attachment'}
+                        </a>
+                      )}
                       <p className={`text-[10px] mt-1.5 ${isMe ? 'text-white/60' : 'text-text/40 dark:text-[#f5f5f5]/40'}`}>
                         {new Date(m.createdAt).toLocaleString()}
                       </p>
@@ -100,6 +136,11 @@ export default function ProfessorMessages() {
                 })}
                 <div ref={bottomRef} />
               </div>
+              {errorMsg && (
+                <div className="px-4 pt-3">
+                  <p className="text-xs text-red-600 dark:text-red-400">{errorMsg}</p>
+                </div>
+              )}
               <form onSubmit={sendMessage} className="p-4 border-t border-pink-soft/50 dark:border-white/10 flex gap-2">
                 <input
                   value={content}
@@ -107,6 +148,23 @@ export default function ProfessorMessages() {
                   placeholder={t('dashboard.professor.message') + '...'}
                   className="flex-1 px-4 py-2.5 border border-pink-soft/50 dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:border-pink-primary bg-white dark:bg-[#111] text-text dark:text-[#f5f5f5] placeholder:text-text/40 dark:placeholder:text-[#f5f5f5]/40 transition-colors duration-300"
                 />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".doc,.docx,.xls,.xlsx,.pdf"
+                  className="hidden"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-2.5 border border-pink-soft/50 dark:border-white/20 rounded-xl text-pink-primary dark:text-pink-300 hover:bg-pink-soft/30 dark:hover:bg-white/10 transition"
+                  title="Attach file"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.657-5.657L5.757 10.757a6 6 0 108.486 8.486L20 13" />
+                  </svg>
+                </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-200 font-medium btn-glow"
@@ -114,6 +172,13 @@ export default function ProfessorMessages() {
                   {t('contact.send')}
                 </button>
               </form>
+              {selectedFile && (
+                <div className="px-4 pb-3">
+                  <p className="text-xs text-text/60 dark:text-[#f5f5f5]/70">
+                    {selectedFile.name}
+                  </p>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center gap-3">

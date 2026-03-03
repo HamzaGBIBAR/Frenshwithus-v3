@@ -91,6 +91,10 @@ model Message {
   senderId  String
   receiverId String
   content   String
+  attachmentUrl String?
+  attachmentName String?
+  attachmentMimeType String?
+  attachmentSize Int?
   createdAt DateTime @default(now())
 
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
