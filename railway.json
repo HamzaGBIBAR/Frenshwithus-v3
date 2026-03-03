@@ -5,7 +5,7 @@
     "buildCommand": "npm run build"
   },
   "deploy": {
-    "preDeployCommand": "cd backend && npx prisma migrate deploy && npm run db:seed",
+    "preDeployCommand": "cd backend && npx prisma migrate deploy && (npm run db:seed || true)",
     "startCommand": "node backend/src/index.js",
     "healthcheckPath": "/api/health",
     "restartPolicyType": "ON_FAILURE",

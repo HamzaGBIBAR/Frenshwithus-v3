@@ -5,8 +5,6 @@ import { authenticate } from '../middleware/auth.js';
 const router = Router();
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-router.use(authenticate);
-
 function parseCourseDateTime(course) {
   return new Date(`${course.date}T${course.time}`);
 }
@@ -205,7 +203,7 @@ async function generateStudentNotifications(userId) {
   }
 }
 
-router.get('/notifications', async (req, res) => {
+router.get('/notifications', authenticate, async (req, res) => {
   if (req.user.role === 'ADMIN') await generateAdminNotifications(req.user.id);
   if (req.user.role === 'PROFESSOR') await generateProfessorNotifications(req.user.id);
   if (req.user.role === 'STUDENT') await generateStudentNotifications(req.user.id);
@@ -219,7 +217,7 @@ router.get('/notifications', async (req, res) => {
   res.json({ notifications, unreadCount });
 });
 
-router.put('/notifications/read-all', async (req, res) => {
+router.put('/notifications/read-all', authenticate, async (req, res) => {
   await prisma.notification.updateMany({
     where: { userId: req.user.id, isRead: false, archivedAt: null },
     data: { isRead: true, readAt: new Date() },
@@ -227,7 +225,7 @@ router.put('/notifications/read-all', async (req, res) => {
   res.json({ ok: true });
 });
 
-router.put('/notifications/:id/read', async (req, res) => {
+router.put('/notifications/:id/read', authenticate, async (req, res) => {
   const updated = await prisma.notification.updateMany({
     where: { id: req.params.id, userId: req.user.id, archivedAt: null },
     data: { isRead: true, readAt: new Date() },
@@ -236,7 +234,7 @@ router.put('/notifications/:id/read', async (req, res) => {
   res.json({ ok: true });
 });
 
-router.delete('/notifications/:id', async (req, res) => {
+router.delete('/notifications/:id', authenticate, async (req, res) => {
   const updated = await prisma.notification.updateMany({
     where: { id: req.params.id, userId: req.user.id, archivedAt: null },
     data: { archivedAt: new Date() },

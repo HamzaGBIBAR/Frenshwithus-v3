@@ -61,6 +61,9 @@ app.use(cors({
 app.use(generalLimiter);
 app.use('/api/auth/login', authLimiter);
 
+// Healthcheck MUST be registered before any authenticated routers to avoid interception.
+app.get('/api/health', (_, res) => res.json({ ok: true, db: dbConnected ? 'connected' : 'connecting' }));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/professor', professorRoutes);
@@ -68,8 +71,6 @@ app.use('/api/student', studentRoutes);
 app.use('/api', notificationsRoutes);
 app.use('/api', liveRoutes);
 app.use('/api', chatRoutes);
-
-app.get('/api/health', (_, res) => res.json({ ok: true, db: dbConnected ? 'connected' : 'connecting' }));
 
 // Global error handler for unhandled route errors
 app.use((err, req, res, next) => {
@@ -95,18 +96,16 @@ if (fs.existsSync(publicPath)) {
 }
 
 async function start() {
-  await initSentry();
+  try { await initSentry(); } catch (e) { console.error('Sentry init failed (non-fatal):', e.message); }
+
   if (!process.env.JWT_SECRET) {
-    // Keep service bootable for healthcheck; still warn loudly.
     process.env.JWT_SECRET = `fallback-${Math.random().toString(36).slice(2)}-${Date.now()}`;
     console.warn('Warning: JWT_SECRET missing. Temporary fallback secret generated. Set JWT_SECRET in Railway Variables.');
   }
   if (isProd && process.env.JWT_SECRET.length < 64) {
-    console.warn('Security: JWT_SECRET should be at least 64 characters in production. Generate with: node backend/scripts/generate-jwt-secret.js');
+    console.warn('Security: JWT_SECRET should be at least 64 characters in production.');
   }
-  if (isProd && process.env.NODE_ENV !== 'production') {
-    console.warn('Warning: NODE_ENV should be "production" in production.');
-  }
+
   const connectDbWithRetry = async () => {
     try {
       await prisma.$connect();
@@ -121,8 +120,9 @@ async function start() {
   connectDbWithRetry();
 
   const httpServer = http.createServer(app);
-  initLiveSocket(httpServer, app);
-  startProfessorAbsenceChecker(app);
+  try { initLiveSocket(httpServer, app); } catch (e) { console.error('LiveSocket init failed (non-fatal):', e.message); }
+  try { startProfessorAbsenceChecker(app); } catch (e) { console.error('AbsenceChecker init failed (non-fatal):', e.message); }
+
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
@@ -137,4 +137,6 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled rejection at:', promise, 'reason:', reason);
 });
 
-start();
+start().catch((err) => {
+  console.error('FATAL start() error:', err);
+});
