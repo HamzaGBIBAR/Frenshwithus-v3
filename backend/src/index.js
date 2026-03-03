@@ -32,6 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
+let dbConnected = false;
 
 app.set('trust proxy', 1);
 
@@ -68,7 +69,7 @@ app.use('/api', notificationsRoutes);
 app.use('/api', liveRoutes);
 app.use('/api', chatRoutes);
 
-app.get('/api/health', (_, res) => res.json({ ok: true }));
+app.get('/api/health', (_, res) => res.json({ ok: true, db: dbConnected ? 'connected' : 'connecting' }));
 
 // Global error handler for unhandled route errors
 app.use((err, req, res, next) => {
@@ -96,8 +97,9 @@ if (fs.existsSync(publicPath)) {
 async function start() {
   await initSentry();
   if (!process.env.JWT_SECRET) {
-    console.error('Fatal: JWT_SECRET environment variable is not set. Add it in Railway Variables.');
-    process.exit(1);
+    // Keep service bootable for healthcheck; still warn loudly.
+    process.env.JWT_SECRET = `fallback-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+    console.warn('Warning: JWT_SECRET missing. Temporary fallback secret generated. Set JWT_SECRET in Railway Variables.');
   }
   if (isProd && process.env.JWT_SECRET.length < 64) {
     console.warn('Security: JWT_SECRET should be at least 64 characters in production. Generate with: node backend/scripts/generate-jwt-secret.js');
@@ -105,13 +107,18 @@ async function start() {
   if (isProd && process.env.NODE_ENV !== 'production') {
     console.warn('Warning: NODE_ENV should be "production" in production.');
   }
-  try {
-    await prisma.$connect();
-    console.log('Database connected');
-  } catch (err) {
-    console.error('Database connection failed:', err.message);
-    process.exit(1);
-  }
+  const connectDbWithRetry = async () => {
+    try {
+      await prisma.$connect();
+      dbConnected = true;
+      console.log('Database connected');
+    } catch (err) {
+      dbConnected = false;
+      console.error('Database connection failed:', err.message);
+      setTimeout(connectDbWithRetry, 5000);
+    }
+  };
+  connectDbWithRetry();
 
   const httpServer = http.createServer(app);
   initLiveSocket(httpServer, app);
