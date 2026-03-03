@@ -296,11 +296,11 @@ router.get('/students', async (req, res) => {
   const [assigned, allStudents] = await Promise.all([
     prisma.user.findMany({
       where: { professorId, role: 'STUDENT' },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, lastActiveAt: true },
     }),
     prisma.user.findMany({
       where: { role: 'STUDENT' },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, lastActiveAt: true },
     }),
   ]);
   const seen = new Set();
@@ -327,7 +327,7 @@ router.get('/students', async (req, res) => {
 router.post('/messages', messageValidation, validate, async (req, res) => {
   const { receiverId, content } = req.body;
   const msg = await prisma.message.create({
-    data: { senderId: req.user.id, receiverId, content },
+    data: { senderId: req.user.id, receiverId, content, isSeen: false },
     include: {
       receiver: { select: { id: true, name: true } },
     },
@@ -361,6 +361,7 @@ router.post('/messages/attachment', uploadMessageAttachment.single('file'), asyn
         attachmentName: file.originalname,
         attachmentMimeType: file.mimetype,
         attachmentSize: file.size,
+        isSeen: false,
       },
       include: {
         receiver: { select: { id: true, name: true } },
@@ -378,8 +379,8 @@ router.get('/messages', async (req, res) => {
   const messages = await prisma.message.findMany({
     where: {
       OR: [
-        { senderId: req.user.id },
-        { receiverId: req.user.id },
+        { senderId: req.user.id, archivedBySender: false },
+        { receiverId: req.user.id, archivedByReceiver: false },
       ],
     },
     include: {
@@ -390,6 +391,42 @@ router.get('/messages', async (req, res) => {
     take: 100,
   });
   res.json(messages);
+});
+
+router.put('/messages/:id/seen', async (req, res) => {
+  const updated = await prisma.message.updateMany({
+    where: {
+      id: req.params.id,
+      receiverId: req.user.id,
+    },
+    data: {
+      isSeen: true,
+      seenAt: new Date(),
+    },
+  });
+  if (!updated.count) return res.status(404).json({ error: 'Message not found' });
+  res.json({ ok: true });
+});
+
+router.put('/messages/:id/archive', async (req, res) => {
+  const msg = await prisma.message.findFirst({
+    where: {
+      id: req.params.id,
+      OR: [{ senderId: req.user.id }, { receiverId: req.user.id }],
+    },
+    select: { id: true, senderId: true, receiverId: true },
+  });
+  if (!msg) return res.status(404).json({ error: 'Message not found' });
+
+  const data = msg.senderId === req.user.id
+    ? { archivedBySender: true }
+    : { archivedByReceiver: true };
+
+  await prisma.message.update({
+    where: { id: msg.id },
+    data,
+  });
+  res.json({ ok: true });
 });
 
 export default router;

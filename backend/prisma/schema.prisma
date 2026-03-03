@@ -18,6 +18,7 @@ model User {
   avatarUrl String?  @db.Text
   country   String?  // ISO country code (e.g. "MA", "FR", "US")
   createdAt DateTime @default(now())
+  lastActiveAt DateTime @default(now())
 
   // Professor: courses they teach
   coursesAsProfessor Course[] @relation("ProfessorCourses")
@@ -95,6 +96,10 @@ model Message {
   attachmentName String?
   attachmentMimeType String?
   attachmentSize Int?
+  isSeen Boolean @default(false)
+  seenAt DateTime?
+  archivedBySender Boolean @default(false)
+  archivedByReceiver Boolean @default(false)
   createdAt DateTime @default(now())
 
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)

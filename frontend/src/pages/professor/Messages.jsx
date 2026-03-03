@@ -3,6 +3,13 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 
+const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+
+function isUserOnline(lastActiveAt) {
+  if (!lastActiveAt) return false;
+  return Date.now() - new Date(lastActiveAt).getTime() <= ONLINE_WINDOW_MS;
+}
+
 export default function ProfessorMessages() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -12,6 +19,7 @@ export default function ProfessorMessages() {
   const [content, setContent] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [openMenuId, setOpenMenuId] = useState(null);
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -19,6 +27,14 @@ export default function ProfessorMessages() {
   useEffect(() => {
     refreshMessages();
     api.get('/professor/students').then((r) => setStudents(r.data));
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      refreshMessages();
+      api.get('/professor/students').then((r) => setStudents(r.data));
+    }, 15000);
+    return () => clearInterval(id);
   }, []);
 
   const conversation = messages
@@ -55,6 +71,19 @@ export default function ProfessorMessages() {
   };
 
   const selectedName = students.find((s) => s.id === selectedStudent)?.name;
+  const selectedStudentObj = students.find((s) => s.id === selectedStudent) || null;
+
+  const markAsSeen = async (messageId) => {
+    await api.put(`/professor/messages/${messageId}/seen`);
+    setOpenMenuId(null);
+    refreshMessages();
+  };
+
+  const archiveMessage = async (messageId) => {
+    await api.put(`/professor/messages/${messageId}/archive`);
+    setOpenMenuId(null);
+    refreshMessages();
+  };
 
   return (
     <div className="animate-fade-in">
@@ -76,7 +105,10 @@ export default function ProfessorMessages() {
                     : 'text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/5 border-l-4 border-transparent'
                 }`}
               >
-                {s.name}
+                <span className="inline-flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${isUserOnline(s.lastActiveAt) ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-600'}`} />
+                  {s.name}
+                </span>
               </button>
             ))}
             {students.length === 0 && (
@@ -93,7 +125,12 @@ export default function ProfessorMessages() {
                 <div className="w-9 h-9 rounded-full bg-pink-primary/15 dark:bg-pink-400/15 flex items-center justify-center">
                   <span className="text-sm font-bold text-pink-primary dark:text-pink-400">{selectedName?.charAt(0)?.toUpperCase()}</span>
                 </div>
-                <span className="font-medium text-text dark:text-[#f5f5f5]">{selectedName}</span>
+                <div>
+                  <span className="font-medium text-text dark:text-[#f5f5f5]">{selectedName}</span>
+                  <p className={`text-xs ${isUserOnline(selectedStudentObj?.lastActiveAt) ? 'text-emerald-600 dark:text-emerald-400' : 'text-text/50 dark:text-[#f5f5f5]/50'}`}>
+                    {isUserOnline(selectedStudentObj?.lastActiveAt) ? 'En ligne' : 'Hors ligne'}
+                  </p>
+                </div>
               </div>
               <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-pink-soft/10 dark:bg-white/[0.02]">
                 {conversation.length === 0 && (
@@ -106,12 +143,46 @@ export default function ProfessorMessages() {
                   return (
                     <div
                       key={m.id}
-                      className={`max-w-[80%] rounded-2xl p-3 animate-fade-in ${
+                      className={`relative max-w-[80%] rounded-2xl p-3 animate-fade-in ${
                         isMe
                           ? 'ml-auto bg-pink-primary dark:bg-pink-500 text-white rounded-br-md'
                           : 'bg-white dark:bg-[#252525] text-text dark:text-[#f5f5f5] border border-pink-soft/30 dark:border-white/10 rounded-bl-md shadow-sm'
                       }`}
                     >
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenuId((prev) => (prev === m.id ? null : m.id))}
+                        className={`absolute top-1.5 right-1.5 p-1 rounded-md transition ${
+                          isMe ? 'hover:bg-white/20' : 'hover:bg-pink-soft/40 dark:hover:bg-white/10'
+                        }`}
+                        aria-label="Message actions"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <circle cx="4" cy="10" r="1.6" />
+                          <circle cx="10" cy="10" r="1.6" />
+                          <circle cx="16" cy="10" r="1.6" />
+                        </svg>
+                      </button>
+                      {openMenuId === m.id && (
+                        <div className="absolute right-1.5 top-8 z-10 bg-white dark:bg-[#1a1a1a] border border-pink-soft/40 dark:border-white/10 rounded-lg shadow-lg min-w-[120px]">
+                          {!isMe && !m.isSeen && (
+                            <button
+                              type="button"
+                              onClick={() => markAsSeen(m.id)}
+                              className="w-full text-left px-3 py-2 text-xs text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/5"
+                            >
+                              Marquer vu
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => archiveMessage(m.id)}
+                            className="w-full text-left px-3 py-2 text-xs text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/5"
+                          >
+                            Archiver
+                          </button>
+                        </div>
+                      )}
                       {m.content && <p className="text-sm leading-relaxed">{m.content}</p>}
                       {m.attachmentUrl && (
                         <a
@@ -131,6 +202,11 @@ export default function ProfessorMessages() {
                       <p className={`text-[10px] mt-1.5 ${isMe ? 'text-white/60' : 'text-text/40 dark:text-[#f5f5f5]/40'}`}>
                         {new Date(m.createdAt).toLocaleString()}
                       </p>
+                      {isMe && (
+                        <p className="text-[10px] mt-0.5 text-white/70">
+                          {m.isSeen ? 'Vu' : 'Envoye'}
+                        </p>
+                      )}
                     </div>
                   );
                 })}

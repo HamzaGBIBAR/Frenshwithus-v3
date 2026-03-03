@@ -12,6 +12,11 @@ export const authenticate = async (req, res, next) => {
     const decoded = verifyAccessToken(token);
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     if (!user) return res.status(401).json({ error: 'User not found' });
+    // Lightweight presence ping on authenticated requests.
+    prisma.user.update({
+      where: { id: user.id },
+      data: { lastActiveAt: new Date() },
+    }).catch(() => {});
     req.user = user;
     next();
   } catch (err) {
