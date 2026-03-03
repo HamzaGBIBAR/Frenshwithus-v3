@@ -37,6 +37,7 @@ model User {
   messagesSent      Message[] @relation("SentMessages")
   messagesReceived  Message[] @relation("ReceivedMessages")
   liveSessions      LiveSession[]
+  notifications     Notification[]
 }
 
 model ProfessorAvailability {
@@ -118,4 +119,23 @@ model LiveSession {
   createdAt     DateTime  @default(now())
 
   professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  dedupeKey String
+  title     String
+  body      String
+  type      String   // info, warning, success
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  archivedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
 }

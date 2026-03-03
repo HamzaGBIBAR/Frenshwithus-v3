@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import MobileMenuButton from '../components/MobileMenuButton';
+import NotificationBell from '../components/NotificationBell';
 import StudentDashboard from '../pages/student/Dashboard';
 import StudentMessages from '../pages/student/Messages';
 
@@ -20,7 +21,13 @@ export default function StudentLayout() {
         <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm border-b border-pink-soft/50 dark:border-white/10">
           <MobileMenuButton onClick={() => setSidebarOpen(true)} />
           <span className="font-semibold text-text dark:text-[#f5f5f5]">French With Us</span>
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
         </header>
+        <div className="hidden md:flex sticky top-0 z-20 items-center justify-end px-4 sm:px-6 py-3 bg-transparent border-b border-pink-soft/30 dark:border-white/5">
+          <NotificationBell />
+        </div>
         <main className="flex-1 p-4 sm:p-6 overflow-auto bg-white/50 dark:bg-[#111111]/80 transition-colors duration-500 scroll-smooth">
         <Routes>
           <Route index element={<StudentDashboard />} />

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import MobileMenuButton from '../components/MobileMenuButton';
 import ProfessorProfileModal from '../components/ProfessorProfileModal';
+import NotificationBell from '../components/NotificationBell';
 import ProfessorDashboard from '../pages/professor/Dashboard';
 import ProfessorCourses from '../pages/professor/Courses';
 import ProfessorMessages from '../pages/professor/Messages';
@@ -36,8 +37,12 @@ export default function ProfessorLayout() {
         <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm border-b border-pink-soft/50 dark:border-white/10">
           <MobileMenuButton onClick={() => setSidebarOpen(true)} />
           <span className="font-semibold text-text dark:text-[#f5f5f5]">French With Us</span>
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
         </header>
-        <div className="hidden md:flex sticky top-0 z-20 items-center justify-end px-4 sm:px-6 py-3 bg-transparent border-b border-pink-soft/30 dark:border-white/5">
+        <div className="hidden md:flex sticky top-0 z-20 items-center justify-end gap-3 px-4 sm:px-6 py-3 bg-transparent border-b border-pink-soft/30 dark:border-white/5">
+          <NotificationBell />
           <button
             type="button"
             onClick={() => setProfileOpen(true)}
