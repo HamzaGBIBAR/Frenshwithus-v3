@@ -38,6 +38,8 @@ app.set('trust proxy', 1);
 // HTTPS redirect in production
 if (isProd) {
   app.use((req, res, next) => {
+    // Keep healthcheck always reachable for Railway internal probes.
+    if (req.path === '/api/health') return next();
     if (req.headers['x-forwarded-proto'] === 'http') {
       return res.redirect(301, `https://${req.headers.host}${req.url}`);
     }
