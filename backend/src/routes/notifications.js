@@ -222,9 +222,9 @@ async function generateStudentNotifications(userId) {
     await ensureNotification(userId, {
       dedupeKey: `student-unpaid-${p.id}`,
       title: 'Paiement en attente',
-      body: `Montant: ${Number(p.amount || 0).toFixed(2)} EUR`,
+      body: `Montant: €${Number(p.amount || 0).toFixed(2)} - Réf: ${p.reference || p.id.slice(-6)}`,
       type: 'warning',
-      link: '/student',
+      link: '/student#payments',
     });
   }
 }

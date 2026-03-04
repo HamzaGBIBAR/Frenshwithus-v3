@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
@@ -13,9 +13,22 @@ const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
 function StudentPaymentsSection({ payments, onRefresh, t }) {
   const [uploadingId, setUploadingId] = useState(null);
+  const [removingId, setRemovingId] = useState(null);
 
   const copyReference = (ref) => {
     navigator.clipboard?.writeText(ref);
+  };
+
+  const handleRemoveProof = async (paymentId) => {
+    setRemovingId(paymentId);
+    try {
+      await api.delete(`/student/payments/${paymentId}/proof`);
+      onRefresh?.();
+    } catch {
+      // ignore
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   const handleUploadProof = async (paymentId, e) => {
@@ -38,7 +51,7 @@ function StudentPaymentsSection({ payments, onRefresh, t }) {
   };
 
   return (
-    <section className="p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg">
+    <section id="payments" className="p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg scroll-mt-24">
       <h2 className="text-text/60 dark:text-[#f5f5f5]/60 text-sm font-medium mb-3">{t('dashboard.student.payments')}</h2>
       {payments.length === 0 ? (
         <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noPayment')}</p>
@@ -81,9 +94,19 @@ function StudentPaymentsSection({ payments, onRefresh, t }) {
                       disabled={uploadingId === p.id}
                     />
                     <span className="inline-block px-3 py-1.5 rounded-lg text-xs font-medium bg-pink-primary/20 dark:bg-pink-400/20 text-pink-primary dark:text-pink-400 hover:bg-pink-primary/30 dark:hover:bg-pink-400/30 transition disabled:opacity-50">
-                      {uploadingId === p.id ? '...' : t('dashboard.student.uploadProof')}
+                      {uploadingId === p.id ? '...' : p.proofUrl ? t('dashboard.student.replaceProof') : t('dashboard.student.uploadProof')}
                     </span>
                   </label>
+                  {p.proofUrl && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveProof(p.id)}
+                      disabled={removingId === p.id}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition disabled:opacity-50"
+                    >
+                      {removingId === p.id ? '...' : t('dashboard.student.removeProof')}
+                    </button>
+                  )}
                   <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.payViaWhatsApp')}</span>
                 </div>
               )}
@@ -208,10 +231,18 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted, loc
 export default function StudentDashboard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const location = useLocation();
   const { courses, payments, loading, error, fetchCourses, fetchAll } = useStudentData();
   const [selectedDate, setSelectedDate] = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
   const [localTime, setLocalTime] = useState(() => user?.country ? getLocalDateTime(user.country, i18n.language) : null);
+
+  useEffect(() => {
+    if (location.hash === '#payments' && !loading) {
+      const el = document.getElementById('payments');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.hash, loading]);
 
   useEffect(() => {
     if (!user?.country) return;

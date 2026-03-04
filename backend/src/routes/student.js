@@ -202,6 +202,20 @@ router.post('/payments/:id/proof', uploadPaymentProof.single('proof'), async (re
   res.json({ ok: true, proofUrl: uploadResult.secure_url });
 });
 
+// Remove payment proof (student can remove and re-upload if mistaken)
+router.delete('/payments/:id/proof', async (req, res) => {
+  const paymentId = req.params.id;
+  const payment = await prisma.payment.findFirst({
+    where: { id: paymentId, studentId: req.user.id, status: 'unpaid' },
+  });
+  if (!payment) return res.status(404).json({ error: 'Payment not found or already paid' });
+  await prisma.payment.update({
+    where: { id: paymentId },
+    data: { proofUrl: null, proofUploadedAt: null },
+  });
+  res.json({ ok: true });
+});
+
 // Send message to professor
 router.post('/messages', messageValidation, validate, async (req, res) => {
   const { receiverId, content } = req.body;

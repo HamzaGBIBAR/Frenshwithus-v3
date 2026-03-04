@@ -549,6 +549,8 @@
       "paymentReferenceHint": "Include this reference when paying via WhatsApp",
       "copyReference": "Copy reference",
       "uploadProof": "Upload proof",
+      "replaceProof": "Replace proof",
+      "removeProof": "Remove proof",
       "proofSent": "Proof sent",
       "payViaWhatsApp": "Pay via WhatsApp and upload your receipt",
       "noUpcoming": "No upcoming courses",
