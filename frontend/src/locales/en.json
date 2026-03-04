@@ -278,6 +278,7 @@
     "admin": {
       "title": "Dashboard",
       "analytics": "Analytics",
+      "analyticsSub": "Key metrics at a glance",
       "subscriptionTrends": "Subscription Trends",
       "subscriptionTrendsSub": "New subscriptions and cancellations",
       "newSubscriptions": "New Subscriptions",

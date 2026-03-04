@@ -278,6 +278,7 @@
     "admin": {
       "title": "Dashboard",
       "analytics": "Statistiques",
+      "analyticsSub": "Indicateurs clés en un coup d'œil",
       "subscriptionTrends": "Tendances des inscriptions",
       "subscriptionTrendsSub": "Nouvelles inscriptions et annulations",
       "newSubscriptions": "Nouvelles inscriptions",
