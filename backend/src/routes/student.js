@@ -16,6 +16,8 @@ const MESSAGE_ALLOWED_MIMES = [
   'application/pdf',
 ];
 const MESSAGE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const PAYMENT_PROOF_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+const PAYMENT_PROOF_MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 const uploadMessageAttachment = multer({
   storage: multer.memoryStorage(),
@@ -38,6 +40,36 @@ function uploadMessageFileToCloudinary(buffer, originalName = 'file.bin') {
         public_id: publicId,
         overwrite: false,
         resource_type: 'raw',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+}
+
+const uploadPaymentProof = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: PAYMENT_PROOF_MAX_SIZE },
+  fileFilter: (req, file, cb) => {
+    if (!PAYMENT_PROOF_MIMES.includes(file.mimetype)) {
+      return cb(new Error('Invalid file type. Only JPEG, PNG and WebP images are allowed.'));
+    }
+    cb(null, true);
+  },
+});
+
+function uploadPaymentProofToCloudinary(buffer) {
+  const publicId = `payment-proof-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'frenchwithus/payment-proofs',
+        public_id: publicId,
+        overwrite: false,
+        resource_type: 'image',
       },
       (error, result) => {
         if (error) return reject(error);
@@ -121,6 +153,53 @@ router.get('/payments', async (req, res) => {
     orderBy: { date: 'desc' },
   });
   res.json(payments);
+});
+
+// Upload payment proof (screenshot/receipt for WhatsApp payment)
+router.post('/payments/:id/proof', uploadPaymentProof.single('proof'), async (req, res) => {
+  const paymentId = req.params.id;
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+  const payment = await prisma.payment.findFirst({
+    where: { id: paymentId, studentId: req.user.id, status: 'unpaid' },
+    include: { student: { select: { name: true } } },
+  });
+  if (!payment) return res.status(404).json({ error: 'Payment not found or already paid' });
+
+  const uploadResult = await uploadPaymentProofToCloudinary(file.buffer);
+  await prisma.payment.update({
+    where: { id: paymentId },
+    data: { proofUrl: uploadResult.secure_url, proofUploadedAt: new Date() },
+  });
+
+  // Notify all admins
+  const admins = await prisma.user.findMany({
+    where: { role: 'ADMIN' },
+    select: { id: true },
+  });
+  for (const admin of admins) {
+    await prisma.notification.upsert({
+      where: { userId_dedupeKey: { userId: admin.id, dedupeKey: `payment-proof-${paymentId}` } },
+      update: {
+        title: 'Preuve de paiement reçue',
+        body: `${payment.student?.name || 'Élève'} a envoyé une preuve pour ${payment.reference} (€${payment.amount})`,
+        type: 'info',
+        link: '/admin/payments',
+        archivedAt: null,
+      },
+      create: {
+        userId: admin.id,
+        dedupeKey: `payment-proof-${paymentId}`,
+        title: 'Preuve de paiement reçue',
+        body: `${payment.student?.name || 'Élève'} a envoyé une preuve pour ${payment.reference} (€${payment.amount})`,
+        type: 'info',
+        link: '/admin/payments',
+      },
+    });
+  }
+
+  res.json({ ok: true, proofUrl: uploadResult.secure_url });
 });
 
 // Send message to professor

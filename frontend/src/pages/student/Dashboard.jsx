@@ -10,6 +10,90 @@ import { getLocalDateTime, convertMoroccoToLocal } from '../../utils/countries';
 import COUNTRIES from '../../utils/countries';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
+function StudentPaymentsSection({ payments, onRefresh, t }) {
+  const [uploadingId, setUploadingId] = useState(null);
+
+  const copyReference = (ref) => {
+    navigator.clipboard?.writeText(ref);
+  };
+
+  const handleUploadProof = async (paymentId, e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    setUploadingId(paymentId);
+    const formData = new FormData();
+    formData.append('proof', file);
+    try {
+      await api.post(`/student/payments/${paymentId}/proof`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onRefresh?.();
+    } catch {
+      // ignore
+    } finally {
+      setUploadingId(null);
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <section className="p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg">
+      <h2 className="text-text/60 dark:text-[#f5f5f5]/60 text-sm font-medium mb-3">{t('dashboard.student.payments')}</h2>
+      {payments.length === 0 ? (
+        <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noPayment')}</p>
+      ) : (
+        <div className="space-y-4">
+          {payments.map((p) => (
+            <div key={p.id} className="p-4 rounded-xl border border-pink-soft/30 dark:border-white/10 bg-pink-soft/10 dark:bg-white/5">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <span className="font-semibold text-text dark:text-[#f5f5f5]">€{Number(p.amount || 0).toFixed(2)}</span>
+                <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${p.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'}`}>
+                  {p.status === 'paid' ? t('dashboard.adminPayments.paid') : p.proofUrl ? t('dashboard.student.proofSent') : t('dashboard.adminPayments.unpaid')}
+                </span>
+              </div>
+              {p.reference && (
+                <div className="mb-2">
+                  <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.student.paymentReference')}</p>
+                  <div className="flex items-center gap-2">
+                    <code className="px-2 py-1 rounded-lg bg-white dark:bg-[#1a1a1a] border border-pink-soft/40 dark:border-white/10 text-sm font-mono text-pink-primary dark:text-pink-400">
+                      {p.reference}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => copyReference(p.reference)}
+                      className="text-xs text-pink-primary dark:text-pink-400 hover:underline font-medium"
+                    >
+                      {t('dashboard.student.copyReference')}
+                    </button>
+                  </div>
+                  <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mt-1">{t('dashboard.student.paymentReferenceHint')}</p>
+                </div>
+              )}
+              {p.status === 'unpaid' && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      className="hidden"
+                      onChange={(e) => handleUploadProof(p.id, e)}
+                      disabled={uploadingId === p.id}
+                    />
+                    <span className="inline-block px-3 py-1.5 rounded-lg text-xs font-medium bg-pink-primary/20 dark:bg-pink-400/20 text-pink-primary dark:text-pink-400 hover:bg-pink-primary/30 dark:hover:bg-pink-400/30 transition disabled:opacity-50">
+                      {uploadingId === p.id ? '...' : t('dashboard.student.uploadProof')}
+                    </span>
+                  </label>
+                  <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.payViaWhatsApp')}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
 const POLL_INTERVAL_MS = 15000;
 
 function useStudentData() {
@@ -384,23 +468,7 @@ export default function StudentDashboard() {
       </section>
 
       {/* Payments detail */}
-      <section className="p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg">
-        <h2 className="text-text/60 dark:text-[#f5f5f5]/60 text-sm font-medium mb-3">{t('dashboard.student.payments')}</h2>
-        {payments.length === 0 ? (
-          <p className="text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.student.noPayment')}</p>
-        ) : (
-          <div className="space-y-2">
-            {payments.map((p) => (
-              <div key={p.id} className="flex justify-between items-center py-2 border-b border-pink-soft/30 dark:border-white/10 last:border-0">
-                <span className="font-medium text-text dark:text-[#f5f5f5]">${Number(p.amount || 0).toFixed(2)}</span>
-                <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${p.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'}`}>
-                  {p.status === 'paid' ? t('dashboard.adminPayments.paid') : t('dashboard.adminPayments.unpaid')}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <StudentPaymentsSection payments={payments} onRefresh={fetchAll} t={t} />
     </div>
   );
 }

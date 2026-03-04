@@ -116,11 +116,25 @@ router.put('/students/:id/assign', assignProfessorValidation, validate, async (r
   res.json(user);
 });
 
+// Generate unique payment reference (e.g. FWU-2026-001)
+async function generatePaymentReference() {
+  const year = new Date().getFullYear();
+  const prefix = `FWU-${year}-`;
+  const last = await prisma.payment.findFirst({
+    where: { reference: { startsWith: prefix } },
+    orderBy: { reference: 'desc' },
+    select: { reference: true },
+  });
+  const num = last ? parseInt(last.reference.slice(prefix.length), 10) + 1 : 1;
+  return `${prefix}${String(num).padStart(3, '0')}`;
+}
+
 // Payments
 router.post('/payments', paymentCreateValidation, validate, async (req, res) => {
   const { studentId, amount, status } = req.body;
   const st = status || 'unpaid';
-  const data = { studentId, amount, status: st };
+  const reference = await generatePaymentReference();
+  const data = { reference, studentId, amount, status: st };
   if (st === 'paid') {
     const next = new Date();
     next.setMonth(next.getMonth() + 1);

@@ -175,27 +175,41 @@ export default function Payments() {
         <table className="w-full text-sm min-w-[320px]">
           <thead>
             <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.reference')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.student')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.amount')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.status')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.date')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminPayments.nextDue')}</th>
-              <th className="p-3 font-medium text-text dark:text-[#f5f5f5] w-24">{t('dashboard.adminStudents.actions')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {payments.map((p) => (
               <tr key={p.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
+                <td className="p-3">
+                  <code className="text-xs font-mono text-pink-primary dark:text-pink-400">{p.reference || '—'}</code>
+                </td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.student?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">€{Number(p.amount || 0).toFixed(2)}</td>
                 <td className="p-3">
                   <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${p.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'}`}>
-                    {p.status === 'paid' ? t('dashboard.adminPayments.paid') : t('dashboard.adminPayments.unpaid')}
+                    {p.status === 'paid' ? t('dashboard.adminPayments.paid') : p.proofUrl ? t('dashboard.adminPayments.proofUploaded') : t('dashboard.adminPayments.unpaid')}
                   </span>
                 </td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{new Date(p.date).toLocaleDateString()}</td>
                 <td className="p-3">{formatNextDue(p.nextPaymentDue, t)}</td>
                 <td className="p-3 flex flex-wrap gap-2">
+                  {p.proofUrl && (
+                    <a
+                      href={p.proofUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-pink-primary dark:text-pink-300 hover:underline font-medium"
+                    >
+                      {t('dashboard.adminPayments.viewProof')}
+                    </a>
+                  )}
                   <button
                     onClick={() => toggleStatus(p.id, p.status)}
                     className="text-pink-primary dark:text-pink-300 hover:underline font-medium"
@@ -213,7 +227,7 @@ export default function Payments() {
             ))}
             {payments.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-text/60 dark:text-[#f5f5f5]/60">
+                <td colSpan={7} className="p-6 text-center text-text/60 dark:text-[#f5f5f5]/60">
                   {t('dashboard.adminPayments.empty')}
                 </td>
               </tr>

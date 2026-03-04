@@ -79,11 +79,14 @@ model Course {
 
 model Payment {
   id              String    @id @default(cuid())
+  reference       String    @unique // e.g. FWU-2026-001 (for WhatsApp transfer)
   studentId       String
   amount          Float
   status          String    // paid, unpaid
   date            DateTime  @default(now())
   nextPaymentDue  DateTime? // set when paid: date + 1 month
+  proofUrl        String?   @db.Text // URL of uploaded payment proof (screenshot, receipt)
+  proofUploadedAt DateTime? // when student uploaded proof
 
   student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
