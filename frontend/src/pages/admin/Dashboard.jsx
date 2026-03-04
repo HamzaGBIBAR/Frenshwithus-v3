@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { formatTimeAMPM, formatDateToAMPM, formatProfessorName, formatStudentName } from '../../utils/format';
+import AdminDashboardCharts from '../../components/AdminDashboardCharts';
 
 const STORAGE_KEY = 'adminDismissedMeetingIssues';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
-  const [revenue, setRevenue] = useState(0);
   const [courses, setCourses] = useState([]);
   const [dueSoon, setDueSoon] = useState([]);
   const [dismissedMeetingIssues, setDismissedMeetingIssues] = useState(() => {
@@ -20,7 +20,6 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    api.get('/admin/revenue').then((r) => setRevenue(r.data.total));
     api.get('/admin/courses').then((r) => setCourses(r.data));
     api.get('/admin/payments/due-soon').then((r) => setDueSoon(r.data)).catch(() => setDueSoon([]));
   }, []);
@@ -53,6 +52,11 @@ export default function AdminDashboard() {
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">{t('dashboard.admin.title')}</h1>
+
+      {/* Analytics Charts */}
+      <div className="mb-8">
+        <AdminDashboardCharts />
+      </div>
 
       {professorAbsent.length > 0 && (
         <div className="mb-6 p-4 rounded-2xl border border-orange-200 dark:border-orange-500/40 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all duration-300 animate-fade-in shadow-sm">
@@ -165,16 +169,6 @@ export default function AdminDashboard() {
         </Link>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 mb-8">
-        <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft card-hover transition-colors duration-500">
-          <h2 className="text-text/60 dark:text-[#f5f5f5]/60 text-sm font-medium">{t('dashboard.admin.totalRevenue')}</h2>
-          <p className="text-2xl font-bold text-pink-primary dark:text-pink-400 mt-1">${revenue.toFixed(2)}</p>
-        </div>
-        <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft card-hover transition-colors duration-500">
-          <h2 className="text-text/60 dark:text-[#f5f5f5]/60 text-sm font-medium">{t('dashboard.admin.upcomingCourses')}</h2>
-          <p className="text-2xl font-bold text-pink-primary dark:text-pink-400 mt-1">{upcoming.length}</p>
-        </div>
-      </div>
       <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft overflow-hidden transition-colors duration-500">
         <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 flex justify-between items-center">
           <h2 className="font-semibold text-text dark:text-[#f5f5f5]">{t('dashboard.admin.recentCourses')}</h2>

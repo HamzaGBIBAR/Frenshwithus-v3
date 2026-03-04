@@ -327,6 +327,120 @@ router.get('/professors/availability', async (req, res) => {
   res.json(professors);
 });
 
+// Dashboard analytics (charts, KPIs)
+router.get('/analytics/dashboard', async (req, res) => {
+  const now = new Date();
+  const monthsBack = 6;
+  const monthKeys = [];
+  for (let i = monthsBack; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthKeys.push(d.toISOString().slice(0, 7));
+  }
+
+  const users = await prisma.user.findMany({
+    where: { role: { in: ['STUDENT', 'PROFESSOR'] } },
+    select: { id: true, role: true, createdAt: true },
+  });
+  const students = users.filter((u) => u.role === 'STUDENT');
+  const professors = users.filter((u) => u.role === 'PROFESSOR');
+
+  const payments = await prisma.payment.findMany({
+    select: { id: true, studentId: true, amount: true, status: true, date: true, nextPaymentDue: true },
+  });
+
+  const courses = await prisma.course.findMany({
+    select: { id: true, studentId: true, date: true },
+  });
+
+  const endedSessions = await prisma.liveSession.findMany({
+    where: { endedAt: { not: null } },
+    select: { roomName: true, endedAt: true },
+  });
+  const endedCourseIds = new Set();
+  for (const s of endedSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    endedCourseIds.add(s.roomName.replace('frenchwithus-course-', ''));
+  }
+
+  const newStudentsByMonth = monthKeys.map((m) => ({
+    month: m,
+    count: students.filter((s) => s.createdAt.toISOString().slice(0, 7) === m).length,
+  }));
+
+  const cancellationsByMonth = monthKeys.map((m) => {
+    const [y, mo] = m.split('-').map(Number);
+    const start = new Date(y, mo - 1, 1);
+    const end = new Date(y, mo, 0, 23, 59, 59);
+    return {
+      month: m,
+      count: payments.filter(
+        (p) =>
+          p.status === 'unpaid' &&
+          p.nextPaymentDue &&
+          new Date(p.nextPaymentDue) >= start &&
+          new Date(p.nextPaymentDue) <= end
+      ).length,
+    };
+  });
+
+  const activeByMonth = monthKeys.map((m) => {
+    const studentIds = new Set();
+    for (const c of courses) {
+      if (c.date.startsWith(m) && endedCourseIds.has(c.id)) {
+        studentIds.add(c.studentId);
+      }
+    }
+    return { month: m, count: studentIds.size };
+  });
+
+  const revenueByMonth = monthKeys.map((m) => {
+    const total = payments
+      .filter((p) => p.status === 'paid' && p.date.toISOString().slice(0, 7) === m)
+      .reduce((s, p) => s + p.amount, 0);
+    return { month: m, total };
+  });
+
+  const lessonsByMonth = monthKeys.map((m) => {
+    const count = courses.filter((c) => c.date.startsWith(m) && endedCourseIds.has(c.id)).length;
+    return { month: m, count };
+  });
+
+  const totalRevenue = payments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const upcomingCourses = courses.filter((c) => c.date >= today).length;
+
+  const studentsByCountry = await prisma.user.groupBy({
+    where: { role: 'STUDENT', country: { not: null } },
+    by: ['country'],
+    _count: { id: true },
+  });
+
+  res.json({
+    kpis: {
+      totalStudents: students.length,
+      totalProfessors: professors.length,
+      totalRevenue,
+      totalLessons: endedCourseIds.size,
+      upcomingCourses,
+      unpaidCount: payments.filter((p) => p.status === 'unpaid').length,
+      dueSoonCount: payments.filter((p) => {
+        if (p.status !== 'paid' || !p.nextPaymentDue) return false;
+        const due = new Date(p.nextPaymentDue);
+        const in7 = new Date();
+        in7.setDate(in7.getDate() + 7);
+        return due <= in7;
+      }).length,
+    },
+    subscriptionTrends: { newStudentsByMonth, cancellationsByMonth, activeByMonth },
+    revenueByMonth,
+    lessonsByMonth,
+    studentsByCountry: studentsByCountry
+      .map((s) => ({ country: s.country, count: s._count.id }))
+      .sort((a, b) => b.count - a.count),
+  });
+});
+
 // Revenue total
 router.get('/revenue', async (req, res) => {
   const paid = await prisma.payment.aggregate({
