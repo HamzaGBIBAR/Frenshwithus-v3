@@ -142,3 +142,10 @@ model Notification {
   @@unique([userId, dedupeKey])
   @@index([userId, createdAt])
 }
+
+// IPs blocked after exceeding rate limit; admin can unblock
+model BlockedIp {
+  id        String   @id @default(cuid())
+  ip        String   @unique
+  blockedAt DateTime @default(now())
+}

@@ -425,6 +425,17 @@
         "preparation": "Pack Préparation - 380€"
       }
     },
+    "blockedIps": {
+      "title": "IP bloquées",
+      "subtitle": "IP bloquées pour avoir dépassé 100 requêtes par minute. Débloquez pour autoriser à nouveau l'accès.",
+      "ip": "Adresse IP",
+      "blockedAt": "Bloquée le",
+      "unblock": "Débloquer",
+      "empty": "Aucune IP bloquée",
+      "unblockConfirm": "Débloquer cette IP ?",
+      "errorList": "Erreur lors du chargement",
+      "errorUnblock": "Erreur lors du déblocage"
+    },
     "adminAvailability": {
       "title": "Disponibilités",
       "subtitle": "Gérer la disponibilité des élèves et consulter celle des professeurs.",

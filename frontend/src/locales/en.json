@@ -425,6 +425,17 @@
         "preparation": "Preparation Pack - 380€"
       }
     },
+    "blockedIps": {
+      "title": "Blocked IPs",
+      "subtitle": "IPs blocked for exceeding 100 requests per minute. Unblock to allow access again.",
+      "ip": "IP address",
+      "blockedAt": "Blocked at",
+      "unblock": "Unblock",
+      "empty": "No blocked IPs",
+      "unblockConfirm": "Unblock this IP?",
+      "errorList": "Error loading list",
+      "errorUnblock": "Error unblocking"
+    },
     "adminAvailability": {
       "title": "Availability",
       "subtitle": "Manage student availability and view professor availability.",

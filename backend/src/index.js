@@ -16,7 +16,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import prisma from './lib/db.js';
-import { helmetMiddleware, generalLimiter, authLimiter, getAllowedOrigins } from './middleware/security.js';
+import { helmetMiddleware, blockBlockedIps, generalLimiter, authLimiter, getAllowedOrigins } from './middleware/security.js';
 import { initSentry, captureException } from './lib/sentry.js';
 import { initLiveSocket } from './lib/liveSocket.js';
 import { startProfessorAbsenceChecker } from './lib/professorAbsenceCheck.js';
@@ -58,11 +58,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// Healthcheck before block/rate limit so it is always reachable
+app.get('/api/health', (_, res) => res.json({ ok: true, db: dbConnected ? 'connected' : 'connecting' }));
+
+app.use(blockBlockedIps);
 app.use(generalLimiter);
 app.use('/api/auth/login', authLimiter);
-
-// Healthcheck MUST be registered before any authenticated routers to avoid interception.
-app.get('/api/health', (_, res) => res.json({ ok: true, db: dbConnected ? 'connected' : 'connecting' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);

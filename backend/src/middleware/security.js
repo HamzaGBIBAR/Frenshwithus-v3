@@ -1,7 +1,25 @@
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import prisma from '../lib/db.js';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+export const getClientIp = (req) => req.ip || req.connection?.remoteAddress || '';
+
+// Reject requests from blocked IPs (must run before rate limiter)
+export const blockBlockedIps = async (req, res, next) => {
+  const ip = getClientIp(req);
+  if (!ip) return next();
+  try {
+    const blocked = await prisma.blockedIp.findUnique({ where: { ip } });
+    if (blocked) {
+      return res.status(403).json({ error: 'Access denied. Your IP has been blocked. Contact admin to unblock.' });
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
 
 // CORS allowed origins – restrict in production
 export const getAllowedOrigins = () => {
@@ -18,13 +36,29 @@ export const getAllowedOrigins = () => {
   return ['http://localhost:5173', 'http://127.0.0.1:5173'];
 };
 
-// General rate limit
+// General rate limit: 100 per minute per IP; exceeding adds IP to block list
 export const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 200,
+  windowMs: 60 * 1000, // 1 min
+  max: 100,
   message: { error: 'Too many requests' },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => getClientIp(req),
+  handler: async (req, res) => {
+    const ip = getClientIp(req);
+    try {
+      await prisma.blockedIp.upsert({
+        where: { ip },
+        create: { ip },
+        update: {},
+      });
+    } catch (e) {
+      // ignore duplicate / DB errors, still respond 429
+    }
+    res.status(429).json({
+      error: 'Too many requests. Your IP has been blocked. Contact admin to unblock.',
+    });
+  },
 });
 
 // Stricter limit for auth endpoints (brute-force protection)

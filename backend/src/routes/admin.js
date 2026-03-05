@@ -567,4 +567,18 @@ router.get('/students/:id/sessions', async (req, res) => {
   res.json(sessions);
 });
 
+// Blocked IPs (rate-limit blocks); admin can list and unblock
+router.get('/blocked-ips', async (req, res) => {
+  const list = await prisma.blockedIp.findMany({
+    orderBy: { blockedAt: 'desc' },
+    select: { id: true, ip: true, blockedAt: true },
+  });
+  res.json(list);
+});
+
+router.delete('/blocked-ips/:id', async (req, res) => {
+  await prisma.blockedIp.delete({ where: { id: req.params.id } });
+  res.json({ ok: true });
+});
+
 export default router;

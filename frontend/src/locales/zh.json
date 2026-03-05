@@ -405,6 +405,17 @@
         "preparation": "备考套餐 - 380€"
       }
     },
+    "blockedIps": {
+      "title": "已封禁 IP",
+      "subtitle": "因每分钟超过 100 次请求而被封禁的 IP。解除封禁后可再次访问。",
+      "ip": "IP 地址",
+      "blockedAt": "封禁时间",
+      "unblock": "解除封禁",
+      "empty": "暂无封禁 IP",
+      "unblockConfirm": "确定解除此 IP 的封禁？",
+      "errorList": "加载列表失败",
+      "errorUnblock": "解除封禁失败"
+    },
     "adminAvailability": {
       "title": "可用时间",
       "subtitle": "管理学生可用时间并查看教师可用时间。",
