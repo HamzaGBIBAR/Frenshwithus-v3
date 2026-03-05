@@ -286,6 +286,8 @@
       "active": "Actives",
       "revenueTrends": "Revenus",
       "revenueTrendsSub": "Revenus mensuels (€)",
+      "filterByYear": "Année",
+      "lastMonths": "7 derniers mois",
       "lessonsCompleted": "Cours terminés",
       "lessonsCompletedSub": "Sessions terminées par mois",
       "studentsByCountry": "Élèves par pays",

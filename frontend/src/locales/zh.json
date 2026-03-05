@@ -278,6 +278,8 @@
     "admin": {
       "title": "控制面板",
       "totalRevenue": "总收入",
+      "filterByYear": "年份",
+      "lastMonths": "最近7个月",
       "upcomingCourses": "即将开始的课程",
       "recentCourses": "最近课程",
       "viewAll": "查看全部",

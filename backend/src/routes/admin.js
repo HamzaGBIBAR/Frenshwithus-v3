@@ -341,14 +341,22 @@ router.get('/professors/availability', async (req, res) => {
   res.json(professors);
 });
 
-// Dashboard analytics (charts, KPIs)
+// Dashboard analytics (charts, KPIs). Optional ?year=YYYY for full year (Jan–Dec).
 router.get('/analytics/dashboard', async (req, res) => {
   const now = new Date();
-  const monthsBack = 6;
-  const monthKeys = [];
-  for (let i = monthsBack; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthKeys.push(d.toISOString().slice(0, 7));
+  const yearParam = req.query.year ? parseInt(req.query.year, 10) : null;
+  let monthKeys = [];
+
+  if (yearParam && yearParam >= 2020 && yearParam <= 2100) {
+    for (let m = 1; m <= 12; m++) {
+      monthKeys.push(`${yearParam}-${String(m).padStart(2, '0')}`);
+    }
+  } else {
+    const monthsBack = 6;
+    for (let i = monthsBack; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      monthKeys.push(d.toISOString().slice(0, 7));
+    }
   }
 
   const users = await prisma.user.findMany({

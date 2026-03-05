@@ -98,18 +98,24 @@ const tooltipStyle = () => ({
   boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
 });
 
+const currentYear = new Date().getFullYear();
+const YEAR_OPTIONS = [null, ...Array.from({ length: currentYear - 2022 }, (_, i) => currentYear - i)];
+
 export default function AdminDashboardCharts() {
   const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
   useEffect(() => {
+    setLoading(true);
+    const params = selectedYear ? { year: selectedYear } : {};
     api
-      .get('/admin/analytics/dashboard')
+      .get('/admin/analytics/dashboard', { params })
       .then((r) => setData(r.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedYear]);
 
   if (loading) {
     return (
@@ -248,8 +254,25 @@ export default function AdminDashboardCharts() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* Revenue & Lessons - 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Revenue & Lessons - year filter + 2 columns */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <span className="text-text/70 dark:text-[#f5f5f5]/70 font-medium">{t('dashboard.admin.filterByYear')}</span>
+            <select
+              value={selectedYear ?? ''}
+              onChange={(e) => setSelectedYear(e.target.value ? parseInt(e.target.value, 10) : null)}
+              className="rounded-xl border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5] px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-pink-primary/40 dark:focus:ring-pink-400/40 focus:border-pink-primary dark:focus:border-pink-400 outline-none transition-all min-h-touch"
+              aria-label={t('dashboard.admin.filterByYear')}
+            >
+              <option value="">{t('dashboard.admin.lastMonths')}</option>
+              {YEAR_OPTIONS.filter(Boolean).map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title={t('dashboard.admin.revenueTrends')}
           subtitle={t('dashboard.admin.revenueTrendsSub')}
@@ -299,6 +322,7 @@ export default function AdminDashboardCharts() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
+        </div>
       </div>
 
       {/* Students by Country */}

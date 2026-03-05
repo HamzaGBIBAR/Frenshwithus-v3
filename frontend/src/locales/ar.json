@@ -278,6 +278,8 @@
     "admin": {
       "title": "لوحة التحكم",
       "totalRevenue": "إجمالي الإيرادات",
+      "filterByYear": "السنة",
+      "lastMonths": "آخر 7 أشهر",
       "upcomingCourses": "الدروس القادمة",
       "recentCourses": "الدروس الأخيرة",
       "viewAll": "عرض الكل",
