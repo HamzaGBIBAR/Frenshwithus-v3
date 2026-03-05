@@ -2,29 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Responsive base – mobile-first, relative units */
-html {
-  font-size: 16px;
-}
-@media (min-width: 768px) {
-  html { font-size: 16px; }
-}
-@media (min-width: 1024px) {
-  html { font-size: 16px; }
-}
-@media (min-width: 1600px) {
-  html { font-size: 18px; }
-}
+/* ==========================================================================
+   MOBILE-FIRST RESPONSIVE DESIGN
+   Breakpoints: 480px (xs), 768px (md), 1024px (lg), 1280px (xl), 1600px (3xl)
 
-/* Responsive images and media */
-img, video, iframe {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-img {
-  display: block;
-}
+   Key improvements:
+   - Root font uses clamp() for fluid typography (rem-based).
+   - Images/media: max-width 100%, height auto to prevent overflow.
+   - Section dividers and tables adapt at each breakpoint.
+   - Touch targets (min 44px) and .touch-target, .safe-area-* utilities.
+   - Reduced motion respected; overflow-x hidden on html/body.
+   ========================================================================== */
 
 :root {
   --pink-primary: #E75480;
@@ -33,26 +21,40 @@ img {
   --bg: #FFF7FA;
   --text: #1F1F1F;
   --gold: #F4B400;
-
-  /* Typography */
   --font-sans: 'Nunito Sans', 'Noto Sans Arabic', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
   --font-heading: 'Nunito', 'Noto Sans Arabic', 'Noto Sans SC', 'Nunito Sans', system-ui, sans-serif;
+  /* Fluid root font: 16px base, scales to 18px on large viewports for readability */
+  --root-font-size: clamp(1rem, 0.5vw + 0.875rem, 1.125rem);
 }
 
+/* Base: mobile-first, relative units (rem), prevent horizontal overflow */
 html {
-  @apply transition-colors duration-500 ease-in-out;
+  font-size: var(--root-font-size);
   min-height: 100%;
   overflow-x: hidden;
+  @apply transition-colors duration-500 ease-in-out;
 }
 
 body {
   min-height: 100vh;
   font-family: var(--font-sans);
-  @apply antialiased transition-colors duration-500 ease-in-out;
   background-color: var(--bg);
   color: var(--text);
-  animation: bgBreath 30s ease-in-out infinite;
   overflow-x: hidden;
+  animation: bgBreath 30s ease-in-out infinite;
+  @apply antialiased transition-colors duration-500 ease-in-out;
+}
+
+/* Responsive images and media: scale within container, preserve aspect ratio */
+img,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+img {
+  display: block;
 }
 
 @keyframes bgBreath {
@@ -154,7 +156,7 @@ textarea::placeholder {
   display: none;
 }
 
-/* Section divider – dégradé rose entre les sections */
+/* Section divider: gradient line between sections; width adapts by breakpoint */
 .section-divider {
   height: 1px;
   margin: 0 auto;
@@ -170,10 +172,17 @@ textarea::placeholder {
     transparent 100%
   );
 }
-@media (min-width: 640px) {
-  .section-divider {
-    max-width: 80%;
-  }
+@media (min-width: 480px) {
+  .section-divider { max-width: 90%; }
+}
+@media (min-width: 768px) {
+  .section-divider { max-width: 85%; }
+}
+@media (min-width: 1024px) {
+  .section-divider { max-width: 80%; }
+}
+@media (min-width: 1280px) {
+  .section-divider { max-width: 75%; }
 }
 
 .dark .section-divider {
@@ -195,7 +204,7 @@ textarea::placeholder {
   max-width: 60%;
 }
 
-/* Responsive tables – scroll on mobile */
+/* Responsive tables: horizontal scroll on small screens, touch-friendly */
 .responsive-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -206,10 +215,29 @@ textarea::placeholder {
   }
 }
 
-/* TV / large screen – enhance spacing and typography */
-@media (min-width: 1600px) {
+/* Touch-friendly: minimum 44×44px tap targets for buttons/links (WCAG 2.5.5) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Safe area: respect notched devices (use on footer/fixed bottom bars) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Large viewports: extra letter-spacing for headlines */
+@media (min-width: 1280px) {
   .headline-approach {
     letter-spacing: 0.02em;
+  }
+}
+@media (min-width: 1600px) {
+  .headline-approach {
+    letter-spacing: 0.025em;
   }
 }
 

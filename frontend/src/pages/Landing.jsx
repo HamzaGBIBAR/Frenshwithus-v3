@@ -91,7 +91,7 @@ export default function Landing() {
     <div className="min-h-screen bg-transparent transition-colors duration-500 relative overflow-x-hidden">
       <ScrollCharacter />
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-500">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center gap-2">
+        <div className="w-full px-4 xs:px-5 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center gap-2">
           <div className="flex flex-col gap-0.5" dir="ltr">
             <span className="logo-sequence text-xl sm:text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-baseline gap-1 min-w-0 shrink">
               <span className={`logo-part font-bold text-text dark:text-[#f5f5f5] transition-opacity duration-300 ${showFrench ? 'opacity-100' : 'opacity-0'}`}>French</span>
@@ -132,7 +132,7 @@ export default function Landing() {
         </div>
       </header>
 
-      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 3xl:px-12 py-10 sm:py-16 lg:py-24 3xl:py-32">
+      <main className="w-full max-w-6xl mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10 3xl:px-12 py-10 sm:py-16 lg:py-24 xl:py-28 3xl:py-32">
         {/* Hero Section */}
         <section ref={heroRef} className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-20">
           <ScrollReveal className="flex-1 w-full min-w-0">
@@ -205,7 +205,7 @@ export default function Landing() {
               {t('approach.line3')}
             </h2>
             </ScrollReveal>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <ScrollReveal className="approach-card bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-pink-soft dark:shadow-lg border border-pink-soft/50 dark:border-white/10 card-hover relative transition-colors duration-500 flex flex-col h-full">
                 <div className="absolute top-4 right-4 w-10 h-10 bg-pink-soft dark:bg-white/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -386,7 +386,7 @@ export default function Landing() {
 
         <ContactSection />
 
-        <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-12 sm:mt-16 pt-8 sm:pt-12 pb-6 sm:pb-8">
+        <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-12 sm:mt-16 pt-8 sm:pt-12 pb-6 sm:pb-8 safe-area-bottom">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
               <div dir="ltr" className="flex flex-col gap-1">

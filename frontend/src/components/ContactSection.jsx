@@ -92,7 +92,7 @@ export default function ContactSection() {
                       href={item.href}
                       target={item.href.startsWith('http') ? '_blank' : undefined}
                       rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                      className="contact-link flex items-center gap-2 px-4 py-3 rounded-xl bg-pink-soft/50 dark:bg-white/5 border border-pink-soft/60 dark:border-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft dark:hover:bg-white/10 hover:border-pink-primary/40 dark:hover:border-pink-400/40 transition-all duration-300 hover:scale-[1.03] hover:-translate-y-0.5"
+                      className="contact-link flex items-center gap-2 px-4 py-3 min-h-touch rounded-xl bg-pink-soft/50 dark:bg-white/5 border border-pink-soft/60 dark:border-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft dark:hover:bg-white/10 hover:border-pink-primary/40 dark:hover:border-pink-400/40 transition-all duration-300 hover:scale-[1.03] hover:-translate-y-0.5 touch-manipulation"
                       style={{ animationDelay: `${i * 80}ms` }}
                       aria-label={item.label}
                     >
@@ -104,7 +104,7 @@ export default function ContactSection() {
 
                 <a
                   href={`mailto:${CONTACT.email}`}
-                  className="contact-cta inline-flex items-center gap-2 mt-6 px-6 py-3 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover font-medium text-sm"
+                  className="contact-cta inline-flex items-center gap-2 mt-6 px-6 py-3 min-h-touch bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover font-medium text-sm touch-manipulation"
                 >
                   {t('contact.cta')}
                 </a>

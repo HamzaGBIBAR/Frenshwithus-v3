@@ -3,7 +3,9 @@ export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
+    /* Mobile-first breakpoints: 480px, 768px, 1024px, 1280px (+ 2xl, 3xl for large desktops) */
     screens: {
+      xs: '480px',
       sm: '640px',
       md: '768px',
       lg: '1024px',
@@ -12,26 +14,39 @@ export default {
       '3xl': '1600px',
     },
     extend: {
+      /* Minimum touch target size for accessibility (WCAG 2.5.5) */
+      minHeight: {
+        'touch': '44px',
+      },
+      minWidth: {
+        'touch': '44px',
+      },
       fontFamily: {
         sans: ['Nunito Sans', 'Noto Sans Arabic', 'Noto Sans SC', 'system-ui', '-apple-system', 'sans-serif'],
         heading: ['Nunito', 'Noto Sans Arabic', 'Noto Sans SC', 'Nunito Sans', 'system-ui', 'sans-serif'],
       },
+      /* Responsive typography: rem-based with optional fluid scaling */
       fontSize: {
-        'typo-h1': ['2rem', { lineHeight: '1.2' }],
-        'typo-h1-lg': ['3rem', { lineHeight: '1.2' }],
-        'typo-h2': ['1.5rem', { lineHeight: '1.3' }],
-        'typo-h2-lg': ['2rem', { lineHeight: '1.3' }],
-        'typo-h3': ['1.25rem', { lineHeight: '1.35' }],
+        'typo-h1': ['clamp(1.75rem, 4vw + 1rem, 2.5rem)', { lineHeight: '1.2' }],
+        'typo-h1-lg': ['clamp(2.25rem, 5vw + 1.25rem, 3rem)', { lineHeight: '1.2' }],
+        'typo-h2': ['clamp(1.375rem, 2.5vw + 0.75rem, 1.75rem)', { lineHeight: '1.3' }],
+        'typo-h2-lg': ['clamp(1.75rem, 3vw + 1rem, 2rem)', { lineHeight: '1.3' }],
+        'typo-h3': ['clamp(1.125rem, 1.5vw + 0.75rem, 1.5rem)', { lineHeight: '1.35' }],
         'typo-h3-lg': ['1.5rem', { lineHeight: '1.35' }],
         'typo-body': ['0.875rem', { lineHeight: '1.6' }],
         'typo-body-lg': ['1rem', { lineHeight: '1.6' }],
-        'typo-body-xl': ['1rem', { lineHeight: '1.6' }],
+        'typo-body-xl': ['clamp(0.9375rem, 0.5vw + 0.85rem, 1rem)', { lineHeight: '1.6' }],
         'typo-body-xl-lg': ['1.125rem', { lineHeight: '1.6' }],
         'typo-small': ['0.75rem', { lineHeight: '1.5' }],
         'typo-small-lg': ['0.875rem', { lineHeight: '1.5' }],
         'typo-btn': ['0.875rem', { lineHeight: '1.2' }],
         'typo-caption': ['0.75rem', { lineHeight: '1.4' }],
         'typo-caption-lg': ['0.8125rem', { lineHeight: '1.4' }],
+      },
+      /* Responsive spacing: consistent padding/margin scale across breakpoints */
+      spacing: {
+        'section': 'clamp(2rem, 5vw, 4rem)',
+        'section-sm': 'clamp(1.5rem, 4vw, 3rem)',
       },
       fontWeight: {
         'typo-regular': '400',

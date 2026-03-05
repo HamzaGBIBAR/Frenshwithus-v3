@@ -3,7 +3,7 @@ export default function MobileMenuButton({ onClick, ariaLabel = 'Open menu' }) {
     <button
       type="button"
       onClick={onClick}
-      className="md:hidden p-2.5 rounded-xl text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 transition"
+      className="md:hidden p-3 min-h-touch min-w-touch rounded-xl text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 transition active:scale-95"
       aria-label={ariaLabel}
     >
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
