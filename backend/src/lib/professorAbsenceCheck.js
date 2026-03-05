@@ -1,6 +1,7 @@
 /**
  * Vérifie périodiquement les cours où le professeur n'a pas démarré après 15 minutes.
  * Marque le cours "Absence du Prof" et notifie l'admin via Socket.IO si connecté.
+ * Les heures des cours sont interprétées en heure Maroc (UTC+1).
  */
 import prisma from './db.js';
 
@@ -8,6 +9,12 @@ const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 const CHECK_INTERVAL_MS = 60 * 1000; // toutes les minutes
 
 let intervalId = null;
+
+/** Parse date + time as Morocco (UTC+1) to avoid marking courses before they actually start. */
+function getCourseStartMorocco(dateStr, timeStr) {
+  const timePart = !timeStr || timeStr.length <= 5 ? `${timeStr || '00:00'}:00` : timeStr;
+  return new Date(`${dateStr}T${timePart}+01:00`);
+}
 
 export function startProfessorAbsenceChecker(app) {
   if (intervalId) return;
@@ -28,9 +35,10 @@ export function startProfessorAbsenceChecker(app) {
         },
       });
 
-      // Filtrer : cours dont l'heure de début est passée depuis au moins 15 min
+      // Filtrer : cours dont l'heure de début (Maroc) est passée depuis au moins 15 min
       const toMark = courses.filter((c) => {
-        const courseStart = new Date(`${c.date}T${c.time}`);
+        const courseStart = getCourseStartMorocco(c.date, c.time);
+        if (isNaN(courseStart.getTime())) return false;
         return courseStart.getTime() <= cutoff.getTime();
       });
 

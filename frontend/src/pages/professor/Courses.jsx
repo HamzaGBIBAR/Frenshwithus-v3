@@ -73,18 +73,26 @@ function StudentNameTooltip({ student, children, className, locale }) {
   );
 }
 
+// Parse course start as Morocco time (UTC+1) so status is correct for all timezones
+function getCourseStartMorocco(course) {
+  if (!course?.date || !course?.time) return null;
+  const timePart = course.time.length <= 5 ? `${course.time}:00` : course.time;
+  return new Date(`${course.date}T${timePart}+01:00`);
+}
+
 function getCourseStatus(course) {
   const now = new Date();
-  const d = new Date(`${course.date}T${course.time}`);
+  const d = getCourseStartMorocco(course);
+  if (!d || isNaN(d.getTime())) return 'upcoming';
   const twoHours = 2 * 60 * 60 * 1000;
   const fifteenMin = 15 * 60 * 1000;
 
-  // Future course: always show upcoming; never show professor_absent before start time
+  // Future course (Morocco time): always show "upcoming", never "professor absent"
   if (d >= now) return 'upcoming';
 
   if (course.sessionEnded) return 'completed';
   if (course.isStarted && now - d < twoHours) return 'live';
-  // Past start, professor did not start: show "upcoming" for 15 min grace, then professor_absent
+  // Past start (Morocco), professor did not start: grace 15 min then professor_absent
   if (!course.isStarted) {
     if (now - d < fifteenMin) return 'upcoming';
     return 'professor_absent';
