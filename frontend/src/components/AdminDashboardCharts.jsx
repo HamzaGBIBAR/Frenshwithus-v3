@@ -148,7 +148,7 @@ export default function AdminDashboardCharts() {
 
   const KpiCard = ({ label, value, icon, delay }) => (
     <div
-      className="group relative bg-white dark:bg-[#1a1a1a] p-5 rounded-2xl border border-pink-soft/40 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-300 hover:shadow-[0_12px_32px_rgba(231,84,128,0.18)] dark:hover:shadow-[0_12px_32px_rgba(231,84,128,0.12)] hover:-translate-y-1 hover:border-pink-primary/30 dark:hover:border-pink-400/30 animate-fade-in"
+      className="group relative bg-white dark:bg-[#221a1e] p-5 rounded-2xl border border-pink-soft/40 dark:border-pink-500/25 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-300 hover:shadow-[0_12px_32px_rgba(231,84,128,0.18)] dark:hover:shadow-[0_12px_32px_rgba(231,84,128,0.15)] hover:-translate-y-1 hover:border-pink-primary/40 dark:hover:border-pink-400/40 animate-fade-in"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-primary/5 to-transparent dark:from-pink-400/5 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
