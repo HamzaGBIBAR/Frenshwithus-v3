@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
-import { formatTimeAMPM } from '../../utils/format';
+import { formatTimeAMPM, formatTimeRange } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
 import COUNTRIES, { getLocalDateTime } from '../../utils/countries';
 
@@ -252,7 +252,7 @@ export default function ProfessorCourses() {
       id: c.id,
       date: c.date,
       title: c.student?.name ? `${t('dashboard.admin.student')} ${c.student.name}` : t('dashboard.professor.course'),
-      time: formatTimeAMPM(c.time),
+      time: formatTimeRange(c.time, c.durationMin || 60),
       rawTime: c.time,
       type: 'course',
       isPast,
@@ -345,7 +345,7 @@ export default function ProfessorCourses() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <span className={`flex items-center justify-center min-w-[4.5rem] h-12 px-2 rounded-xl shrink-0 font-mono font-bold text-sm shadow-sm whitespace-nowrap ${hasDarkBg ? 'bg-black/35 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
-              {formatTimeAMPM(c.time)}
+              {formatTimeRange(c.time, c.durationMin || 60)}
             </span>
             <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
               <StudentNameTooltip student={c.student} className={`font-semibold break-words cursor-default ${nameTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
@@ -726,7 +726,7 @@ export default function ProfessorCourses() {
                             <div className="space-y-1.5">
                               <StudentNameTooltip student={c.student} className={`font-semibold text-sm leading-snug break-words block cursor-default ${weekTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
                               <div className="flex flex-col gap-1">
-                                <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{formatTimeAMPM(c.time)}</span>
+                                <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{formatTimeRange(c.time, c.durationMin || 60)}</span>
                                 <span className={`inline-block w-fit px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${
                                   status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white animate-pulse' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 animate-pulse') :
                                   status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :

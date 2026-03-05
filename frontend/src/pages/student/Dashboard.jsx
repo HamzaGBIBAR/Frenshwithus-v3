@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
-import { formatTimeAMPM, formatProfessorName } from '../../utils/format';
+import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
 import { getLocalDateTime, convertMoroccoToLocal } from '../../utils/countries';
 import COUNTRIES from '../../utils/countries';
@@ -189,9 +189,11 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted, loc
   const borderClass = highlighted ? 'ring-2 ring-pink-primary dark:ring-pink-400 border-pink-primary dark:border-pink-400' : 'border-pink-soft/50 dark:border-white/10';
   const liveBorder = variant === 'live' ? 'border-green-500/50 dark:border-green-400/50' : borderClass;
 
-  const displayDate = localInfo ? localInfo.displayDate : course.date;
-  const displayTime = localInfo ? localInfo.displayTime : (course.time ? formatTimeAMPM(course.time) : '');
   const durationMin = course.durationMin || 60;
+  const displayDate = localInfo ? localInfo.displayDate : course.date;
+  const displayTime = localInfo
+    ? (localInfo.displayEndTime ? `${localInfo.displayTime} – ${localInfo.displayEndTime}` : localInfo.displayTime)
+    : (course.time ? formatTimeRange(course.time, durationMin) : '');
 
   return (
     <div
@@ -255,7 +257,10 @@ export default function StudentDashboard() {
 
   const getLocalInfo = (c) => {
     if (!user?.country || !c?.date || !c?.time) return null;
-    return convertMoroccoToLocal(c.date, c.time, user.country, i18n.language);
+    const start = convertMoroccoToLocal(c.date, c.time, user.country, i18n.language);
+    const endTime = getEndTime(c.time, c.durationMin || 60);
+    const end = endTime ? convertMoroccoToLocal(c.date, endTime, user.country, i18n.language) : null;
+    return { ...start, displayEndTime: end?.displayTime || null };
   };
 
   const { upcoming, live, past } = categorizeCourses(courses);
@@ -289,7 +294,7 @@ export default function StudentDashboard() {
       id: c.id,
       date: localInfo?.date || c.date,
       title: c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse'),
-      time: localInfo?.displayTime || formatTimeAMPM(c.time),
+      time: localInfo?.displayEndTime ? `${localInfo.displayTime} – ${localInfo.displayEndTime}` : (localInfo?.displayTime || formatTimeRange(c.time, c.durationMin || 60)),
       hoverDetails: `${t('dashboard.student.moroccoTime')}: ${c.date} ${formatTimeAMPM(c.time)}`,
       type: 'course',
       isPast: sessionEnded || !!c.endReason,

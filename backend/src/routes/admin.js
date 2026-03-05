@@ -463,6 +463,67 @@ router.get('/analytics/dashboard', async (req, res) => {
   });
 });
 
+// Teacher (professor) statistics for admin dashboard
+router.get('/analytics/teachers', async (req, res) => {
+  const now = new Date();
+  const professors = await prisma.user.findMany({
+    where: { role: 'PROFESSOR' },
+    select: {
+      id: true,
+      name: true,
+      availability: { select: { id: true } },
+      coursesAsProfessor: {
+        select: { id: true, date: true, time: true, absenceReason: true },
+      },
+    },
+  });
+
+  const endedSessions = await prisma.liveSession.findMany({
+    where: { endedAt: { not: null } },
+    select: { roomName: true, endReason: true },
+  });
+  const endReasonByCourse = {};
+  for (const s of endedSessions) {
+    if (!s.roomName.startsWith('frenchwithus-course-')) continue;
+    const courseId = s.roomName.replace('frenchwithus-course-', '');
+    endReasonByCourse[courseId] = s.endReason;
+  }
+
+  const oneWeekAgo = new Date(now);
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const weekStart = oneWeekAgo.toISOString().slice(0, 10);
+
+  let absentCount = 0;
+  let activeThisWeekCount = 0;
+  const professorIdsActiveThisWeek = new Set();
+  const professorIdsAbsent = new Set();
+
+  for (const p of professors) {
+    for (const c of p.coursesAsProfessor) {
+      const courseStart = new Date(`${c.date}T${c.time}`);
+      const endReason = endReasonByCourse[c.id] || c.absenceReason;
+      if (courseStart <= now && endReason === 'professor_absent') {
+        professorIdsAbsent.add(p.id);
+      }
+      if (c.date >= weekStart) {
+        professorIdsActiveThisWeek.add(p.id);
+      }
+    }
+    if (professorIdsAbsent.has(p.id)) absentCount++;
+    if (professorIdsActiveThisWeek.has(p.id)) activeThisWeekCount++;
+  }
+
+  const withAvailabilityCount = professors.filter((p) => p.availability && p.availability.length > 0).length;
+
+  res.json({
+    total: professors.length,
+    absent: professorIdsAbsent.size,
+    activeThisWeek: professorIdsActiveThisWeek.size,
+    withAvailability: withAvailabilityCount,
+    withoutAvailability: professors.length - withAvailabilityCount,
+  });
+});
+
 // Revenue total
 router.get('/revenue', async (req, res) => {
   const paid = await prisma.payment.aggregate({

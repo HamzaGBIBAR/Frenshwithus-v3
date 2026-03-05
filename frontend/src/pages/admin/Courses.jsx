@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatTimeAMPM, formatDateToAMPM } from '../../utils/format';
+import { formatTimeAMPM, formatDateToAMPM, getEndTime, formatTimeRange } from '../../utils/format';
 import api from '../../api/axios';
 
 export default function Courses() {
@@ -193,6 +193,12 @@ export default function Courses() {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.endTime')}</label>
+              <div className="w-full px-4 py-2.5 rounded-xl bg-pink-soft/30 dark:bg-white/5 border border-pink-soft/50 dark:border-white/10 text-text dark:text-[#f5f5f5] font-medium">
+                {form.time ? `${formatTimeAMPM(form.time)} – ${formatTimeAMPM(getEndTime(form.time, form.durationMin))}` : '—'}
+              </div>
+            </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.meetingLink')}</label>
               <div className="flex flex-wrap gap-2">
@@ -251,7 +257,7 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
-                <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeRange(c.time, c.durationMin || 60)}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.durationMin || 60} min</td>
                 <td className="p-3">
                   {showProfessorAbsent ? (
