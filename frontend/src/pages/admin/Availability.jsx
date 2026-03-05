@@ -69,8 +69,8 @@ export default function AdminAvailability() {
     return found?.name || selectedStudentCountry;
   }, [selectedStudentCountry]);
   const selectedStudentTz = useMemo(
-    () => (selectedStudentCountry ? getTimezoneByCountry(selectedStudentCountry) : null),
-    [selectedStudentCountry]
+    () => selectedStudentData?.timezone || (selectedStudentCountry ? getTimezoneByCountry(selectedStudentCountry) : null),
+    [selectedStudentData?.timezone, selectedStudentCountry]
   );
 
   const formatSlotTime = (timeStr) => {
@@ -109,6 +109,19 @@ export default function AdminAvailability() {
     return `${dayRange} ${formatSlotTime(local.localStart.time)} - ${formatSlotTime(local.localEnd.time)}`;
   };
 
+  // Weekly calendar (Morocco time): which profs/students available per (day, hour)
+  const hourSlots = Array.from({ length: 15 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+  const slotContains = (start, end, timeStr) => (start && end && timeStr && timeStr >= start && timeStr < end);
+  const getWeeklyCell = (dayOfWeek, timeStr) => {
+    const profs = professors.filter((p) =>
+      (p.availability || []).some((s) => s.dayOfWeek === dayOfWeek && slotContains(s.startTime, s.endTime, timeStr))
+    );
+    const studs = students.filter((s) =>
+      (s.studentAvailability || []).some((slot) => slot.dayOfWeek === dayOfWeek && slotContains(slot.startTime, slot.endTime, timeStr))
+    );
+    return { profs, studs };
+  };
+
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">
@@ -117,6 +130,63 @@ export default function AdminAvailability() {
       <p className="text-text/70 dark:text-[#f5f5f5]/70 text-sm mb-6">
         {t('dashboard.adminAvailability.subtitle')}
       </p>
+
+      {/* Weekly calendar (Morocco time) - overlap of prof + student availability */}
+      <section className="mb-8 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden">
+        <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
+          <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-pink-primary dark:bg-pink-400" />
+            {t('dashboard.adminAvailability.weeklyCalendar')}
+          </h2>
+          <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mt-1">
+            {t('dashboard.adminAvailability.weeklyCalendarHint')}
+          </p>
+        </div>
+        <div className="p-4 overflow-x-auto">
+          <table className="w-full text-sm border-collapse min-w-[600px]">
+            <thead>
+              <tr className="border-b border-pink-soft/50 dark:border-white/10">
+                <th className="text-left p-2 font-medium text-text/70 dark:text-[#f5f5f5]/70 w-14">{t('dashboard.adminAvailability.time')}</th>
+                {dayLabels.map((d, i) => (
+                  <th key={i} className="p-2 font-medium text-text dark:text-[#f5f5f5]">{d}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {hourSlots.map((timeStr) => (
+                <tr key={timeStr} className="border-b border-pink-soft/30 dark:border-white/5 hover:bg-pink-soft/10 dark:hover:bg-white/5">
+                  <td className="p-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs">{timeStr}</td>
+                  {[1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => {
+                    const { profs, studs } = getWeeklyCell(dayOfWeek, timeStr);
+                    return (
+                      <td key={dayOfWeek} className="p-1.5 align-top">
+                        <div className="flex flex-wrap gap-1">
+                          {profs.length > 0 && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-100 dark:bg-pink-500/25 text-pink-800 dark:text-pink-200" title={profs.map((p) => p.name).join(', ')}>
+                              {profs.length}P
+                            </span>
+                          )}
+                          {studs.length > 0 && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200" title={studs.map((s) => s.name).join(', ')}>
+                              {studs.length}E
+                            </span>
+                          )}
+                          {profs.length === 0 && studs.length === 0 && (
+                            <span className="text-[10px] text-text/40 dark:text-[#f5f5f5]/40">—</span>
+                          )}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50 mt-2">
+            P = {t('dashboard.adminAvailability.professorAvailability').toLowerCase()}, E = {t('dashboard.adminAvailability.studentAvailability').toLowerCase()}. {t('dashboard.adminAvailability.slotMoroccoRef')}.
+          </p>
+        </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Student availability */}
@@ -239,7 +309,7 @@ export default function AdminAvailability() {
               </p>
             ) : (
               students.map((student, idx) => {
-                const studentTz = student?.country ? getTimezoneByCountry(student.country) : null;
+                const studentTz = student?.timezone || (student?.country ? getTimezoneByCountry(student.country) : null);
                 const slots = student?.studentAvailability || [];
                 return (
                   <div

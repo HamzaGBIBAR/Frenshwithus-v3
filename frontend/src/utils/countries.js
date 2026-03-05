@@ -38,6 +38,11 @@ const COUNTRIES = [
   { code: 'GH', name: 'Ghana', tz: 'Africa/Accra' },
 ];
 
+// Unique IANA timezones for user profile (value, label)
+export const TIMEZONE_OPTIONS = [
+  ...new Map(COUNTRIES.map((c) => [c.tz, { value: c.tz, label: `${c.name} (${c.tz})` }])).values(),
+];
+
 export default COUNTRIES;
 
 export function getTimezoneByCountry(countryCode) {
@@ -199,4 +204,46 @@ function zonedDateTimeToUtc(dateStr, timeStr, timeZone) {
   }
 
   return new Date(utcMs);
+}
+
+const MOROCCO_TZ = 'Africa/Casablanca';
+// Reference Monday = 2025-01-06 (day 1)
+function refDateForDay(dayOfWeek) {
+  const d = 5 + Number(dayOfWeek); // Mon=6, Tue=7, ... Sun=12
+  return `2025-01-${String(d).padStart(2, '0')}`;
+}
+
+/**
+ * Convert a weekly slot from Morocco to a target timezone (for display).
+ * Returns { dayOfWeek, startTime, endTime, displayDay, displayStart, displayEnd } in target TZ.
+ */
+export function moroccoSlotToLocal(dayOfWeek, startTime, endTime, toTz, locale = 'fr') {
+  const refDate = refDateForDay(dayOfWeek);
+  const startOut = convertTimeBetweenTimezones(refDate, startTime, MOROCCO_TZ, toTz, locale);
+  const endOut = convertTimeBetweenTimezones(refDate, endTime || startTime, MOROCCO_TZ, toTz, locale);
+  if (!startOut || !endOut) return null;
+  return {
+    dayOfWeek: startOut.dayOfWeek,
+    startTime: startOut.time,
+    endTime: endOut.time,
+    displayDay: startOut.displayDate,
+    displayStart: startOut.displayTime,
+    displayEnd: endOut.displayTime,
+  };
+}
+
+/**
+ * Convert a weekly slot from user's timezone to Morocco (for saving).
+ * Returns { dayOfWeek, startTime, endTime } in Morocco.
+ */
+export function localSlotToMorocco(dayOfWeek, startTime, endTime, fromTz) {
+  const refDate = refDateForDay(dayOfWeek);
+  const startOut = convertTimeBetweenTimezones(refDate, startTime, fromTz, MOROCCO_TZ);
+  const endOut = convertTimeBetweenTimezones(refDate, endTime || startTime, fromTz, MOROCCO_TZ);
+  if (!startOut || !endOut) return null;
+  return {
+    dayOfWeek: startOut.dayOfWeek,
+    startTime: startOut.time,
+    endTime: endOut.time,
+  };
 }

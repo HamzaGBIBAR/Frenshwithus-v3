@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
-import COUNTRIES from '../../utils/countries';
+import COUNTRIES, { getTimezoneByCountry, TIMEZONE_OPTIONS } from '../../utils/countries';
 
 export default function Students() {
   const { t } = useTranslation();
   const [students, setStudents] = useState([]);
   const [professors, setProfessors] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', professorId: '', country: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' });
   const [error, setError] = useState('');
 
   const load = () => {
@@ -24,8 +24,14 @@ export default function Students() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/admin/students', { name: form.name, email: form.email, password: form.password, country: form.country || undefined });
-      setForm({ name: '', email: '', password: '', professorId: '', country: '' });
+      await api.post('/admin/students', {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        country: form.country || undefined,
+        timezone: form.timezone || undefined,
+      });
+      setForm({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminStudents.errorDefault'));
@@ -38,7 +44,7 @@ export default function Students() {
     try {
       await api.put(`/admin/students/${editing.id}`, form);
       setEditing(null);
-      setForm({ name: '', email: '', password: '', professorId: '', country: '' });
+      setForm({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminStudents.errorDefault'));
@@ -58,7 +64,14 @@ export default function Students() {
 
   const startEdit = (s) => {
     setEditing(s);
-    setForm({ name: s.name, email: s.email, password: '', professorId: s.professorId || '', country: s.country || '' });
+    setForm({
+      name: s.name,
+      email: s.email,
+      password: '',
+      professorId: s.professorId || '',
+      country: s.country || '',
+      timezone: s.timezone || (s.country ? getTimezoneByCountry(s.country) : '') || '',
+    });
   };
 
   return (
@@ -97,7 +110,14 @@ export default function Students() {
           />
           <select
             value={form.country}
-            onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
+            onChange={(e) => {
+              const code = e.target.value;
+              setForm((f) => ({
+                ...f,
+                country: code,
+                timezone: code ? getTimezoneByCountry(code) : f.timezone,
+              }));
+            }}
             className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
           >
             <option value="">{t('dashboard.adminStudents.selectCountry')}</option>
@@ -105,6 +125,19 @@ export default function Students() {
               <option key={c.code} value={c.code}>{c.name}</option>
             ))}
           </select>
+          <div>
+            <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminStudents.timezone')}</label>
+            <select
+              value={form.timezone}
+              onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}
+              className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+            >
+              <option value="">—</option>
+              {TIMEZONE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         {editing && (
           <div className="mt-4">
@@ -128,7 +161,7 @@ export default function Students() {
           {editing && (
             <button
               type="button"
-              onClick={() => { setEditing(null); setForm({ name: '', email: '', password: '', professorId: '', country: '' }); }}
+              onClick={() => { setEditing(null); setForm({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' }); }}
               className="px-5 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl hover:bg-pink-soft/40 dark:hover:bg-white/10 transition text-text dark:text-[#f5f5f5]"
             >
               {t('dashboard.adminStudents.cancel')}
@@ -144,6 +177,7 @@ export default function Students() {
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.name')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.email')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.country')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.timezone')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.professor')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5] w-32">{t('dashboard.adminStudents.actions')}</th>
             </tr>
@@ -156,6 +190,7 @@ export default function Students() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">
                   {COUNTRIES.find((c) => c.code === s.country)?.name || <span className="text-text/40 dark:text-[#f5f5f5]/40">—</span>}
                 </td>
+                <td className="p-3 text-text dark:text-[#f5f5f5] text-xs">{s.timezone || (s.country ? getTimezoneByCountry(s.country) : '') || '—'}</td>
                 <td className="p-3">
                   <select
                     value={s.professorId || ''}

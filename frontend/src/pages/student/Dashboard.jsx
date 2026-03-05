@@ -6,7 +6,7 @@ import Calendar from '../../components/Calendar';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
-import { getLocalDateTime, convertMoroccoToLocal } from '../../utils/countries';
+import { getLocalDateTime, convertMoroccoToLocal, convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
 import COUNTRIES from '../../utils/countries';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -119,9 +119,12 @@ function StudentPaymentsSection({ payments, onRefresh, t }) {
 }
 const POLL_INTERVAL_MS = 15000;
 
+const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7];
+
 function useStudentData() {
   const [courses, setCourses] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -143,16 +146,23 @@ function useStudentData() {
       .catch(() => setPayments([]));
   }, []);
 
+  const fetchAvailability = useCallback(() => {
+    return api
+      .get('/student/availability')
+      .then((res) => setAvailability(Array.isArray(res?.data) ? res.data : []))
+      .catch(() => setAvailability([]));
+  }, []);
+
   const fetchAll = useCallback(() => {
     setLoading(true);
-    Promise.all([fetchCourses(), fetchPayments()]).finally(() => setLoading(false));
-  }, [fetchCourses, fetchPayments]);
+    Promise.all([fetchCourses(), fetchPayments(), fetchAvailability()]).finally(() => setLoading(false));
+  }, [fetchCourses, fetchPayments, fetchAvailability]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
-  return { courses, payments, loading, error, fetchCourses, fetchAll };
+  return { courses, payments, availability, loading, error, fetchCourses, fetchAvailability, fetchAll };
 }
 
 function categorizeCourses(courses) {
@@ -235,10 +245,12 @@ export default function StudentDashboard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const location = useLocation();
-  const { courses, payments, loading, error, fetchCourses, fetchAll } = useStudentData();
+  const { courses, payments, availability, loading, error, fetchCourses, fetchAvailability, fetchAll } = useStudentData();
   const [selectedDate, setSelectedDate] = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
   const [localTime, setLocalTime] = useState(() => user?.country ? getLocalDateTime(user.country, i18n.language) : null);
+  const studentTz = user?.timezone || (user?.country ? getTimezoneByCountry(user.country) : null);
+  const [availForm, setAvailForm] = useState({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' });
 
   useEffect(() => {
     if (location.hash === '#payments' && !loading) {
@@ -256,11 +268,14 @@ export default function StudentDashboard() {
   }, [user?.country, i18n.language]);
 
   const getLocalInfo = (c) => {
-    if (!user?.country || !c?.date || !c?.time) return null;
-    const start = convertMoroccoToLocal(c.date, c.time, user.country, i18n.language);
+    if (!c?.date || !c?.time) return null;
+    const tz = studentTz || (user?.country ? getTimezoneByCountry(user.country) : null);
+    if (!tz) return null;
+    const start = convertTimeBetweenTimezones(c.date, c.time, 'Africa/Casablanca', tz, i18n.language);
+    if (!start) return null;
     const endTime = getEndTime(c.time, c.durationMin || 60);
-    const end = endTime ? convertMoroccoToLocal(c.date, endTime, user.country, i18n.language) : null;
-    return { ...start, displayEndTime: end?.displayTime || null };
+    const end = endTime ? convertTimeBetweenTimezones(c.date, endTime, 'Africa/Casablanca', tz, i18n.language) : null;
+    return { displayDate: start.displayDate, displayTime: start.displayTime, displayEndTime: end?.displayTime || null };
   };
 
   const { upcoming, live, past } = categorizeCourses(courses);
@@ -437,6 +452,100 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Availability - student sets weekly slots (in local time); stored as Morocco time */}
+      <section id="availability" className="scroll-mt-6 p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg">
+        <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-2">{t('dashboard.student.myAvailability')}</h2>
+        <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mb-4">{t('dashboard.student.availabilityDesc')}</p>
+        {studentTz ? (
+          <>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  await api.post('/student/availability', {
+                    dayOfWeek: availForm.dayOfWeek,
+                    startTime: availForm.startTime,
+                    endTime: availForm.endTime,
+                  });
+                  setAvailForm((f) => ({ ...f, startTime: '09:00', endTime: '10:00' }));
+                  fetchAvailability();
+                } catch {
+                  // ignore
+                }
+              }}
+              className="flex flex-wrap gap-4 items-end"
+            >
+              <div>
+                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.day')}</label>
+                <select
+                  value={availForm.dayOfWeek}
+                  onChange={(e) => setAvailForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
+                  className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                >
+                  {(typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']).map((dayName, i) => (
+                    <option key={i} value={i + 1}>{dayName}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.from')}</label>
+                <input
+                  type="time"
+                  value={availForm.startTime}
+                  onChange={(e) => setAvailForm((f) => ({ ...f, startTime: e.target.value }))}
+                  className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.to')}</label>
+                <input
+                  type="time"
+                  value={availForm.endTime}
+                  onChange={(e) => setAvailForm((f) => ({ ...f, endTime: e.target.value }))}
+                  className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
+              >
+                {t('dashboard.student.addSlot')}
+              </button>
+            </form>
+            {availability.length > 0 && (
+              <ul className="mt-4 space-y-2">
+                {availability.map((slot) => {
+                  const dayNames = typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+                  const display = `${dayNames[slot.dayOfWeek - 1]} ${slot.startTime} – ${slot.endTime}`;
+                  return (
+                    <li
+                      key={slot.id}
+                      className="flex items-center justify-between py-2 px-3 rounded-xl bg-pink-soft/30 dark:bg-white/5 border border-pink-soft/50 dark:border-white/10"
+                    >
+                      <span className="text-sm text-text dark:text-[#f5f5f5]">{display}</span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await api.delete(`/student/availability/${slot.id}`);
+                          fetchAvailability();
+                        }}
+                        className="text-pink-primary dark:text-pink-300 hover:underline text-sm"
+                      >
+                        {t('dashboard.student.removeSlot')}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-text/50 dark:text-[#f5f5f5]/50">
+            {t('dashboard.student.availabilityNeedTimezone')}
+          </p>
+        )}
+      </section>
 
       {/* Calendar */}
       <section>

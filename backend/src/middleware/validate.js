@@ -18,6 +18,8 @@ export const userCreateValidation = [
   body('name').trim().isLength({ min: 1, max: 100 }).escape(),
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6, max: 128 }),
+  body('country').optional({ checkFalsy: true }).trim().isLength({ max: 10 }),
+  body('timezone').optional({ checkFalsy: true }).trim().isLength({ max: 64 }),
 ];
 
 export const userUpdateValidation = [
@@ -25,6 +27,8 @@ export const userUpdateValidation = [
   body('email').optional().isEmail().normalizeEmail(),
   body('password').optional().isLength({ min: 6, max: 128 }),
   body('professorId').optional({ values: 'null' }).isString().trim().isLength({ max: 30 }),
+  body('country').optional({ checkFalsy: true }).trim().isLength({ max: 10 }),
+  body('timezone').optional({ checkFalsy: true }).trim().isLength({ max: 64 }),
 ];
 
 export const cuidParam = (name) => param(name).isLength({ min: 20, max: 30 }).matches(/^c[a-z0-9]+$/);

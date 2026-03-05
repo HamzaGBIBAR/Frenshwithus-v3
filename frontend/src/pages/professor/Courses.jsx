@@ -13,8 +13,9 @@ const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 const COURSE_DURATION_MINUTES = 15;
 
 function canStartCourse(course, now) {
-  const start = new Date(`${course.date}T${course.time}`).getTime();
-  return now >= start;
+  const start = getCourseStartMorocco(course);
+  if (!start || isNaN(start.getTime())) return false;
+  return now.getTime() >= start.getTime();
 }
 
 function getRemainingCountdown(sessionStartedAt, now) {

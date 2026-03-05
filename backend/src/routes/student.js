@@ -4,7 +4,8 @@ import streamifier from 'streamifier';
 import prisma from '../lib/db.js';
 import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { validate, messageValidation } from '../middleware/validate.js';
+import { validate, messageValidation, studentAvailabilityValidation } from '../middleware/validate.js';
+import { localSlotToUtc, utcSlotToZoned, getUserTz } from '../lib/availabilityUtc.js';
 
 const router = Router();
 
@@ -82,6 +83,48 @@ function uploadPaymentProofToCloudinary(buffer) {
 
 router.use(authenticate);
 router.use(requireRole('STUDENT'));
+
+// My weekly availability (stored in UTC; returned in student's timezone)
+router.get('/availability', async (req, res) => {
+  const [slots, user] = await Promise.all([
+    prisma.studentAvailability.findMany({
+      where: { studentId: req.user.id },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    }),
+    prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { timezone: true, country: true },
+    }),
+  ]);
+  const tz = getUserTz(user?.timezone, user?.country);
+  const inLocal = slots.map((s) => {
+    const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, tz);
+    return z ? { ...s, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : s;
+  });
+  res.json(inLocal);
+});
+
+router.post('/availability', studentAvailabilityValidation, validate, async (req, res) => {
+  const { dayOfWeek, startTime, endTime } = req.body;
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { timezone: true, country: true },
+  });
+  const tz = getUserTz(user?.timezone, user?.country);
+  const utc = localSlotToUtc(Number(dayOfWeek), startTime, endTime, tz);
+  const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
+  const slot = await prisma.studentAvailability.create({
+    data: { studentId: req.user.id, ...data },
+  });
+  res.json(slot);
+});
+
+router.delete('/availability/:id', async (req, res) => {
+  await prisma.studentAvailability.delete({
+    where: { id: req.params.id, studentId: req.user.id },
+  });
+  res.json({ ok: true });
+});
 
 // Upcoming courses – inclut sessionEnded et sessionEndedAt
 router.get('/courses', async (req, res) => {

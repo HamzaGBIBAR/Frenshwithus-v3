@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import ProfessorProfileModal from '../../components/ProfessorProfileModal';
+import COUNTRIES, { TIMEZONE_OPTIONS } from '../../utils/countries';
 
 export default function Professors() {
   const { t } = useTranslation();
   const [list, setList] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', country: '', timezone: '' });
   const [error, setError] = useState('');
   const [viewingProfile, setViewingProfile] = useState(null);
 
@@ -21,8 +22,14 @@ export default function Professors() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/admin/professors', form);
-      setForm({ name: '', email: '', password: '' });
+      await api.post('/admin/professors', {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        country: form.country || undefined,
+        timezone: form.timezone || undefined,
+      });
+      setForm({ name: '', email: '', password: '', country: '', timezone: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminStudents.errorDefault'));
@@ -35,7 +42,7 @@ export default function Professors() {
     try {
       await api.put(`/admin/professors/${editing.id}`, form);
       setEditing(null);
-      setForm({ name: '', email: '', password: '' });
+      setForm({ name: '', email: '', password: '', country: '', timezone: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminStudents.errorDefault'));
@@ -50,7 +57,13 @@ export default function Professors() {
 
   const startEdit = (p) => {
     setEditing(p);
-    setForm({ name: p.name, email: p.email, password: '' });
+    setForm({
+      name: p.name,
+      email: p.email,
+      password: '',
+      country: p.country || '',
+      timezone: p.timezone || '',
+    });
   };
 
   return (
@@ -70,7 +83,7 @@ export default function Professors() {
             placeholder={t('dashboard.adminStudents.name')}
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="px-4 py-2.5 border border-pink-soft rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary"
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required
           />
           <input
@@ -78,7 +91,7 @@ export default function Professors() {
             placeholder={t('dashboard.adminStudents.email')}
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            className="px-4 py-2.5 border border-pink-soft rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary"
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required
           />
           <input
@@ -86,9 +99,37 @@ export default function Professors() {
             placeholder={editing ? t('dashboard.adminStudents.passwordPlaceholder') : t('dashboard.adminStudents.password')}
             value={form.password}
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-            className="px-4 py-2.5 border border-pink-soft rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary"
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required={!editing}
           />
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminStudents.country')}</label>
+            <select
+              value={form.country}
+              onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
+              className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+            >
+              <option value="">—</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminStudents.timezone')}</label>
+            <select
+              value={form.timezone}
+              onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}
+              className="w-full px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+            >
+              <option value="">—</option>
+              {TIMEZONE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="mt-4 flex gap-2">
           <button type="submit" className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow">
@@ -112,6 +153,7 @@ export default function Professors() {
             <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.name')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.email')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.timezone')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5] w-24">{t('dashboard.adminStudents.actions')}</th>
             </tr>
           </thead>
@@ -120,6 +162,7 @@ export default function Professors() {
               <tr key={p.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.email}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5] text-xs">{p.timezone || (p.country ? COUNTRIES.find((c) => c.code === p.country)?.tz : '—') || '—'}</td>
                 <td className="p-3 flex gap-2">
                   <button onClick={() => startEdit(p)} className="text-pink-primary dark:text-pink-300 hover:underline font-medium">{t('dashboard.adminStudents.edit')}</button>
                   <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-300 hover:underline">{t('dashboard.adminStudents.delete')}</button>

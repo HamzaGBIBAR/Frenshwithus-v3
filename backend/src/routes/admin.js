@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation, studentAvailabilityValidation } from '../middleware/validate.js';
+import { autoGenerateWeeklyCourses, previewAutoGenerate } from '../lib/autoGenerateCourses.js';
+import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ } from '../lib/availabilityUtc.js';
 
 const router = Router();
 
@@ -15,30 +17,35 @@ const hashPassword = (p) => bcrypt.hashSync(p, 10);
 router.get('/professors', async (req, res) => {
   const users = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, country: true, timezone: true },
   });
   res.json(users);
 });
 
 router.post('/professors', userCreateValidation, validate, async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, country, timezone } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
+  const data = { name, email, password: hashPassword(password), role: 'PROFESSOR' };
+  if (country) data.country = country;
+  if (timezone) data.timezone = timezone;
   const user = await prisma.user.create({
-    data: { name, email, password: hashPassword(password), role: 'PROFESSOR' },
-    select: { id: true, name: true, email: true },
+    data,
+    select: { id: true, name: true, email: true, country: true, timezone: true },
   });
   res.json(user);
 });
 
 router.put('/professors/:id', userUpdateValidation, validate, async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, country, timezone } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);
+  if (country !== undefined) data.country = country || null;
+  if (timezone !== undefined) data.timezone = timezone || null;
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'PROFESSOR' },
     data,
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, country: true, timezone: true },
   });
   res.json(user);
 });
@@ -51,7 +58,7 @@ router.delete('/professors/:id', async (req, res) => {
 router.get('/professors/:id', async (req, res) => {
   const user = await prisma.user.findFirst({
     where: { id: req.params.id, role: 'PROFESSOR' },
-    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true, country: true, timezone: true },
   });
   if (!user) return res.status(404).json({ error: 'Professor not found' });
   res.json(user);
@@ -67,6 +74,7 @@ router.get('/students', async (req, res) => {
       email: true,
       professorId: true,
       country: true,
+      timezone: true,
       professor: { select: { id: true, name: true } },
     },
   });
@@ -74,28 +82,30 @@ router.get('/students', async (req, res) => {
 });
 
 router.post('/students', userCreateValidation, validate, async (req, res) => {
-  const { name, email, password, country } = req.body;
+  const { name, email, password, country, timezone } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
   const data = { name, email, password: hashPassword(password), role: 'STUDENT' };
   if (country) data.country = country;
+  if (timezone) data.timezone = timezone;
   const user = await prisma.user.create({
     data,
-    select: { id: true, name: true, email: true, country: true },
+    select: { id: true, name: true, email: true, country: true, timezone: true },
   });
   res.json(user);
 });
 
 router.put('/students/:id', userUpdateValidation, validate, async (req, res) => {
-  const { name, email, password, professorId, country } = req.body;
+  const { name, email, password, professorId, country, timezone } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);
   if (professorId !== undefined) data.professorId = professorId || null;
   if (country !== undefined) data.country = country || null;
+  if (timezone !== undefined) data.timezone = timezone || null;
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'STUDENT' },
     data,
-    select: { id: true, name: true, email: true, professorId: true, country: true },
+    select: { id: true, name: true, email: true, professorId: true, country: true, timezone: true },
   });
   res.json(user);
 });
@@ -283,7 +293,32 @@ router.delete('/courses/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Student availability (admin manages)
+// Auto-generate weekly courses from professor + student availability (UTC slots → Morocco time courses)
+router.post('/courses/auto-generate', async (req, res) => {
+  try {
+    const weekStart = req.body.weekStart || new Date().toISOString().slice(0, 10);
+    const durationMin = req.body.durationMin ? parseInt(req.body.durationMin, 10) : 60;
+    const result = await autoGenerateWeeklyCourses(weekStart, durationMin);
+    res.json(result);
+  } catch (err) {
+    console.error('[auto-generate]', err);
+    res.status(500).json({ error: err.message || 'Auto-generate failed' });
+  }
+});
+
+router.get('/courses/auto-generate/preview', async (req, res) => {
+  try {
+    const weekStart = req.query.weekStart || new Date().toISOString().slice(0, 10);
+    const durationMin = req.query.durationMin ? parseInt(req.query.durationMin, 10) : 60;
+    const result = await previewAutoGenerate(weekStart, durationMin);
+    res.json(result);
+  } catch (err) {
+    console.error('[auto-generate preview]', err);
+    res.status(500).json({ error: err.message || 'Preview failed' });
+  }
+});
+
+// Student availability in Morocco time (stored in UTC)
 router.get('/students/availability', async (req, res) => {
   const students = await prisma.user.findMany({
     where: { role: 'STUDENT' },
@@ -292,18 +327,28 @@ router.get('/students/availability', async (req, res) => {
       name: true,
       email: true,
       country: true,
+      timezone: true,
       professorId: true,
       professor: { select: { id: true, name: true } },
       studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
     },
   });
-  res.json(students);
+  const inMorocco = students.map((s) => ({
+    ...s,
+    studentAvailability: (s.studentAvailability || []).map((slot) => {
+      const z = utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, MOROCCO_TZ);
+      return z ? { ...slot, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : slot;
+    }),
+  }));
+  res.json(inMorocco);
 });
 
 router.post('/students/:id/availability', studentAvailabilityValidation, validate, async (req, res) => {
   const { dayOfWeek, startTime, endTime } = req.body;
+  const utc = moroccoSlotToUtc(Number(dayOfWeek), startTime, endTime);
+  const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
   const slot = await prisma.studentAvailability.create({
-    data: { studentId: req.params.id, dayOfWeek, startTime, endTime },
+    data: { studentId: req.params.id, ...data },
   });
   res.json(slot);
 });
@@ -328,7 +373,7 @@ router.get('/messages', async (req, res) => {
   res.json(messages);
 });
 
-// Get professors with their availability (for admin when creating courses)
+// Get professors with their availability in Morocco time (stored in UTC)
 router.get('/professors/availability', async (req, res) => {
   const professors = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },
@@ -338,7 +383,14 @@ router.get('/professors/availability', async (req, res) => {
       availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
     },
   });
-  res.json(professors);
+  const inMorocco = professors.map((p) => ({
+    ...p,
+    availability: (p.availability || []).map((s) => {
+      const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
+      return z ? { ...s, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : s;
+    }),
+  }));
+  res.json(inMorocco);
 });
 
 // Dashboard analytics (charts, KPIs). Optional ?year=YYYY for full year (Jan–Dec).

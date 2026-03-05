@@ -7,6 +7,7 @@ import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, messageValidation, availabilityValidation, profileUpdateValidation, passwordChangeValidation } from '../middleware/validate.js';
 import { captureException } from '../lib/sentry.js';
+import { localSlotToUtc, utcSlotToZoned, getUserTz } from '../lib/availabilityUtc.js';
 
 const router = Router();
 
@@ -224,19 +225,37 @@ router.get('/courses', async (req, res) => {
   res.json(coursesWithStatus);
 });
 
-// My weekly availability
+// My weekly availability (stored in UTC; returned in professor's timezone)
 router.get('/availability', async (req, res) => {
-  const slots = await prisma.professorAvailability.findMany({
-    where: { professorId: req.user.id },
-    orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+  const [slots, user] = await Promise.all([
+    prisma.professorAvailability.findMany({
+      where: { professorId: req.user.id },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    }),
+    prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { timezone: true, country: true },
+    }),
+  ]);
+  const tz = getUserTz(user?.timezone, user?.country);
+  const inLocal = slots.map((s) => {
+    const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, tz);
+    return z ? { ...s, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : s;
   });
-  res.json(slots);
+  res.json(inLocal);
 });
 
 router.post('/availability', availabilityValidation, validate, async (req, res) => {
   const { dayOfWeek, startTime, endTime } = req.body;
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { timezone: true, country: true },
+  });
+  const tz = getUserTz(user?.timezone, user?.country);
+  const utc = localSlotToUtc(Number(dayOfWeek), startTime, endTime, tz);
+  const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
   const slot = await prisma.professorAvailability.create({
-    data: { professorId: req.user.id, dayOfWeek, startTime, endTime },
+    data: { professorId: req.user.id, ...data },
   });
   res.json(slot);
 });

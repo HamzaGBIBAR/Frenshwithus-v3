@@ -29,6 +29,7 @@ router.get('/me', authenticate, async (req, res) => {
       createdAt: true,
       avatarUrl: true,
       country: true,
+      timezone: true,
       professor: { select: { id: true, name: true } },
     },
   });
