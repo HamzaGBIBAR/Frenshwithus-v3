@@ -168,7 +168,8 @@ function categorizeCourses(courses) {
 
     const timeReached = now >= d;
     const withinWindow = now - d < TWO_HOURS_MS;
-    const ended = c.sessionEnded || c.endReason === 'professor_absent';
+    const professorAbsentPast = timeReached && !c.isStarted && c.endReason === 'professor_absent';
+    const ended = c.sessionEnded || professorAbsentPast;
 
     if (!timeReached) {
       upcoming.push(c);
@@ -216,7 +217,7 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted, loc
           <p className="text-xs text-text/40 dark:text-[#f5f5f5]/40 mt-0.5">
             {durationMin} min
           </p>
-          {course.endReason === 'professor_absent' && (
+          {variant === 'past' && course.endReason === 'professor_absent' && (
             <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mt-1">{t('dashboard.admin.endReasonProfessorAbsent')}</p>
           )}
         </div>

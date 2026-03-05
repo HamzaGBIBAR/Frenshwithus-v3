@@ -34,7 +34,11 @@ export default function AdminDashboard() {
   });
 
   const meetingIssues = courses.filter((c) => c.endReason === 'meeting_issue' && !dismissedMeetingIssues.includes(c.id));
-  const professorAbsent = courses.filter((c) => c.endReason === 'professor_absent');
+  const professorAbsent = courses.filter((c) => {
+    if (c.endReason !== 'professor_absent') return false;
+    const courseStart = new Date(`${c.date}T${c.time}`);
+    return courseStart <= new Date();
+  });
 
   const dismissMeetingIssue = (e, courseId) => {
     e.preventDefault();
@@ -188,14 +192,18 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {courses.slice(0, 10).map((c) => (
+              {courses.slice(0, 10).map((c) => {
+                const courseStart = new Date(`${c.date}T${c.time}`);
+                const isPast = courseStart <= new Date();
+                const showProfessorAbsent = c.endReason === 'professor_absent' && isPast;
+                return (
                 <tr key={c.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                   <td className="p-3">
-                    {c.endReason === 'professor_absent' ? (
+                    {showProfessorAbsent ? (
                       <span className="text-orange-600 dark:text-orange-400 font-medium">{t('dashboard.admin.endReasonProfessorAbsent')}</span>
                     ) : c.sessionEnded ? (
                       <span className="text-amber-600 dark:text-amber-400">
@@ -217,7 +225,7 @@ export default function AdminDashboard() {
                     )}
                   </td>
                 </tr>
-              ))}
+              ); })}
             </tbody>
           </table>
         </div>

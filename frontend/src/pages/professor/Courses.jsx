@@ -74,16 +74,18 @@ function StudentNameTooltip({ student, children, className, locale }) {
 }
 
 function getCourseStatus(course) {
-  if (course.endReason === 'professor_absent') return 'professor_absent';
   const now = new Date();
   const d = new Date(`${course.date}T${course.time}`);
   const twoHours = 2 * 60 * 60 * 1000;
   const fifteenMin = 15 * 60 * 1000;
 
+  // Future course: always show upcoming; never show professor_absent before start time
+  if (d >= now) return 'upcoming';
+
   if (course.sessionEnded) return 'completed';
-  if (course.isStarted && d <= now && now - d < twoHours) return 'live';
-  // Heure passée mais prof n'a pas démarré : garder "upcoming" pendant 15 min pour permettre de démarrer
-  if (d < now && !course.isStarted) {
+  if (course.isStarted && now - d < twoHours) return 'live';
+  // Past start, professor did not start: show "upcoming" for 15 min grace, then professor_absent
+  if (!course.isStarted) {
     if (now - d < fifteenMin) return 'upcoming';
     return 'professor_absent';
   }
@@ -244,8 +246,8 @@ export default function ProfessorCourses() {
   }, [allProfsAvailability, user?.id]);
 
   const courseEvents = courses.map((c) => {
-    const d = new Date(`${c.date}T${c.time}`);
-    const isPast = c.sessionEnded || c.endReason === 'professor_absent';
+    const status = getCourseStatus(c);
+    const isPast = status === 'completed' || status === 'professor_absent';
     return {
       id: c.id,
       date: c.date,

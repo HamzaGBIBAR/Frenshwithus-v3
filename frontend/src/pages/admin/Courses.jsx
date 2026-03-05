@@ -242,7 +242,11 @@ export default function Courses() {
             </tr>
           </thead>
           <tbody>
-            {courses.map((c) => (
+            {courses.map((c) => {
+              const courseStart = new Date(`${c.date}T${c.time}`);
+              const isPast = courseStart <= new Date();
+              const showProfessorAbsent = c.endReason === 'professor_absent' && isPast;
+              return (
               <tr key={c.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.student?.name}</td>
@@ -250,7 +254,7 @@ export default function Courses() {
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.durationMin || 60} min</td>
                 <td className="p-3">
-                  {c.endReason === 'professor_absent' ? (
+                  {showProfessorAbsent ? (
                     <span className="text-orange-600 dark:text-orange-400 font-medium">{t('dashboard.admin.endReasonProfessorAbsent')}</span>
                   ) : c.endReason === 'meeting_issue' ? (
                     <span className="text-red-600 dark:text-red-400 font-medium">
@@ -285,7 +289,7 @@ export default function Courses() {
                   ) : '-'}
                 </td>
                 <td className="p-3 flex flex-wrap gap-2">
-                  {(c.endReason === 'meeting_issue' || c.endReason === 'professor_absent') && (
+                  {(c.endReason === 'meeting_issue' || (c.endReason === 'professor_absent' && isPast)) && (
                     <button
                       onClick={() => openRelaunch(c)}
                       className="text-pink-600 dark:text-pink-400 hover:underline text-sm font-medium"
@@ -301,7 +305,7 @@ export default function Courses() {
                   </button>
                 </td>
               </tr>
-            ))}
+            ); })}
           </tbody>
         </table>
       </div>
