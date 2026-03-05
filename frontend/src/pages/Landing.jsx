@@ -91,39 +91,41 @@ export default function Landing() {
     <div className="min-h-screen bg-transparent transition-colors duration-500 relative overflow-x-hidden">
       <ScrollCharacter />
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-500">
-        <div className="w-full px-4 xs:px-5 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center gap-2">
-          <div className="flex flex-col gap-0.5" dir="ltr">
-            <span className="logo-sequence text-xl sm:text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-baseline gap-1 min-w-0 shrink">
-              <span className={`logo-part font-bold text-text dark:text-[#f5f5f5] transition-opacity duration-300 ${showFrench ? 'opacity-100' : 'opacity-0'}`}>French</span>
-              <span className={`logo-part text-base font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase transition-opacity duration-300 ${showWith ? 'opacity-100' : 'opacity-0'}`}>with</span>
-              <span className={`logo-part transition-opacity duration-300 ${showMe ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full px-3 xs:px-5 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-wrap justify-between items-center gap-x-2 gap-y-2 min-w-0">
+          {/* Logo: can shrink on very small screens so nav has room */}
+          <div className="flex flex-col gap-0.5 min-w-0 flex-shrink" dir="ltr">
+            <span className="logo-sequence text-lg xs:text-xl sm:text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-baseline gap-1 min-w-0">
+              <span className={`logo-part font-bold text-text dark:text-[#f5f5f5] transition-opacity duration-300 truncate ${showFrench ? 'opacity-100' : 'opacity-0'}`}>French</span>
+              <span className={`logo-part text-sm xs:text-base font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase transition-opacity duration-300 shrink-0 ${showWith ? 'opacity-100' : 'opacity-0'}`}>with</span>
+              <span className={`logo-part shrink-0 transition-opacity duration-300 ${showMe ? 'opacity-100' : 'opacity-0'}`}>
                 <AnimatedEye variant="hero" show={showMe} />
               </span>
             </span>
-            <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 font-normal">{t('nav.tagline')}</span>
+            <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 font-normal hidden xs:block truncate">{t('nav.tagline')}</span>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            <LanguageSwitcher className="rounded-full" />
-            <ThemeToggle className="rounded-full" />
+          {/* Nav: wraps to next line on very narrow screens so Connexion is never cut off */}
+          <div className="flex items-center flex-wrap gap-2 sm:gap-4 justify-end min-h-touch">
+            <LanguageSwitcher className="rounded-full shrink-0" />
+            <ThemeToggle className="rounded-full shrink-0" />
             {user && (
               <LogoutButton
                 onClick={handleLogout}
                 compact
-                className="border-red-300/50 dark:border-red-500/40"
+                className="border-red-300/50 dark:border-red-500/40 shrink-0"
               />
             )}
             {user ? (
               <button
                 type="button"
                 onClick={() => { window.location.href = getDashboardLink(); }}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
+                className="px-3 xs:px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] whitespace-nowrap flex items-center justify-center shrink-0"
               >
                 {t('nav.dashboard')}
               </button>
             ) : (
               <Link
                 to="/login"
-                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] flex items-center"
+                className="px-3 xs:px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] whitespace-nowrap flex items-center justify-center shrink-0"
               >
                 {t('nav.login')}
               </Link>
