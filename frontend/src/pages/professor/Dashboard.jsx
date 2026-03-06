@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
-import { formatTimeAMPM, formatDateToAMPM } from '../../utils/format';
+import { formatTimeAMPM, formatDateToAMPM, shouldShowProfessorAbsent } from '../../utils/format';
 
 export default function ProfessorDashboard() {
   const { t } = useTranslation();
@@ -48,7 +48,7 @@ export default function ProfessorDashboard() {
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.date}</td>
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{formatTimeAMPM(c.time)}</td>
                   <td className="p-3">
-                    {c.endReason === 'professor_absent' ? (
+                    {shouldShowProfessorAbsent(c) ? (
                       <span className="text-orange-600 dark:text-orange-400 font-medium">{t('dashboard.admin.endReasonProfessorAbsent')}</span>
                     ) : c.sessionEnded ? (
                       <span className="text-amber-600 dark:text-amber-400">

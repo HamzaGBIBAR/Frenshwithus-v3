@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
-import { formatTimeAMPM, formatDateToAMPM, formatProfessorName, formatStudentName } from '../../utils/format';
+import { formatTimeAMPM, formatDateToAMPM, formatProfessorName, formatStudentName, shouldShowProfessorAbsent } from '../../utils/format';
 import AdminDashboardCharts from '../../components/AdminDashboardCharts';
 
 const STORAGE_KEY_MEETING = 'adminDismissedMeetingIssues';
@@ -48,12 +48,7 @@ export default function AdminDashboard() {
   });
 
   const meetingIssues = courses.filter((c) => c.endReason === 'meeting_issue' && !dismissedMeetingIssues.includes(c.id));
-  const professorAbsent = courses.filter((c) => {
-    if (c.endReason !== 'professor_absent') return false;
-    const courseStart = new Date(`${c.date}T${c.time}`);
-    if (courseStart > new Date()) return false;
-    return !dismissedProfessorAbsent.includes(c.id);
-  });
+  const professorAbsent = courses.filter((c) => shouldShowProfessorAbsent(c) && !dismissedProfessorAbsent.includes(c.id));
 
   const dismissMeetingIssue = (e, courseId) => {
     e.preventDefault();
@@ -77,9 +72,7 @@ export default function AdminDashboard() {
   const dismissAllProfessorAbsent = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const ids = courses
-      .filter((c) => c.endReason === 'professor_absent' && new Date(`${c.date}T${c.time}`) <= new Date())
-      .map((c) => c.id);
+    const ids = courses.filter((c) => shouldShowProfessorAbsent(c)).map((c) => c.id);
     setDismissedProfessorAbsent((prev) => [...new Set([...prev, ...ids])]);
   };
 
@@ -284,9 +277,7 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {courses.slice(0, 10).map((c) => {
-                const courseStart = new Date(`${c.date}T${c.time}`);
-                const isPast = courseStart <= new Date();
-                const showProfessorAbsent = c.endReason === 'professor_absent' && isPast;
+                const showProfessorAbsent = shouldShowProfessorAbsent(c);
                 return (
                 <tr key={c.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                   <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>

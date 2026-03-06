@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
-import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime } from '../../utils/format';
+import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime, shouldShowProfessorAbsent } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
 import { getLocalDateTime, convertMoroccoToLocal, convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
 import COUNTRIES from '../../utils/countries';
@@ -229,7 +229,7 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted, loc
           <p className="text-xs text-text/40 dark:text-[#f5f5f5]/40 mt-0.5">
             {durationMin} min
           </p>
-          {variant === 'past' && course.endReason === 'professor_absent' && (
+          {variant === 'past' && shouldShowProfessorAbsent(course) && (
             <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mt-1">{t('dashboard.admin.endReasonProfessorAbsent')}</p>
           )}
         </div>

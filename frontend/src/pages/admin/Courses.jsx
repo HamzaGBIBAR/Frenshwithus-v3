@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatTimeAMPM, formatDateToAMPM, getEndTime, formatTimeRange } from '../../utils/format';
+import { formatTimeAMPM, formatDateToAMPM, getEndTime, formatTimeRange, shouldShowProfessorAbsent } from '../../utils/format';
 import api from '../../api/axios';
 
 export default function Courses() {
@@ -378,7 +378,7 @@ export default function Courses() {
             {courses.map((c) => {
               const courseStart = new Date(`${c.date}T${c.time}`);
               const isPast = courseStart <= new Date();
-              const showProfessorAbsent = c.endReason === 'professor_absent' && isPast;
+              const showProfessorAbsent = shouldShowProfessorAbsent(c);
               return (
               <tr key={c.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{c.professor?.name}</td>
@@ -422,7 +422,7 @@ export default function Courses() {
                   ) : '-'}
                 </td>
                 <td className="p-3 flex flex-wrap gap-2">
-                  {(c.endReason === 'meeting_issue' || (c.endReason === 'professor_absent' && isPast)) && (
+                  {(c.endReason === 'meeting_issue' || showProfessorAbsent) && (
                     <button
                       onClick={() => openRelaunch(c)}
                       className="text-pink-600 dark:text-pink-400 hover:underline text-sm font-medium"

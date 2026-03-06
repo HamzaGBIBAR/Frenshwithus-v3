@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
-import { formatTimeAMPM, formatTimeRange } from '../../utils/format';
+import { formatTimeAMPM, formatTimeRange, getCourseStartMorocco } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
 import COUNTRIES, { getLocalDateTime } from '../../utils/countries';
 
@@ -74,28 +74,22 @@ function StudentNameTooltip({ student, children, className, locale }) {
   );
 }
 
-// Parse course start as Morocco time (UTC+1) so status is correct for all timezones
-function getCourseStartMorocco(course) {
-  if (!course?.date || !course?.time) return null;
-  const timePart = course.time.length <= 5 ? `${course.time}:00` : course.time;
-  return new Date(`${course.date}T${timePart}+01:00`);
-}
-
 function getCourseStatus(course) {
   const now = new Date();
   const d = getCourseStartMorocco(course);
   if (!d || isNaN(d.getTime())) return 'upcoming';
   const twoHours = 2 * 60 * 60 * 1000;
-  const fifteenMin = 15 * 60 * 1000;
+  const fifteenMinMs = 15 * 60 * 1000;
+  const courseStartPlus15 = d.getTime() + fifteenMinMs;
 
-  // Future course (Morocco time): always show "upcoming", never "professor absent"
-  if (d >= now) return 'upcoming';
+  // Future course (Morocco time): always "upcoming", never "professor absent"
+  if (now.getTime() < d.getTime()) return 'upcoming';
 
   if (course.sessionEnded) return 'completed';
-  if (course.isStarted && now - d < twoHours) return 'live';
-  // Past start (Morocco), professor did not start: grace 15 min then professor_absent
+  if (course.isStarted && now.getTime() - d.getTime() < twoHours) return 'live';
+  // Professor did not start: show "professor absent" ONLY after 15 min past course start (Morocco time)
   if (!course.isStarted) {
-    if (now - d < fifteenMin) return 'upcoming';
+    if (now.getTime() < courseStartPlus15) return 'upcoming';
     return 'professor_absent';
   }
   return 'upcoming';

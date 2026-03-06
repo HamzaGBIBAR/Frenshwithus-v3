@@ -44,6 +44,24 @@ export function formatDateToAMPM(dateOrISO) {
 }
 
 /**
+ * Parse course start as Morocco time (UTC+1) for consistent comparison across timezones.
+ */
+export function getCourseStartMorocco(course) {
+  if (!course?.date || !course?.time) return null;
+  const timePart = course.time.length <= 5 ? `${course.time}:00` : course.time;
+  return new Date(`${course.date}T${timePart}+01:00`);
+}
+
+/** True only when we should show "professor absent": course has that reason AND we're past start + 15 min (Morocco). */
+export function shouldShowProfessorAbsent(course) {
+  if (course?.endReason !== 'professor_absent' && course?.absenceReason !== 'professor_absent') return false;
+  const d = getCourseStartMorocco(course);
+  if (!d || isNaN(d.getTime())) return false;
+  const now = new Date();
+  return now.getTime() >= d.getTime() + 15 * 60 * 1000;
+}
+
+/**
  * Format professor name professionally: "Prof. Anas" instead of "anas"
  */
 export function formatProfessorName(name) {
