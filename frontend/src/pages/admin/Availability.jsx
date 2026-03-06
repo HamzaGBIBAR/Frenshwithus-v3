@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import COUNTRIES, { convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
 const REF_TZ = 'UTC';
-import { formatTimeAMPM } from '../../utils/format';
+import { formatTimeAMPM, getEndTime } from '../../utils/format';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
@@ -28,7 +28,7 @@ export default function AdminAvailability() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [form, setForm] = useState({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' });
   const [createSlot, setCreateSlot] = useState(null);
-  const [createCourseForm, setCreateCourseForm] = useState({ professorId: '', studentId: '', meetingLink: '', durationMin: '60' });
+  const [createCourseForm, setCreateCourseForm] = useState({ professorId: '', studentId: '', date: '', time: '', durationMin: '60', meetingLink: '' });
   const [createCourseError, setCreateCourseError] = useState('');
   const [createCourseLoading, setCreateCourseLoading] = useState(false);
 
@@ -161,15 +161,26 @@ export default function AdminAvailability() {
 
   const openCreateCourseModal = (dayOfWeek, timeStr, profs, studs) => {
     if (!profs?.length || !studs?.length) return;
-    const date = dateStrFromDayOfWeek(dayOfWeek);
-    setCreateSlot({ dayOfWeek, timeStr, date, profs, studs });
+    const dateUtc = dateStrFromDayOfWeek(dayOfWeek);
+    const morocco = convertTimeBetweenTimezones(dateUtc, timeStr, REF_TZ, MOROCCO_TZ);
+    setCreateSlot({ dayOfWeek, timeStr, date: dateUtc, profs, studs });
     setCreateCourseForm({
       professorId: profs[0]?.id || '',
       studentId: studs[0]?.id || '',
-      meetingLink: '',
+      date: morocco?.date || dateUtc,
+      time: morocco?.time || timeStr,
       durationMin: '60',
+      meetingLink: '',
     });
     setCreateCourseError('');
+  };
+
+  const generateJitsiRoomLink = () => {
+    const base = 'https://meet.jit.si';
+    const datePart = createCourseForm.date || 'cours';
+    const timePart = (createCourseForm.time || '').replace(':', '-') || '00-00';
+    const slug = `frenchwithus-${datePart}-${timePart}-${Math.random().toString(36).slice(2, 6)}`;
+    setCreateCourseForm((f) => ({ ...f, meetingLink: `${base}/${slug}` }));
   };
 
   const handleCreateCourse = async (e) => {
@@ -178,14 +189,11 @@ export default function AdminAvailability() {
     setCreateCourseError('');
     setCreateCourseLoading(true);
     try {
-      const morocco = convertTimeBetweenTimezones(createSlot.date, createSlot.timeStr, REF_TZ, MOROCCO_TZ);
-      const date = morocco?.date || createSlot.date;
-      const time = morocco?.time || createSlot.timeStr;
       await api.post('/admin/courses', {
         professorId: createCourseForm.professorId,
         studentId: createCourseForm.studentId,
-        date,
-        time,
+        date: createCourseForm.date,
+        time: createCourseForm.time,
         meetingLink: createCourseForm.meetingLink || undefined,
         durationMin: createCourseForm.durationMin || 60,
       });
@@ -287,44 +295,106 @@ export default function AdminAvailability() {
         </div>
       </section>
 
-      {/* Modal: créer un cours depuis le créneau */}
+      {/* Modal: créer un cours (mêmes options que la section Cours) */}
       {createSlot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setCreateSlot(null)}>
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-xl max-w-md w-full p-5 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto" onClick={() => setCreateSlot(null)}>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-xl max-w-lg w-full p-5 my-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-text dark:text-[#f5f5f5] mb-1">{t('dashboard.adminCourses.createCourse')}</h3>
             <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-4">
               {dayLabels[createSlot.dayOfWeek - 1]} {createSlot.timeStr} — {t('dashboard.adminAvailability.slotMoroccoRef')}
             </p>
-            <form onSubmit={handleCreateCourse} className="space-y-3">
-              <div>
-                <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminCourses.selectProfessor')}</label>
-                <select
-                  className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm"
-                  value={createCourseForm.professorId}
-                  onChange={(e) => setCreateCourseForm((f) => ({ ...f, professorId: e.target.value }))}
-                  required
-                >
-                  {createSlot.profs.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+            <form onSubmit={handleCreateCourse} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.admin.professor')}</label>
+                  <select
+                    className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm text-text dark:text-[#f5f5f5]"
+                    value={createCourseForm.professorId}
+                    onChange={(e) => setCreateCourseForm((f) => ({ ...f, professorId: e.target.value }))}
+                    required
+                  >
+                    {createSlot.profs.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.admin.student')}</label>
+                  <select
+                    className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm text-text dark:text-[#f5f5f5]"
+                    value={createCourseForm.studentId}
+                    onChange={(e) => setCreateCourseForm((f) => ({ ...f, studentId: e.target.value }))}
+                    required
+                  >
+                    {createSlot.studs.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.adminCourses.dateTimeMoroccoHint')}</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.admin.date')}</label>
+                  <input
+                    type="date"
+                    className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm text-text dark:text-[#f5f5f5]"
+                    value={createCourseForm.date}
+                    onChange={(e) => setCreateCourseForm((f) => ({ ...f, date: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.time')}</label>
+                  <input
+                    type="time"
+                    className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm text-text dark:text-[#f5f5f5]"
+                    value={createCourseForm.time}
+                    onChange={(e) => setCreateCourseForm((f) => ({ ...f, time: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.duration')}</label>
+                  <select
+                    className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm text-text dark:text-[#f5f5f5]"
+                    value={createCourseForm.durationMin}
+                    onChange={(e) => setCreateCourseForm((f) => ({ ...f, durationMin: e.target.value }))}
+                  >
+                    {[30, 45, 60, 90, 120].map((m) => (
+                      <option key={m} value={m}>{m} min</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.endTime')}</label>
+                  <div className="w-full px-3 py-2 rounded-lg bg-pink-soft/30 dark:bg-white/5 border border-pink-soft/50 dark:border-white/10 text-sm text-text dark:text-[#f5f5f5]">
+                    {createCourseForm.time ? `${formatTimeAMPM(createCourseForm.time)} – ${formatTimeAMPM(getEndTime(createCourseForm.time, createCourseForm.durationMin))}` : '—'}
+                  </div>
+                </div>
               </div>
               <div>
-                <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminCourses.selectStudent')}</label>
-                <select
-                  className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm"
-                  value={createCourseForm.studentId}
-                  onChange={(e) => setCreateCourseForm((f) => ({ ...f, studentId: e.target.value }))}
-                  required
-                >
-                  {createSlot.studs.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
+                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.meetingLink')}</label>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    type="url"
+                    placeholder="https://meet.jit.si/francais-a1-2026"
+                    className="flex-1 min-w-[180px] rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm text-text dark:text-[#f5f5f5]"
+                    value={createCourseForm.meetingLink}
+                    onChange={(e) => setCreateCourseForm((f) => ({ ...f, meetingLink: e.target.value }))}
+                  />
+                  <button
+                    type="button"
+                    onClick={generateJitsiRoomLink}
+                    className="px-3 py-2 rounded-lg border border-pink-primary dark:border-pink-400 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 text-sm whitespace-nowrap"
+                  >
+                    {t('dashboard.adminCourses.generateJitsiRoom')}
+                  </button>
+                </div>
+                <p className="mt-1 text-[11px] text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.adminCourses.meetingLinkHelp')}</p>
               </div>
-              <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50">
-                {t('dashboard.adminCourses.date')}: {createSlot.date}, {t('dashboard.adminCourses.time')}: {createSlot.timeStr}
-              </p>
               {createCourseError && <p className="text-sm text-red-600 dark:text-red-400">{createCourseError}</p>}
               <div className="flex gap-2 pt-2">
                 <button type="button" className="px-4 py-2 rounded-lg border border-pink-soft/50 dark:border-white/20 text-sm" onClick={() => setCreateSlot(null)}>
