@@ -22,6 +22,26 @@ router.get('/professors', async (req, res) => {
   res.json(users);
 });
 
+// Must be before /professors/:id so "availability" is not interpreted as id
+router.get('/professors/availability', async (req, res) => {
+  const professors = await prisma.user.findMany({
+    where: { role: 'PROFESSOR' },
+    select: {
+      id: true,
+      name: true,
+      availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+    },
+  });
+  const inMorocco = professors.map((p) => ({
+    ...p,
+    availability: (p.availability || []).map((s) => {
+      const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
+      return z ? { ...s, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : s;
+    }),
+  }));
+  res.json(inMorocco);
+});
+
 router.post('/professors', userCreateValidation, validate, async (req, res) => {
   const { name, email, password, country, timezone } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -371,26 +391,6 @@ router.get('/messages', async (req, res) => {
     take: 1000,
   });
   res.json(messages);
-});
-
-// Get professors with their availability in Morocco time (stored in UTC)
-router.get('/professors/availability', async (req, res) => {
-  const professors = await prisma.user.findMany({
-    where: { role: 'PROFESSOR' },
-    select: {
-      id: true,
-      name: true,
-      availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-    },
-  });
-  const inMorocco = professors.map((p) => ({
-    ...p,
-    availability: (p.availability || []).map((s) => {
-      const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
-      return z ? { ...s, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : s;
-    }),
-  }));
-  res.json(inMorocco);
 });
 
 // Dashboard analytics (charts, KPIs). Optional ?year=YYYY for full year (Jan–Dec).
