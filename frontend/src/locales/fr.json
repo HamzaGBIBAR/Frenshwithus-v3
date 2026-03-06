@@ -500,7 +500,9 @@
       "weeklyCalendar": "Calendrier hebdomadaire",
       "weeklyCalendarHint": "Heure Maroc. P = nombre de professeurs disponibles, E = nombre d'élèves disponibles. Créneaux compatibles quand P et E > 0.",
       "time": "Heure",
-      "professorSlotsMoroccoHint": "Toutes les heures ci‑dessous sont en heure Maroc (Africa/Casablanca), et non dans le fuseau du professeur (ex. 9h Paris → 8h Maroc)."
+      "professorSlotsMoroccoHint": "Heure locale du professeur puis référence Maroc (ex. 9h Paris → 8h Maroc).",
+      "professorSlotLocalLabel": "Heure locale professeur",
+      "slotMoroccoRefProfessor": "Référence Maroc"
     },
     "adminMessages": {
       "title": "Messages",

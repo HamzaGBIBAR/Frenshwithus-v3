@@ -53,23 +53,38 @@ router.get('/professors', async (req, res) => {
   res.json(users);
 });
 
-// Professors' availability: stored in UTC; always return in Africa/Casablanca for admin (e.g. 9h Paris → 8h Maroc).
+// Professors' availability: stored in UTC; return Morocco time + professor local time (e.g. 9h Paris → 8h Maroc).
 router.get('/professors/availability', async (req, res) => {
   const professors = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },
     select: {
       id: true,
       name: true,
+      country: true,
+      timezone: true,
       availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
     },
   });
-  const inMorocco = professors.map((p) => ({
-    ...p,
-    availability: (p.availability || []).map((s) => {
-      const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
-      return z ? { ...s, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : s;
-    }),
-  }));
+  const profTz = (p) => getUserTz(p.timezone, p.country);
+  const inMorocco = professors.map((p) => {
+    const tz = profTz(p);
+    return {
+      ...p,
+      availability: (p.availability || []).map((s) => {
+        const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
+        const localZ = tz ? utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, tz) : null;
+        return z
+          ? {
+              ...s,
+              dayOfWeek: z.dayOfWeek,
+              startTime: z.startTime,
+              endTime: z.endTime,
+              ...(localZ && { localDayOfWeek: localZ.dayOfWeek, localStartTime: localZ.startTime, localEndTime: localZ.endTime }),
+            }
+          : s;
+      }),
+    };
+  });
   res.json(inMorocco);
 });
 

@@ -86,6 +86,14 @@ export default function AdminAvailability() {
     return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
   };
 
+  const formatProfessorSlotLocal = (slot) => {
+    if (slot.localStartTime != null && slot.localEndTime != null) {
+      const day = dayLabels[(slot.localDayOfWeek ?? slot.dayOfWeek) - 1] || '-';
+      return `${day} ${formatSlotTime(slot.localStartTime)} - ${formatSlotTime(slot.localEndTime)}`;
+    }
+    return formatBasicSlot(slot);
+  };
+
   // Reference = UTC (Morocco as UTC+0): use ref* when backend sends them for correct 17:00–06:00 display
   const formatReferenceSlot = (slot) => {
     if (slot.refStartTime != null && slot.refEndTime != null) {
@@ -354,7 +362,7 @@ export default function AdminAvailability() {
           </div>
         </div>
 
-        {/* Professor availability: always shown in Morocco time (API returns UTC→Morocco) */}
+        {/* Professor availability: teacher local time + Morocco reference (e.g. 9h Paris → 8h Maroc) */}
         <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-500 hover:shadow-pink-soft/80 dark:hover:shadow-[0_8px_30px_rgba(244,114,182,0.08)]">
           <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
             <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
@@ -374,14 +382,19 @@ export default function AdminAvailability() {
                 <div className="font-semibold text-text dark:text-[#f5f5f5] mb-3 flex items-center gap-2">
                   <span className="text-pink-primary dark:text-pink-400">{p.name}</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2">
                   {(p.availability || []).map((slot) => (
-                    <span
+                    <div
                       key={slot.id}
-                      className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-300 border border-pink-soft/50 dark:border-pink-400/30 transition-transform duration-200 hover:scale-105 animate-fade-in"
+                      className="rounded-lg bg-pink-soft/40 dark:bg-pink-500/15 border border-pink-soft/50 dark:border-pink-400/25 px-2.5 py-2"
                     >
-                      {formatBasicSlot(slot)}
-                    </span>
+                      <p className="text-[11px] font-semibold text-pink-dark dark:text-pink-300">
+                        {t('dashboard.adminAvailability.professorSlotLocalLabel')}: {formatProfessorSlotLocal(slot)}
+                      </p>
+                      <p className="text-[10px] text-pink-dark/80 dark:text-pink-300/80 mt-0.5">
+                        {t('dashboard.adminAvailability.slotMoroccoRefProfessor')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
+                      </p>
+                    </div>
                   ))}
                   {(!p.availability?.length) && (
                     <span className="text-xs text-text/50 dark:text-[#f5f5f5]/60 italic">
