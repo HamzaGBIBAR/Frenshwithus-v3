@@ -36,6 +36,20 @@ router.get('/me', authenticate, async (req, res) => {
   res.json(user);
 });
 
+// Optional: update current user timezone (e.g. from Intl.DateTimeFormat().resolvedOptions().timeZone)
+router.patch('/me', authenticate, async (req, res) => {
+  const { timezone } = req.body;
+  if (!timezone || typeof timezone !== 'string' || timezone.trim().length > 64) {
+    return res.status(400).json({ error: 'Valid timezone (IANA) required' });
+  }
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { timezone: timezone.trim() },
+    select: { id: true, timezone: true },
+  });
+  res.json(user);
+});
+
 const loginValidation = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
   body('password').notEmpty().withMessage('Password required'),

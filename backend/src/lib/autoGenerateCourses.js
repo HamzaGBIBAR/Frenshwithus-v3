@@ -7,6 +7,7 @@ import prisma from './db.js';
 import {
   utcSlotToMoroccoDateAndTime,
   overlapSameDay,
+  moroccoDateTimeToUtc,
 } from './availabilityUtc.js';
 
 const DEFAULT_DURATION_MIN = 60;
@@ -159,12 +160,14 @@ export async function autoGenerateWeeklyCourses(weekStart, durationMin = DEFAULT
 
   const created = [];
   for (const c of toCreate) {
+    const startUtc = moroccoDateTimeToUtc(c.date, c.time);
     const course = await prisma.course.create({
       data: {
         professorId: c.professorId,
         studentId: c.studentId,
         date: c.date,
         time: c.time,
+        startUtc: startUtc || undefined,
         durationMin: c.durationMin,
       },
       include: {

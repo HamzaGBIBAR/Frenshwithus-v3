@@ -6,7 +6,7 @@ import Calendar from '../../components/Calendar';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime, shouldShowProfessorAbsent } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
-import { getLocalDateTime, convertMoroccoToLocal, convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
+import { getLocalDateTime, convertMoroccoToLocal, convertTimeBetweenTimezones, getTimezoneByCountry, formatUtcInTimezone } from '../../utils/countries';
 import COUNTRIES from '../../utils/countries';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -268,14 +268,21 @@ export default function StudentDashboard() {
   }, [user?.country, i18n.language]);
 
   const getLocalInfo = (c) => {
-    if (!c?.date || !c?.time) return null;
     const tz = studentTz || (user?.country ? getTimezoneByCountry(user.country) : null);
     if (!tz) return null;
+    if (c?.startUtc) {
+      const start = formatUtcInTimezone(c.startUtc, tz, i18n.language);
+      if (!start) return null;
+      const endUtc = c.durationMin ? new Date(new Date(c.startUtc).getTime() + c.durationMin * 60 * 1000) : null;
+      const end = endUtc ? formatUtcInTimezone(endUtc.toISOString(), tz, i18n.language) : null;
+      return { date: start.date, time: start.time, displayDate: start.displayDate, displayTime: start.displayTime, displayEndTime: end?.displayTime || null };
+    }
+    if (!c?.date || !c?.time) return null;
     const start = convertTimeBetweenTimezones(c.date, c.time, 'Africa/Casablanca', tz, i18n.language);
     if (!start) return null;
     const endTime = getEndTime(c.time, c.durationMin || 60);
     const end = endTime ? convertTimeBetweenTimezones(c.date, endTime, 'Africa/Casablanca', tz, i18n.language) : null;
-    return { displayDate: start.displayDate, displayTime: start.displayTime, displayEndTime: end?.displayTime || null };
+    return { date: start.date, displayDate: start.displayDate, displayTime: start.displayTime, displayEndTime: end?.displayTime || null };
   };
 
   const { upcoming, live, past } = categorizeCourses(courses);
@@ -288,16 +295,17 @@ export default function StudentDashboard() {
   }, [hasJoinable, fetchCourses]);
 
   const coursesThisWeek = courses.filter((c) => {
-    if (!c?.date || !c?.time) return false;
+    const localInfo = getLocalInfo(c);
+    const courseDateStr = localInfo?.date || (c?.startUtc ? new Date(c.startUtc).toISOString().slice(0, 10) : c?.date);
+    if (!courseDateStr) return false;
     const now = new Date();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
-    startOfWeek.setHours(0, 0, 0, 0);
+    const weekStartStr = startOfWeek.toISOString().slice(0, 10);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-    const d = new Date(`${c.date}T${c.time}`);
-    return d >= startOfWeek && d <= endOfWeek;
+    const weekEndStr = endOfWeek.toISOString().slice(0, 10);
+    return courseDateStr >= weekStartStr && courseDateStr <= weekEndStr;
   }).length;
 
   const calendarEvents = courses.map((c) => {

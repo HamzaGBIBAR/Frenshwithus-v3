@@ -44,9 +44,10 @@ export function formatDateToAMPM(dateOrISO) {
 }
 
 /**
- * Parse course start as Morocco time (UTC+1) for consistent comparison across timezones.
+ * Get course start as Date. Uses startUtc (UTC) when set, else parses date+time as Morocco.
  */
 export function getCourseStartMorocco(course) {
+  if (course?.startUtc) return new Date(course.startUtc);
   if (!course?.date || !course?.time) return null;
   const timePart = course.time.length <= 5 ? `${course.time}:00` : course.time;
   return new Date(`${course.date}T${timePart}+01:00`);

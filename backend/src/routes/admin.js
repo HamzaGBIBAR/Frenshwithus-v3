@@ -4,7 +4,7 @@ import prisma from '../lib/db.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation, studentAvailabilityValidation } from '../middleware/validate.js';
 import { autoGenerateWeeklyCourses, previewAutoGenerate } from '../lib/autoGenerateCourses.js';
-import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ } from '../lib/availabilityUtc.js';
+import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ, moroccoDateTimeToUtc } from '../lib/availabilityUtc.js';
 
 const router = Router();
 
@@ -267,15 +267,17 @@ router.get('/courses', async (req, res) => {
   res.json(coursesWithStatus);
 });
 
-// Create course (admin assigns professor and student)
+// Create course (admin assigns professor and student). Admin enters Morocco time; we store UTC.
 router.post('/courses', courseCreateValidation, validate, async (req, res) => {
   const { professorId, studentId, date, time, meetingLink, durationMin } = req.body;
+  const startUtc = moroccoDateTimeToUtc(date, time);
   const course = await prisma.course.create({
     data: {
       professorId,
       studentId,
       date,
       time,
+      startUtc: startUtc || undefined,
       meetingLink: meetingLink || null,
       durationMin: durationMin ? parseInt(durationMin, 10) : 60,
     },
@@ -287,7 +289,7 @@ router.post('/courses', courseCreateValidation, validate, async (req, res) => {
   res.json(course);
 });
 
-// Update course (e.g. change professor)
+// Update course (e.g. change professor). If date/time provided (Morocco), store startUtc.
 router.put('/courses/:id', async (req, res) => {
   const { professorId, studentId, date, time, meetingLink, durationMin } = req.body;
   const data = {};
@@ -295,6 +297,10 @@ router.put('/courses/:id', async (req, res) => {
   if (studentId !== undefined) data.studentId = studentId;
   if (date !== undefined) data.date = date;
   if (time !== undefined) data.time = time;
+  if (date !== undefined && time !== undefined) {
+    const startUtc = moroccoDateTimeToUtc(date, time);
+    if (startUtc) data.startUtc = startUtc;
+  }
   if (meetingLink !== undefined) data.meetingLink = meetingLink;
   if (durationMin !== undefined) data.durationMin = parseInt(durationMin, 10);
   const course = await prisma.course.update({

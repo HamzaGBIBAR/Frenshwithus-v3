@@ -105,6 +105,22 @@ export function convertMoroccoToLocal(dateStr, timeStr, studentCountryCode, loca
 }
 
 /**
+ * Format a UTC ISO datetime in a target timezone (for course display: DATABASE = UTC, DISPLAY = USER TZ).
+ * Returns { date, time, displayDate, displayTime } or null.
+ */
+export function formatUtcInTimezone(isoUtcString, toTz, locale = 'fr') {
+  if (!isoUtcString) return null;
+  const d = new Date(isoUtcString);
+  if (isNaN(d.getTime())) return null;
+  const parts = getZonedParts(d, toTz);
+  const date = `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+  const time = `${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}`;
+  const displayDate = d.toLocaleDateString(locale, { timeZone: toTz, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const displayTime = d.toLocaleTimeString(locale, { timeZone: toTz, hour: '2-digit', minute: '2-digit' });
+  return { date, time, displayDate, displayTime };
+}
+
+/**
  * Convert a wall-clock datetime from one timezone to another.
  * Returns { date: 'YYYY-MM-DD', time: 'HH:mm', dayOfWeek: 1..7 (Mon..Sun), displayDate, displayTime }.
  */

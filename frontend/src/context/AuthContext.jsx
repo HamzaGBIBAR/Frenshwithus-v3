@@ -10,7 +10,14 @@ export function AuthProvider({ children }) {
   const fetchUser = () => {
     return api
       .get('/auth/me')
-      .then((r) => setUser(r.data))
+      .then((r) => {
+        const u = r.data;
+        setUser(u);
+        if (u && !u.timezone && typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone) {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          api.patch('/auth/me', { timezone: tz }).then((patched) => setUser((prev) => (prev ? { ...prev, timezone: patched.data?.timezone ?? tz } : null))).catch(() => {});
+        }
+      })
       .catch(() => setUser(null));
   };
 

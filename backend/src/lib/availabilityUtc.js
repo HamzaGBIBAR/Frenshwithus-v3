@@ -159,6 +159,42 @@ function overlapSameDay(s1, e1, s2, e2) {
   return null;
 }
 
+/**
+ * Convert admin input (date + time in Morocco) to UTC Date for lesson storage.
+ * DATABASE = UTC.
+ */
+function moroccoDateTimeToUtc(dateStr, timeStr) {
+  return zonedDateTimeToUtc(dateStr, timeStr, MOROCCO_TZ);
+}
+
+/**
+ * Convert UTC Date to Morocco date + time (for admin display).
+ */
+function utcToMoroccoDateTime(utcDate) {
+  if (!utcDate || isNaN(new Date(utcDate).getTime())) return null;
+  const d = new Date(utcDate);
+  const parts = getZonedParts(d, MOROCCO_TZ);
+  return {
+    date: `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`,
+    time: `${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}`,
+  };
+}
+
+/**
+ * Convert UTC Date to a target timezone (for student/teacher display).
+ * Returns { date, time, displayDate, displayTime }.
+ */
+function utcToZonedDateTime(utcDate, toTz, locale = 'fr') {
+  if (!utcDate || isNaN(new Date(utcDate).getTime())) return null;
+  const d = new Date(utcDate);
+  const parts = getZonedParts(d, toTz);
+  const date = `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+  const time = `${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}`;
+  const displayDate = d.toLocaleDateString(locale, { timeZone: toTz, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const displayTime = d.toLocaleTimeString(locale, { timeZone: toTz, hour: '2-digit', minute: '2-digit' });
+  return { date, time, displayDate, displayTime };
+}
+
 export {
   MOROCCO_TZ,
   getUserTz,
@@ -166,6 +202,9 @@ export {
   moroccoSlotToUtc,
   utcSlotToZoned,
   utcSlotToMoroccoDateAndTime,
+  moroccoDateTimeToUtc,
+  utcToMoroccoDateTime,
+  utcToZonedDateTime,
   refDateForDay,
   compareTime,
   overlapSameDay,

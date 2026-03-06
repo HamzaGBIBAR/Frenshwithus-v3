@@ -7,7 +7,7 @@ import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
 import { formatTimeAMPM, formatTimeRange, getCourseStartMorocco, getEndTime } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
-import COUNTRIES, { getLocalDateTime, getTimezoneByCountry, convertTimeBetweenTimezones } from '../../utils/countries';
+import COUNTRIES, { getLocalDateTime, getTimezoneByCountry, convertTimeBetweenTimezones, formatUtcInTimezone } from '../../utils/countries';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 const COURSE_DURATION_MINUTES = 15;
@@ -134,7 +134,15 @@ export default function ProfessorCourses() {
   );
   const getCourseLocalInfo = useCallback(
     (c) => {
-      if (!profTz || !c?.date || !c?.time) return null;
+      if (!profTz) return null;
+      if (c?.startUtc) {
+        const start = formatUtcInTimezone(c.startUtc, profTz, i18n.language);
+        if (!start) return null;
+        const endUtc = c.durationMin ? new Date(new Date(c.startUtc).getTime() + c.durationMin * 60 * 1000) : null;
+        const end = endUtc ? formatUtcInTimezone(endUtc.toISOString(), profTz, i18n.language) : null;
+        return { date: start.date, time: start.time, displayTime: start.displayTime, displayEndTime: end?.displayTime };
+      }
+      if (!c?.date || !c?.time) return null;
       const start = convertTimeBetweenTimezones(c.date, c.time, 'Africa/Casablanca', profTz, i18n.language);
       if (!start) return null;
       const endTimeStr = getEndTime(c.time, c.durationMin || 60);

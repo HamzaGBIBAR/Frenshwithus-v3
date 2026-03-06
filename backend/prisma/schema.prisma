@@ -67,8 +67,9 @@ model Course {
   id             String   @id @default(cuid())
   professorId    String
   studentId      String
-  date           String   // YYYY-MM-DD (Morocco time)
-  time           String   // HH:mm (Morocco time)
+  date           String   // YYYY-MM-DD (Morocco, kept for admin display)
+  time           String   // HH:mm (Morocco, kept for admin display)
+  startUtc       DateTime? // canonical: lesson start in UTC (display = user timezone)
   durationMin    Int      @default(60) // lesson duration in minutes
   meetingLink    String?
   isStarted      Boolean  @default(false)
