@@ -1,11 +1,14 @@
 import 'dotenv/config';
 import http from 'http';
 
-// Ensure Railway Postgres SSL: append sslmode=require for non-local hosts
+// Ensure Railway Postgres SSL and limit connection pool to avoid 503 Backend.max_conn reached
 const dbUrl = process.env.DATABASE_URL;
-if (dbUrl && !dbUrl.includes('sslmode=') && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1')) {
+if (dbUrl && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1')) {
   const sep = dbUrl.includes('?') ? '&' : '?';
-  process.env.DATABASE_URL = `${dbUrl}${sep}sslmode=require`;
+  let out = dbUrl;
+  if (!out.includes('sslmode=')) out += `${sep}sslmode=require`;
+  if (!out.includes('connection_limit=')) out += `${out.includes('?') ? '&' : '?'}connection_limit=5`;
+  process.env.DATABASE_URL = out;
 }
 
 import 'express-async-errors';
@@ -121,6 +124,9 @@ async function start() {
   connectDbWithRetry();
 
   const httpServer = http.createServer(app);
+  // Shorter keep-alive so proxy (Railway/Varnish) doesn't hit Backend.max_conn
+  httpServer.keepAliveTimeout = 30000;
+  httpServer.headersTimeout = 35000;
   try { initLiveSocket(httpServer, app); } catch (e) { console.error('LiveSocket init failed (non-fatal):', e.message); }
   try { startProfessorAbsenceChecker(app); } catch (e) { console.error('AbsenceChecker init failed (non-fatal):', e.message); }
 
