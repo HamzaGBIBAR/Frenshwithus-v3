@@ -8,6 +8,7 @@ Set in Railway dashboard:
 - `JWT_SECRET` – **Required.** Use 64+ character random string: `openssl rand -base64 48`
 - `NODE_ENV` – Set to `production` in production
 - `FRONTEND_URL` – (Optional) Restrict CORS to your app URL, e.g. `https://frenshwithus-v2-production.up.railway.app`
+- `DISABLE_LIVE_SOCKET` – (Optional) Set to `true` or `1` to disable WebSocket (live “professor online”). Use this if you see **503 Backend.max_conn reached**: it reduces concurrent connections so the site can load. The Live page will show professor as offline.
 - `SENTRY_DSN` – (Optional) Monitoring des erreurs avec Sentry
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` – (Required for avatar uploads) Créer un compte sur cloudinary.com
 
@@ -36,6 +37,13 @@ Use this if you haven’t created migrations yet. Add as a **build command** or 
 1. **Railway Backups** : Activer les backups automatiques dans le dashboard Postgres (plans payants).
 2. **Export manuel** : `pg_dump $DATABASE_URL > backup.sql` (Railway Shell ou localement).
 3. **Cron externe** : cron-job.org ou GitHub Actions pour dump quotidien vers S3/storage externe.
+
+## 503 Backend.max_conn reached
+
+On free/low-tier Railway the proxy limits how many concurrent connections hit your app. If you see this error:
+
+1. **Quick fix:** In Railway → your service → Variables, add `DISABLE_LIVE_SOCKET` = `true` and redeploy. The site should load; the "professor online" live indicator will be off.
+2. **Long-term:** Upgrade your Railway plan for higher connection limits, or host the frontend on Vercel/Netlify so only API traffic hits Railway.
 
 ## SSL
 

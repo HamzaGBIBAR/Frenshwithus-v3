@@ -127,7 +127,14 @@ async function start() {
   // Shorter keep-alive so proxy (Railway/Varnish) doesn't hit Backend.max_conn
   httpServer.keepAliveTimeout = 30000;
   httpServer.headersTimeout = 35000;
-  try { initLiveSocket(httpServer, app); } catch (e) { console.error('LiveSocket init failed (non-fatal):', e.message); }
+  const disableLiveSocket = process.env.DISABLE_LIVE_SOCKET === 'true' || process.env.DISABLE_LIVE_SOCKET === '1';
+  if (disableLiveSocket) {
+    app.locals.courseProfessorOnline = {};
+    app.locals.io = null;
+    console.log('Live Socket disabled (DISABLE_LIVE_SOCKET). Set in Railway to reduce 503 Backend.max_conn.');
+  } else {
+    try { initLiveSocket(httpServer, app); } catch (e) { console.error('LiveSocket init failed (non-fatal):', e.message); }
+  }
   try { startProfessorAbsenceChecker(app); } catch (e) { console.error('AbsenceChecker init failed (non-fatal):', e.message); }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
