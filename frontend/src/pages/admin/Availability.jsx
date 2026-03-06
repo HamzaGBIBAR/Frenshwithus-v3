@@ -392,7 +392,7 @@ export default function AdminAvailability() {
                         {t('dashboard.adminAvailability.professorSlotLocalLabel')}: {formatProfessorSlotLocal(slot)}
                       </p>
                       <p className="text-[10px] text-pink-dark/80 dark:text-pink-300/80 mt-0.5">
-                        {t('dashboard.adminAvailability.slotMoroccoRefProfessor')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
+                        {t('dashboard.adminAvailability.slotMoroccoRefProfessor')}: {slot.refStartTime != null && slot.refEndTime != null ? formatReferenceSlot(slot) : `${dayLabels[slot.dayOfWeek - 1] || '-'} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`}
                       </p>
                     </div>
                   ))}

@@ -53,8 +53,9 @@ router.get('/professors', async (req, res) => {
   res.json(users);
 });
 
-// Professors' availability: stored in UTC; return Morocco time + professor local time (e.g. 9h Paris → 8h Maroc).
+// Professors' availability: stored in UTC; return professor local + reference (UTC = Morocco as UTC+0 so 9h Paris → 8h ref).
 router.get('/professors/availability', async (req, res) => {
+  const REF_TZ = 'UTC';
   const professors = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },
     select: {
@@ -73,6 +74,9 @@ router.get('/professors/availability', async (req, res) => {
       availability: (p.availability || []).map((s) => {
         const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
         const localZ = tz ? utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, tz) : null;
+        const refZ = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, REF_TZ);
+        const crossesMidnight = refZ && s.startTime && s.endTime && s.endTime < s.startTime;
+        const refEndDay = crossesMidnight ? (s.dayOfWeek === 7 ? 1 : s.dayOfWeek + 1) : null;
         return z
           ? {
               ...s,
@@ -80,6 +84,7 @@ router.get('/professors/availability', async (req, res) => {
               startTime: z.startTime,
               endTime: z.endTime,
               ...(localZ && { localDayOfWeek: localZ.dayOfWeek, localStartTime: localZ.startTime, localEndTime: localZ.endTime }),
+              ...(refZ && { refDayOfWeek: refZ.dayOfWeek, refStartTime: refZ.startTime, refEndTime: refZ.endTime, ...(refEndDay != null && { refEndDayOfWeek: refEndDay }) }),
             }
           : s;
       }),
