@@ -27,11 +27,13 @@ export default function AdminDashboard() {
     }
   });
   const [teacherStats, setTeacherStats] = useState(null);
+  const [professorsWithAvailability, setProfessorsWithAvailability] = useState([]);
 
   useEffect(() => {
     api.get('/admin/courses').then((r) => setCourses(r.data));
     api.get('/admin/payments/due-soon').then((r) => setDueSoon(r.data)).catch(() => setDueSoon([]));
     api.get('/admin/analytics/teachers').then((r) => setTeacherStats(r.data)).catch(() => setTeacherStats(null));
+    api.get('/admin/professors/availability').then((r) => setProfessorsWithAvailability(r.data)).catch(() => setProfessorsWithAvailability([]));
   }, []);
 
   useEffect(() => {
@@ -124,6 +126,41 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Professor availability (Morocco time) */}
+      <div className="mb-8 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-colors duration-500">
+        <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 flex justify-between items-center">
+          <h2 className="font-semibold text-text dark:text-[#f5f5f5]">{t('dashboard.adminAvailability.professorAvailability')}</h2>
+          <Link to="/admin/availability" className="text-sm text-pink-primary dark:text-pink-400 hover:underline font-medium">
+            {t('dashboard.admin.viewAll')}
+          </Link>
+        </div>
+        <div className="p-4">
+          {professorsWithAvailability.length === 0 ? (
+            <p className="text-sm text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.adminCourses.noAvailability')}</p>
+          ) : (
+            <ul className="space-y-3">
+              {professorsWithAvailability.map((p) => {
+                const days = t('calendar.days', { returnObjects: true });
+                const dayLabels = Array.isArray(days) ? days : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                const slots = (p.availability || []).map((s) => {
+                  const dayName = dayLabels[s.dayOfWeek - 1] || '-';
+                  return `${dayName} ${s.startTime}–${s.endTime}`;
+                });
+                return (
+                  <li key={p.id} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
+                    <span className="font-medium text-text dark:text-[#f5f5f5] shrink-0">{formatProfessorName(p.name)}</span>
+                    <span className="text-text/70 dark:text-[#f5f5f5]/70">
+                      {slots.length > 0 ? slots.join(', ') : t('dashboard.adminCourses.noAvailability')}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mt-3">{t('dashboard.adminAvailability.slotMoroccoRef')}</p>
+        </div>
+      </div>
 
       {professorAbsent.length > 0 && (
         <div className="mb-6 p-4 rounded-2xl border border-orange-200 dark:border-orange-500/40 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all duration-300 animate-fade-in shadow-sm">
