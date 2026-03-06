@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
-import { formatTimeAMPM, formatTimeRange, getCourseStartMorocco } from '../../utils/format';
+import { formatTimeAMPM, formatTimeRange, getCourseStartMorocco, getEndTime } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
-import COUNTRIES, { getLocalDateTime } from '../../utils/countries';
+import COUNTRIES, { getLocalDateTime, getTimezoneByCountry, convertTimeBetweenTimezones } from '../../utils/countries';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 const COURSE_DURATION_MINUTES = 15;
@@ -120,8 +120,6 @@ export default function ProfessorCourses() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   });
 
-  const [allProfsAvailability, setAllProfsAvailability] = useState([]);
-  const [showOtherProfs, setShowOtherProfs] = useState(true);
   const [calendarStyle, setCalendarStyle] = useState(getCalendarStyle);
   const [now, setNow] = useState(() => new Date());
   const [selectedClockCountry, setSelectedClockCountry] = useState('MA');
@@ -129,6 +127,27 @@ export default function ProfessorCourses() {
   const weekViewRef = useRef(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const profTz = useMemo(
+    () => user?.timezone || (user?.country ? getTimezoneByCountry(user.country) : null),
+    [user?.timezone, user?.country]
+  );
+  const getCourseLocalInfo = useCallback(
+    (c) => {
+      if (!profTz || !c?.date || !c?.time) return null;
+      const start = convertTimeBetweenTimezones(c.date, c.time, 'Africa/Casablanca', profTz, i18n.language);
+      if (!start) return null;
+      const endTimeStr = getEndTime(c.time, c.durationMin || 60);
+      const end = endTimeStr ? convertTimeBetweenTimezones(c.date, endTimeStr, 'Africa/Casablanca', profTz, i18n.language) : null;
+      return {
+        date: start.date,
+        time: start.time,
+        displayTime: start.displayTime,
+        displayEndTime: end?.displayTime,
+      };
+    },
+    [profTz, i18n.language]
+  );
 
   useEffect(() => {
     if (!user?.country) return;
@@ -154,7 +173,6 @@ export default function ProfessorCourses() {
   const load = () => {
     api.get('/professor/courses').then((r) => setCourses(r.data));
     api.get('/professor/availability').then((r) => setAvailability(r.data));
-    api.get('/professor/planning/availability-all').then((r) => setAllProfsAvailability(r.data)).catch(() => setAllProfsAvailability([]));
   };
 
   useEffect(() => {
@@ -169,7 +187,10 @@ export default function ProfessorCourses() {
 
   const handleAddAvailability = async (e) => {
     e.preventDefault();
-    await api.post('/professor/availability', form);
+    const timezone = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+    await api.post('/professor/availability', { ...form, ...(timezone && { timezone }) });
     setForm({ dayOfWeek: 1, startTime: '09:00', endTime: '12:00' });
     load();
   };
@@ -223,39 +244,36 @@ export default function ProfessorCourses() {
     const rangeStart = new Date();
     rangeStart.setMonth(rangeStart.getMonth() - 2);
     const rangeEnd = new Date();
-    rangeEnd.setMonth(rangeEnd.getMonth() + 12); // 12 mois pour afficher la dispo au-delà de juin
+    rangeEnd.setMonth(rangeEnd.getMonth() + 12);
     const evts = [];
-    for (const prof of allProfsAvailability) {
-      const isMe = prof.id === user?.id;
-      const type = isMe ? 'my-availability' : 'other-availability';
-      for (const slot of prof.availability || []) {
-        const d = new Date(rangeStart.getTime());
-        const end = new Date(rangeEnd.getTime());
-        while (d <= end) {
-          if (d.getDay() === toJsDay(slot.dayOfWeek)) {
-            evts.push({
-              id: `av-${prof.id}-${slot.id}-${toDateStrLocal(d)}`,
-              date: toDateStrLocal(d),
-              time: slot.startTime,
-              title: isMe ? t('dashboard.professor.myAvailabilityShort') : `${prof.name}`,
-              type,
-            });
-          }
-          d.setDate(d.getDate() + 1);
+    for (const slot of availability || []) {
+      const d = new Date(rangeStart.getTime());
+      const end = new Date(rangeEnd.getTime());
+      while (d <= end) {
+        if (d.getDay() === toJsDay(slot.dayOfWeek)) {
+          evts.push({
+            id: `av-my-${slot.id}-${toDateStrLocal(d)}`,
+            date: toDateStrLocal(d),
+            time: slot.startTime,
+            title: t('dashboard.professor.myAvailabilityShort'),
+            type: 'my-availability',
+          });
         }
+        d.setDate(d.getDate() + 1);
       }
     }
     return evts;
-  }, [allProfsAvailability, user?.id]);
+  }, [availability, user?.id]);
 
   const courseEvents = courses.map((c) => {
     const status = getCourseStatus(c);
     const isPast = status === 'completed' || status === 'professor_absent';
+    const local = getCourseLocalInfo(c);
     return {
       id: c.id,
-      date: c.date,
+      date: local?.date ?? c.date,
       title: c.student?.name ? `${t('dashboard.admin.student')} ${c.student.name}` : t('dashboard.professor.course'),
-      time: formatTimeRange(c.time, c.durationMin || 60),
+      time: local ? (local.displayEndTime ? `${local.displayTime} – ${local.displayEndTime}` : local.displayTime) : formatTimeRange(c.time, c.durationMin || 60),
       rawTime: c.time,
       type: 'course',
       isPast,
@@ -263,8 +281,7 @@ export default function ProfessorCourses() {
     };
   });
 
-  const filteredAvailabilityEvents = showOtherProfs ? availabilityEvents : availabilityEvents.filter((e) => e.type === 'my-availability');
-  const calendarEvents = [...courseEvents, ...filteredAvailabilityEvents];
+  const calendarEvents = [...courseEvents, ...availabilityEvents];
 
   const weekStartDate = new Date(weekStart + 'T12:00:00');
   const weekEndDate = new Date(weekStartDate);
@@ -282,9 +299,10 @@ export default function ProfessorCourses() {
     setWeekStart(toDateStrLocal(d));
   };
 
+  const weekEndStr = toDateStrLocal(weekEndDate);
   const coursesInWeek = courses.filter((c) => {
-    const cd = new Date(c.date + 'T12:00:00');
-    return cd >= weekStartDate && cd <= weekEndDate;
+    const localDate = getCourseLocalInfo(c)?.date ?? c.date;
+    return localDate >= weekStart && localDate <= weekEndStr;
   });
 
   const coursesThisWeek = coursesInWeek.length;
@@ -295,19 +313,20 @@ export default function ProfessorCourses() {
     d.setDate(d.getDate() + i);
     const dateStr = toDateStrLocal(d);
     const dayOfWeek = i + 1;
-    let dayAvailability = allProfsAvailability.flatMap((prof) =>
-      (prof.availability || [])
-        .filter((s) => s.dayOfWeek === dayOfWeek)
-        .map((s) => ({ ...s, professorId: prof.id, professorName: prof.name }))
-    );
-    if (!showOtherProfs) dayAvailability = dayAvailability.filter((s) => s.professorId === user?.id);
+    const dayAvailability = (availability || [])
+      .filter((s) => s.dayOfWeek === dayOfWeek)
+      .map((s) => ({ ...s, professorId: user?.id, professorName: user?.name }))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    const dayCourses = coursesInWeek
+      .filter((c) => (getCourseLocalInfo(c)?.date ?? c.date) === dateStr)
+      .sort((a, b) => (getCourseLocalInfo(a)?.time ?? a.time).localeCompare(getCourseLocalInfo(b)?.time ?? b.time));
     return {
       day: DAYS[i],
       dateStr,
       isToday: dateStr === today,
       dayOfWeek,
-      courses: coursesInWeek.filter((c) => c.date === dateStr).sort((a, b) => a.time.localeCompare(b.time)),
-      availability: dayAvailability.sort((a, b) => a.startTime.localeCompare(b.startTime)),
+      courses: dayCourses,
+      availability: dayAvailability,
     };
   });
 
@@ -320,20 +339,27 @@ export default function ProfessorCourses() {
     [selectedClockCountry, locale, now]
   );
 
-  // Day view: selected date data
+  // Day view: selected date data (courses shown in professor's local time)
   const dayViewDateObj = new Date(dayViewDate + 'T12:00:00');
   const dayViewDayOfWeek = dayViewDateObj.getDay() === 0 ? 7 : dayViewDateObj.getDay();
-  const coursesForDay = courses.filter((c) => c.date === dayViewDate).sort((a, b) => a.time.localeCompare(b.time));
-  const availabilityForDay = allProfsAvailability.flatMap((prof) =>
-    (prof.availability || [])
-      .filter((s) => s.dayOfWeek === dayViewDayOfWeek)
-      .map((s) => ({ ...s, professorId: prof.id, professorName: prof.name }))
-  ).filter((s) => showOtherProfs || s.professorId === user?.id).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const coursesForDay = courses
+    .filter((c) => (getCourseLocalInfo(c)?.date ?? c.date) === dayViewDate)
+    .sort((a, b) => (getCourseLocalInfo(a)?.time ?? a.time).localeCompare(getCourseLocalInfo(b)?.time ?? b.time));
+  const availabilityForDay = (availability || [])
+    .filter((s) => s.dayOfWeek === dayViewDayOfWeek)
+    .map((s) => ({ ...s, professorId: user?.id, professorName: user?.name }))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   const dayTimelineItems = [
     ...availabilityForDay.map((s) => ({ type: 'availability', sortTime: s.startTime, data: s })),
-    ...coursesForDay.map((c) => ({ type: 'course', sortTime: c.time, data: c })),
+    ...coursesForDay.map((c) => ({ type: 'course', sortTime: getCourseLocalInfo(c)?.time ?? c.time, data: c })),
   ].sort((a, b) => a.sortTime.localeCompare(b.sortTime));
+
+  const getCourseTimeDisplay = (c) => {
+    const local = getCourseLocalInfo(c);
+    if (local) return local.displayEndTime ? `${local.displayTime} – ${local.displayEndTime}` : local.displayTime;
+    return formatTimeRange(c.time, c.durationMin || 60);
+  };
 
   const renderCourseDayCard = (c, i) => {
     const status = getCourseStatus(c);
@@ -348,7 +374,7 @@ export default function ProfessorCourses() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <span className={`flex items-center justify-center min-w-[4.5rem] h-12 px-2 rounded-xl shrink-0 font-mono font-bold text-sm shadow-sm whitespace-nowrap ${hasDarkBg ? 'bg-black/35 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
-              {formatTimeRange(c.time, c.durationMin || 60)}
+              {getCourseTimeDisplay(c)}
             </span>
             <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
               <StudentNameTooltip student={c.student} className={`font-semibold break-words cursor-default ${nameTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
@@ -611,17 +637,6 @@ export default function ProfessorCourses() {
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
               {t('dashboard.professor.myAvailabilityShort')}
             </span>
-            <button
-              onClick={() => setShowOtherProfs(!showOtherProfs)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                showOtherProfs
-                  ? 'bg-slate-300/30 dark:bg-slate-600/30 text-slate-700 dark:text-slate-300'
-                  : 'bg-slate-200/50 dark:bg-slate-700/30 text-slate-500 dark:text-slate-500'
-              }`}
-            >
-              <span className={`w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500 ${!showOtherProfs && 'opacity-50'}`} />
-              {t('dashboard.professor.otherProfs')} {showOtherProfs ? t('dashboard.professor.hide') : t('dashboard.professor.show')}
-            </button>
           </div>
           <Calendar
           events={calendarEvents}
@@ -662,17 +677,6 @@ export default function ProfessorCourses() {
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                 {t('dashboard.professor.myAvailabilityShort')}
               </span>
-              <button
-                onClick={() => setShowOtherProfs(!showOtherProfs)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                  showOtherProfs
-                    ? 'bg-slate-300/30 dark:bg-slate-600/30 text-slate-700 dark:text-slate-300'
-                    : 'bg-slate-200/50 dark:bg-slate-700/30 text-slate-500 dark:text-slate-500'
-                }`}
-              >
-                <span className={`w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500 ${!showOtherProfs && 'opacity-50'}`} />
-                {t('dashboard.professor.otherProfs')} {showOtherProfs ? t('dashboard.professor.hide') : t('dashboard.professor.show')}
-              </button>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={prevWeek} className="px-4 py-2 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 rounded-xl transition font-medium">
@@ -729,7 +733,7 @@ export default function ProfessorCourses() {
                             <div className="space-y-1.5">
                               <StudentNameTooltip student={c.student} className={`font-semibold text-sm leading-snug break-words block cursor-default ${weekTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
                               <div className="flex flex-col gap-1">
-                                <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{formatTimeRange(c.time, c.durationMin || 60)}</span>
+                                <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{getCourseTimeDisplay(c)}</span>
                                 <span className={`inline-block w-fit px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${
                                   status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white animate-pulse' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 animate-pulse') :
                                   status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :

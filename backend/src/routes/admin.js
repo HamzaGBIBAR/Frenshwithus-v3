@@ -348,7 +348,7 @@ router.post('/students/:id/availability', studentAvailabilityValidation, validat
   const utc = moroccoSlotToUtc(Number(dayOfWeek), startTime, endTime);
   const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
   const slot = await prisma.studentAvailability.create({
-    data: { studentId: req.params.id, ...data },
+    data: { studentId: req.params.id, ...data, enteredTimezone: MOROCCO_TZ },
   });
   res.json(slot);
 });

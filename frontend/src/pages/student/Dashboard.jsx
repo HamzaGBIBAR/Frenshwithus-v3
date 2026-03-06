@@ -457,16 +457,20 @@ export default function StudentDashboard() {
       <section id="availability" className="scroll-mt-6 p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg">
         <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-2">{t('dashboard.student.myAvailability')}</h2>
         <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mb-4">{t('dashboard.student.availabilityDesc')}</p>
-        {studentTz ? (
+        {(studentTz || (typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone)) ? (
           <>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 try {
+                  const browserTz = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
+                    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                    : undefined;
                   await api.post('/student/availability', {
                     dayOfWeek: availForm.dayOfWeek,
                     startTime: availForm.startTime,
                     endTime: availForm.endTime,
+                    ...(browserTz && { timezone: browserTz }),
                   });
                   setAvailForm((f) => ({ ...f, startTime: '09:00', endTime: '10:00' }));
                   fetchAvailability();

@@ -356,7 +356,8 @@
       "preview": "Preview",
       "autoGenerate": "Generate courses",
       "previewResult": "{{count}} compatible slot(s) (no courses created).",
-      "autoGenCreated": "{{count}} course(s) created."
+      "autoGenCreated": "{{count}} course(s) created.",
+      "dateTimeMoroccoHint": "Date and time in Morocco time (Africa/Casablanca). Students and professors will see it in their local timezone."
     },
     "adminStats": {
       "title": "Student Statistics",

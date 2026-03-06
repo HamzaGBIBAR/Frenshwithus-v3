@@ -331,7 +331,8 @@
       "preview": "预览",
       "autoGenerate": "生成课程",
       "previewResult": "{{count}} 个可匹配时段（未创建课程）。",
-      "autoGenCreated": "已创建 {{count}} 节课。"
+      "autoGenCreated": "已创建 {{count}} 节课。",
+      "dateTimeMoroccoHint": "日期和时间为摩洛哥时间。学生和教师将按当地时区显示。"
     },
     "adminStats": {
       "title": "学生统计",

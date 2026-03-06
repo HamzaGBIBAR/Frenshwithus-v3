@@ -44,9 +44,10 @@ model User {
 model ProfessorAvailability {
   id        String @id @default(cuid())
   professorId String
-  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun
-  startTime String // HH:mm
-  endTime   String // HH:mm
+  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun (UTC)
+  startTime String // HH:mm (UTC)
+  endTime   String // HH:mm (UTC)
+  enteredTimezone String? // IANA timezone when slot was created (e.g. "Europe/Paris")
 
   professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
 }
@@ -54,9 +55,10 @@ model ProfessorAvailability {
 model StudentAvailability {
   id        String @id @default(cuid())
   studentId String
-  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun
-  startTime String // HH:mm
-  endTime   String // HH:mm
+  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun (UTC)
+  startTime String // HH:mm (UTC)
+  endTime   String // HH:mm (UTC)
+  enteredTimezone String? // IANA timezone when slot was created
 
   student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }

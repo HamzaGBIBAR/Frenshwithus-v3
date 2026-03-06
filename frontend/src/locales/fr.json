@@ -356,7 +356,8 @@
       "preview": "Aperçu",
       "autoGenerate": "Générer les cours",
       "previewResult": "{{count}} créneau(x) compatible(s) (sans créer de cours).",
-      "autoGenCreated": "{{count}} cours créé(s)."
+      "autoGenCreated": "{{count}} cours créé(s).",
+      "dateTimeMoroccoHint": "Date et heure en heure Maroc (Africa/Casablanca). Les élèves et professeurs verront le cours dans leur fuseau horaire."
     },
     "adminStats": {
       "title": "Statistiques des élèves",

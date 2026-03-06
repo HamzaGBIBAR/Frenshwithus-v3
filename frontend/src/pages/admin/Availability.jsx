@@ -39,20 +39,8 @@ export default function AdminAvailability() {
   const handleAddSlot = async (e) => {
     e.preventDefault();
     if (!selectedStudent) return;
-    let payload = { ...form };
-    if (selectedStudentTz) {
-      const dateStr = dateStrFromDayOfWeek(form.dayOfWeek);
-      const startMorocco = convertTimeBetweenTimezones(dateStr, form.startTime, selectedStudentTz, MOROCCO_TZ);
-      const endMorocco = convertTimeBetweenTimezones(dateStr, form.endTime, selectedStudentTz, MOROCCO_TZ);
-      if (startMorocco && endMorocco) {
-        payload = {
-          dayOfWeek: startMorocco.dayOfWeek,
-          startTime: startMorocco.time,
-          endTime: endMorocco.time,
-        };
-      }
-    }
-    await api.post(`/admin/students/${selectedStudent}/availability`, payload);
+    // Admin always enters and sends availability in Morocco time (Africa/Casablanca)
+    await api.post(`/admin/students/${selectedStudent}/availability`, { ...form });
     setForm({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' });
     load();
   };

@@ -105,16 +105,25 @@ router.get('/availability', async (req, res) => {
 });
 
 router.post('/availability', studentAvailabilityValidation, validate, async (req, res) => {
-  const { dayOfWeek, startTime, endTime } = req.body;
+  const { dayOfWeek, startTime, endTime, timezone: bodyTz } = req.body;
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
     select: { timezone: true, country: true },
   });
-  const tz = getUserTz(user?.timezone, user?.country);
+  let tz = getUserTz(user?.timezone, user?.country);
+  if (bodyTz && typeof bodyTz === 'string' && bodyTz.trim().length > 0) {
+    tz = bodyTz.trim();
+    if (!user?.timezone) {
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { timezone: tz },
+      });
+    }
+  }
   const utc = localSlotToUtc(Number(dayOfWeek), startTime, endTime, tz);
   const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
   const slot = await prisma.studentAvailability.create({
-    data: { studentId: req.user.id, ...data },
+    data: { studentId: req.user.id, ...data, enteredTimezone: tz },
   });
   res.json(slot);
 });

@@ -299,7 +299,7 @@ export default function Courses() {
               />
             </div>
             <div>
-              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">Heure</label>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.time')}</label>
               <input
                 type="time"
                 value={form.time}
@@ -308,6 +308,9 @@ export default function Courses() {
                 required
               />
             </div>
+            <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50 -mt-1 sm:col-span-2">
+              {t('dashboard.adminCourses.dateTimeMoroccoHint')}
+            </p>
             <div>
               <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.duration')}</label>
               <select
@@ -475,6 +478,7 @@ export default function Courses() {
                   />
                 </div>
               </div>
+              <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{t('dashboard.adminCourses.dateTimeMoroccoHint')}</p>
               <div>
                 <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.adminCourses.meetingLink')}</label>
                 <div className="flex gap-2">

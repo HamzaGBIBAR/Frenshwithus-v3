@@ -331,7 +331,8 @@
       "preview": "معاينة",
       "autoGenerate": "إنشاء الدروس",
       "previewResult": "{{count}} وقت متوافق (بدون إنشاء دروس).",
-      "autoGenCreated": "تم إنشاء {{count}} درساً."
+      "autoGenCreated": "تم إنشاء {{count}} درساً.",
+      "dateTimeMoroccoHint": "التاريخ والوقت بتوقيت المغرب. الطلاب والأساتذة يرون الموعد بمنطقتهم الزمنية."
     },
     "adminStats": {
       "title": "إحصائيات الطلاب",
