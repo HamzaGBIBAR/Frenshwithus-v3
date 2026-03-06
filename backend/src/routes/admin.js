@@ -53,7 +53,7 @@ router.get('/professors', async (req, res) => {
   res.json(users);
 });
 
-// Must be before /professors/:id so "availability" is not interpreted as id
+// Professors' availability: stored in UTC; always return in Africa/Casablanca for admin (e.g. 9h Paris → 8h Maroc).
 router.get('/professors/availability', async (req, res) => {
   const professors = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },

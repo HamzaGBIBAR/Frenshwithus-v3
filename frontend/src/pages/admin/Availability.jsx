@@ -339,13 +339,16 @@ export default function AdminAvailability() {
           </div>
         </div>
 
-        {/* Professor availability (announcement / view) */}
+        {/* Professor availability: always shown in Morocco time (API returns UTC→Morocco) */}
         <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-all duration-500 hover:shadow-pink-soft/80 dark:hover:shadow-[0_8px_30px_rgba(244,114,182,0.08)]">
           <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
             <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
               <span className="w-1 h-5 rounded-full bg-pink-primary dark:bg-pink-400" />
               {t('dashboard.adminAvailability.professorAvailability')}
             </h2>
+            <p className="text-xs text-text/60 dark:text-[#f5f5f5]/70 mt-1.5">
+              {t('dashboard.adminAvailability.professorSlotsMoroccoHint')}
+            </p>
           </div>
           <div className="p-4 max-h-96 overflow-y-auto space-y-4 scrollbar-hide">
             {professors.map((p) => (

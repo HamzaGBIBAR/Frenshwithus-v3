@@ -499,7 +499,8 @@
       "noStudents": "No students",
       "weeklyCalendar": "Weekly calendar",
       "weeklyCalendarHint": "Morocco time. P = professors available, E = students available. Compatible slots when both P and E > 0.",
-      "time": "Time"
+      "time": "Time",
+      "professorSlotsMoroccoHint": "All times below are in Morocco time (Africa/Casablanca), not the teacher's timezone (e.g. 9am Paris → 8am Morocco)."
     },
     "adminMessages": {
       "title": "Messages",
