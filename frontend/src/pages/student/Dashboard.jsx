@@ -310,7 +310,7 @@ export default function StudentDashboard() {
       date: localInfo?.date || c.date,
       title: c.professor?.name ? formatProfessorName(c.professor.name) : t('dashboard.student.frenchCourse'),
       time: localInfo?.displayEndTime ? `${localInfo.displayTime} – ${localInfo.displayEndTime}` : (localInfo?.displayTime || formatTimeRange(c.time, c.durationMin || 60)),
-      hoverDetails: `${t('dashboard.student.moroccoTime')}: ${c.date} ${formatTimeAMPM(c.time)}`,
+      hoverDetails: localInfo ? `${localInfo.displayDate} ${localInfo.displayTime}${localInfo.displayEndTime ? ' – ' + localInfo.displayEndTime : ''}` : '',
       type: 'course',
       isPast: sessionEnded || !!c.endReason,
     };
