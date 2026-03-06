@@ -87,6 +87,10 @@ export default function AdminAvailability() {
   };
 
   const formatStudentLocalSlot = (slot, studentTz) => {
+    if (slot.localStartTime != null && slot.localEndTime != null) {
+      const day = dayLabels[(slot.localDayOfWeek ?? slot.dayOfWeek) - 1] || '-';
+      return `${day} ${formatSlotTime(slot.localStartTime)} - ${formatSlotTime(slot.localEndTime)}`;
+    }
     const day = dayLabels[slot.dayOfWeek - 1] || '-';
     const local = getStudentLocalSlot(slot, studentTz);
     if (!local) return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;

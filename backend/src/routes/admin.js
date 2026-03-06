@@ -7,7 +7,7 @@ import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation, studentAvailabilityValidation, messageValidation } from '../middleware/validate.js';
 import { autoGenerateWeeklyCourses, previewAutoGenerate } from '../lib/autoGenerateCourses.js';
-import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ, moroccoDateTimeToUtc, getTimezoneFromCountry, findOverlaps, utcSlotToMoroccoDateAndTime } from '../lib/availabilityUtc.js';
+import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ, moroccoDateTimeToUtc, getTimezoneFromCountry, getUserTz, findOverlaps, utcSlotToMoroccoDateAndTime } from '../lib/availabilityUtc.js';
 import { captureException } from '../lib/sentry.js';
 
 const router = Router();
@@ -443,13 +443,26 @@ router.get('/students/availability', async (req, res) => {
       studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
     },
   });
-  const inMorocco = students.map((s) => ({
-    ...s,
-    studentAvailability: (s.studentAvailability || []).map((slot) => {
-      const z = utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, MOROCCO_TZ);
-      return z ? { ...slot, dayOfWeek: z.dayOfWeek, startTime: z.startTime, endTime: z.endTime } : slot;
-    }),
-  }));
+  const studentTz = (s) => getUserTz(s.timezone, s.country);
+  const inMorocco = students.map((s) => {
+    const tz = studentTz(s);
+    return {
+      ...s,
+      studentAvailability: (s.studentAvailability || []).map((slot) => {
+        const z = utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, MOROCCO_TZ);
+        const localZ = tz ? utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, tz) : null;
+        return z
+          ? {
+              ...slot,
+              dayOfWeek: z.dayOfWeek,
+              startTime: z.startTime,
+              endTime: z.endTime,
+              ...(localZ && { localDayOfWeek: localZ.dayOfWeek, localStartTime: localZ.startTime, localEndTime: localZ.endTime }),
+            }
+          : slot;
+      }),
+    };
+  });
   res.json(inMorocco);
 });
 
