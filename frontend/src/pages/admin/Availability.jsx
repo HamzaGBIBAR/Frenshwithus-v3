@@ -86,6 +86,17 @@ export default function AdminAvailability() {
     return `${day} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
   };
 
+  // Reference = UTC (Morocco as UTC+0): use ref* when backend sends them for correct 17:00–06:00 display
+  const formatReferenceSlot = (slot) => {
+    if (slot.refStartTime != null && slot.refEndTime != null) {
+      const startDay = dayLabels[(slot.refDayOfWeek ?? slot.dayOfWeek) - 1] || '-';
+      const endDay = slot.refEndDayOfWeek != null ? (dayLabels[slot.refEndDayOfWeek - 1] || '-') : startDay;
+      const range = startDay === endDay ? startDay : `${startDay} → ${endDay}`;
+      return `${range} ${formatSlotTime(slot.refStartTime)} - ${formatSlotTime(slot.refEndTime)}`;
+    }
+    return `${dayLabels[slot.dayOfWeek - 1] || '-'} ${formatSlotTime(slot.startTime)} - ${formatSlotTime(slot.endTime)}`;
+  };
+
   const formatStudentLocalSlot = (slot, studentTz) => {
     if (slot.localStartTime != null && slot.localEndTime != null) {
       const day = dayLabels[(slot.localDayOfWeek ?? slot.dayOfWeek) - 1] || '-';
@@ -269,7 +280,7 @@ export default function AdminAvailability() {
                       <div className="min-w-0">
                         <p className="text-xs font-semibold">{t('dashboard.adminAvailability.slotLocalLabel')}: {formatStudentLocalSlot(slot, selectedStudentTz)}</p>
                         <p className="text-[11px] text-emerald-700/80 dark:text-emerald-100/80 mt-0.5">
-                          {t('dashboard.adminAvailability.slotMoroccoRef')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
+                          {t('dashboard.adminAvailability.slotMoroccoRef')}: {formatReferenceSlot(slot)}
                         </p>
                       </div>
                       <button
@@ -330,7 +341,7 @@ export default function AdminAvailability() {
                               {t('dashboard.adminAvailability.slotLocalLabel')}: {formatStudentLocalSlot(slot, studentTz)}
                             </p>
                             <p className="text-[10px] text-emerald-700/85 dark:text-emerald-100/80 mt-0.5">
-                              {t('dashboard.adminAvailability.slotMoroccoRef')}: {dayLabels[slot.dayOfWeek - 1] || '-'} {formatSlotTime(slot.startTime)} - {formatSlotTime(slot.endTime)}
+                              {t('dashboard.adminAvailability.slotMoroccoRef')}: {formatReferenceSlot(slot)}
                             </p>
                           </div>
                         ))}

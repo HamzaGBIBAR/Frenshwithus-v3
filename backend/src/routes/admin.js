@@ -443,6 +443,8 @@ router.get('/students/availability', async (req, res) => {
       studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
     },
   });
+  // Reference time = UTC (Morocco treated as UTC+0 for availability reference)
+  const REF_TZ = 'UTC';
   const studentTz = (s) => getUserTz(s.timezone, s.country);
   const inMorocco = students.map((s) => {
     const tz = studentTz(s);
@@ -451,6 +453,9 @@ router.get('/students/availability', async (req, res) => {
       studentAvailability: (s.studentAvailability || []).map((slot) => {
         const z = utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, MOROCCO_TZ);
         const localZ = tz ? utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, tz) : null;
+        const refZ = utcSlotToZoned(slot.dayOfWeek, slot.startTime, slot.endTime, REF_TZ);
+        const crossesMidnight = refZ && slot.startTime && slot.endTime && slot.endTime < slot.startTime;
+        const refEndDay = crossesMidnight ? (slot.dayOfWeek === 7 ? 1 : slot.dayOfWeek + 1) : null;
         return z
           ? {
               ...slot,
@@ -458,6 +463,7 @@ router.get('/students/availability', async (req, res) => {
               startTime: z.startTime,
               endTime: z.endTime,
               ...(localZ && { localDayOfWeek: localZ.dayOfWeek, localStartTime: localZ.startTime, localEndTime: localZ.endTime }),
+              ...(refZ && { refDayOfWeek: refZ.dayOfWeek, refStartTime: refZ.startTime, refEndTime: refZ.endTime, ...(refEndDay != null && { refEndDayOfWeek: refEndDay }) }),
             }
           : slot;
       }),
