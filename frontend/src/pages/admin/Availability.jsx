@@ -19,6 +19,25 @@ function dateStrFromDayOfWeek(dayOfWeek) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+/** Current week: Monday as first day. For each dayOfWeek 1..7 returns { dateStr, dayNum, year, isToday }. */
+function getWeekDates() {
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const day = today.getDay();
+  const toMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + toMonday);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    return { dateStr, dayNum: d.getDate(), year: yyyy, isToday: dateStr === todayStr };
+  });
+}
+
 export default function AdminAvailability() {
   const { t } = useTranslation();
   const days = t('calendar.days', { returnObjects: true });
@@ -153,6 +172,8 @@ export default function AdminAvailability() {
     return { profs, studs };
   };
 
+  const weekDates = getWeekDates();
+
   const formatNames = (list, max = 2) => {
     if (!list?.length) return '';
     const names = list.slice(0, max).map((x) => x.name).join(', ');
@@ -235,13 +256,24 @@ export default function AdminAvailability() {
           <table className="w-full text-sm border-collapse min-w-[520px]">
             <thead className="sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] border-b border-pink-soft/50 dark:border-white/10 shadow-sm">
               <tr>
-                <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-14 shrink-0">
+                <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-20 shrink-0">
                   <span className="block">{t('dashboard.adminAvailability.time')}</span>
                   <span className="block text-[10px] font-normal text-amber-600 dark:text-amber-400 mt-0.5">{t('dashboard.adminAvailability.slotMoroccoRef')}</span>
                 </th>
-                {dayLabels.map((d, i) => (
-                  <th key={i} className="py-2.5 px-2 font-semibold text-text dark:text-[#f5f5f5] text-center min-w-[72px]">{d}</th>
-                ))}
+                {dayLabels.map((d, i) => {
+                  const w = weekDates[i];
+                  const isToday = w?.isToday;
+                  return (
+                    <th
+                      key={i}
+                      className={`py-2.5 px-2 font-semibold text-center min-w-[72px] ${isToday ? 'bg-pink-500/20 dark:bg-pink-500/25 text-pink-dark dark:text-pink-200 ring-2 ring-inset ring-pink-400/50 dark:ring-pink-400/40' : 'text-text dark:text-[#f5f5f5]'}`}
+                    >
+                      <span className="block">{d}</span>
+                      <span className="block text-xs font-normal mt-0.5">{w ? `${w.dayNum}` : ''}</span>
+                      <span className="block text-[10px] font-normal opacity-80">{w ? w.year : ''}</span>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -253,14 +285,15 @@ export default function AdminAvailability() {
                     key={timeStr}
                     className={`border-b border-pink-soft/20 dark:border-white/5 hover:bg-pink-soft/10 dark:hover:bg-white/5 ${isNight ? 'bg-pink-soft/5 dark:bg-white/[0.02]' : ''}`}
                   >
-                    <td className="py-2 px-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs w-14 shrink-0 align-middle">{timeStr}</td>
+                    <td className="py-2 px-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs w-20 shrink-0 align-middle" title={timeStr}>{formatTimeAMPM(timeStr)}</td>
                     {[1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => {
                       const { profs, studs } = getWeeklyCell(dayOfWeek, timeStr);
                       const hasBoth = profs.length > 0 && studs.length > 0;
+                      const isTodayCol = weekDates[dayOfWeek - 1]?.isToday;
                       return (
                         <td
                           key={dayOfWeek}
-                          className={`py-1.5 px-2 align-middle min-w-[72px] ${hasBoth ? 'cursor-pointer hover:bg-pink-soft/20 dark:hover:bg-pink-400/10' : ''}`}
+                          className={`py-1.5 px-2 align-middle min-w-[72px] ${isTodayCol ? 'bg-pink-500/10 dark:bg-pink-500/10' : ''} ${hasBoth ? 'cursor-pointer hover:bg-pink-soft/20 dark:hover:bg-pink-400/10' : ''}`}
                           onClick={() => hasBoth && openCreateCourseModal(dayOfWeek, timeStr, profs, studs)}
                           title={hasBoth ? t('dashboard.adminAvailability.clickToCreateCourse') : undefined}
                         >
