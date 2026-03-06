@@ -229,11 +229,21 @@ function CourseCard({ course, variant, onJoin, onViewRecording, highlighted, loc
           <p className="text-xs text-text/40 dark:text-[#f5f5f5]/40 mt-0.5">
             {durationMin} min
           </p>
-          {variant === 'past' && shouldShowProfessorAbsent(course) && (
-            <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mt-1">{t('dashboard.admin.endReasonProfessorAbsent')}</p>
-          )}
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex flex-col items-end gap-2">
+          {variant === 'past' && (() => {
+            const reason = course.endReason || course.absenceReason;
+            const reasonLabel =
+              reason === 'completed' ? t('dashboard.student.endReasonCompleted') :
+              reason === 'student_absent' ? t('dashboard.student.endReasonStudentAbsent') :
+              reason === 'meeting_issue' ? t('dashboard.student.endReasonMeetingIssue') :
+              (reason === 'professor_absent' || shouldShowProfessorAbsent(course)) ? t('dashboard.admin.endReasonProfessorAbsent') : null;
+            return reasonLabel ? (
+              <p className={`text-sm font-medium ${reason === 'completed' ? 'text-emerald-600 dark:text-emerald-400' : reason === 'professor_absent' ? 'text-orange-600 dark:text-orange-400' : 'text-text/70 dark:text-[#f5f5f5]/70'}`}>
+                {reasonLabel}
+              </p>
+            ) : null;
+          })()}
           {variant === 'live' || variant === 'upcoming' ? onJoin(course) : onViewRecording(course)}
         </div>
       </div>
