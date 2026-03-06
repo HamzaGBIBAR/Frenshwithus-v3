@@ -104,6 +104,7 @@ router.get('/availability', async (req, res) => {
   res.json(inLocal);
 });
 
+// Student enters slot in their local timezone; we always convert to UTC before storing (DB must store only UTC).
 router.post('/availability', studentAvailabilityValidation, validate, async (req, res) => {
   const { dayOfWeek, startTime, endTime, timezone: bodyTz } = req.body;
   const user = await prisma.user.findUnique({
@@ -121,9 +122,9 @@ router.post('/availability', studentAvailabilityValidation, validate, async (req
     }
   }
   const utc = localSlotToUtc(Number(dayOfWeek), startTime, endTime, tz);
-  const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
+  if (!utc) return res.status(400).json({ error: 'Invalid time slot; could not convert to UTC. Check time format (HH:mm) and timezone.' });
   const slot = await prisma.studentAvailability.create({
-    data: { studentId: req.user.id, ...data, enteredTimezone: tz },
+    data: { studentId: req.user.id, dayOfWeek: utc.dayOfWeek, startTime: utc.startTime, endTime: utc.endTime, enteredTimezone: tz },
   });
   res.json(slot);
 });

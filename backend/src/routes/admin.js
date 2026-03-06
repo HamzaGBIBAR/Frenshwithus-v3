@@ -453,12 +453,13 @@ router.get('/students/availability', async (req, res) => {
   res.json(inMorocco);
 });
 
+// Admin enters student slot in Morocco time; we always convert to UTC before storing (DB must store only UTC).
 router.post('/students/:id/availability', studentAvailabilityValidation, validate, async (req, res) => {
   const { dayOfWeek, startTime, endTime } = req.body;
   const utc = moroccoSlotToUtc(Number(dayOfWeek), startTime, endTime);
-  const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
+  if (!utc) return res.status(400).json({ error: 'Invalid time slot; could not convert Morocco time to UTC.' });
   const slot = await prisma.studentAvailability.create({
-    data: { studentId: req.params.id, ...data, enteredTimezone: MOROCCO_TZ },
+    data: { studentId: req.params.id, dayOfWeek: utc.dayOfWeek, startTime: utc.startTime, endTime: utc.endTime, enteredTimezone: MOROCCO_TZ },
   });
   res.json(slot);
 });

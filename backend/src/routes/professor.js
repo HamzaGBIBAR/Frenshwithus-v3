@@ -262,9 +262,9 @@ router.post('/availability', availabilityValidation, validate, async (req, res) 
     }
   }
   const utc = localSlotToUtc(Number(dayOfWeek), startTime, endTime, tz);
-  const data = utc || { dayOfWeek: Number(dayOfWeek), startTime, endTime };
+  if (!utc) return res.status(400).json({ error: 'Invalid time slot; could not convert to UTC. Check time format (HH:mm) and timezone.' });
   const slot = await prisma.professorAvailability.create({
-    data: { professorId: req.user.id, ...data, enteredTimezone: tz },
+    data: { professorId: req.user.id, dayOfWeek: utc.dayOfWeek, startTime: utc.startTime, endTime: utc.endTime, enteredTimezone: tz },
   });
   res.json(slot);
 });
