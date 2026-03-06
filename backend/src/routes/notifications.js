@@ -17,7 +17,7 @@ async function ensureNotification(userId, payload) {
       body: payload.body,
       type: payload.type,
       link: payload.link || null,
-      archivedAt: null,
+      // do not set archivedAt: null — respect user's choice to archive
     },
     create: {
       userId,
@@ -266,6 +266,14 @@ router.delete('/notifications/:id', authenticate, async (req, res) => {
     data: { archivedAt: new Date() },
   });
   if (!updated.count) return res.status(404).json({ error: 'Notification not found' });
+  res.json({ ok: true });
+});
+
+router.put('/notifications/archive-all', authenticate, async (req, res) => {
+  await prisma.notification.updateMany({
+    where: { userId: req.user.id, archivedAt: null },
+    data: { archivedAt: new Date() },
+  });
   res.json({ ok: true });
 });
 

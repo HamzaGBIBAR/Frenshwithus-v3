@@ -1,12 +1,43 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import streamifier from 'streamifier';
 import prisma from '../lib/db.js';
+import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation, studentAvailabilityValidation } from '../middleware/validate.js';
+import { validate, userCreateValidation, userUpdateValidation, courseCreateValidation, paymentCreateValidation, paymentStatusValidation, assignProfessorValidation, studentAvailabilityValidation, messageValidation } from '../middleware/validate.js';
 import { autoGenerateWeeklyCourses, previewAutoGenerate } from '../lib/autoGenerateCourses.js';
-import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ, moroccoDateTimeToUtc } from '../lib/availabilityUtc.js';
+import { utcSlotToZoned, moroccoSlotToUtc, MOROCCO_TZ, moroccoDateTimeToUtc, getTimezoneFromCountry, findOverlaps, utcSlotToMoroccoDateAndTime } from '../lib/availabilityUtc.js';
+import { captureException } from '../lib/sentry.js';
 
 const router = Router();
+
+const MESSAGE_ALLOWED_MIMES = [
+  'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/pdf',
+];
+const MESSAGE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const uploadMessageAttachment = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MESSAGE_MAX_SIZE },
+  fileFilter: (req, file, cb) => {
+    if (!MESSAGE_ALLOWED_MIMES.includes(file.mimetype)) return cb(new Error('Invalid file type. Only Word, Excel and PDF allowed.'));
+    cb(null, true);
+  },
+});
+
+function uploadMessageFileToCloudinary(buffer, originalName = 'file.bin') {
+  const safeName = String(originalName).replace(/[^a-zA-Z0-9._-]/g, '_');
+  const publicId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'frenchwithus/messages', public_id: publicId, overwrite: false, resource_type: 'raw' },
+      (error, result) => (error ? reject(error) : resolve(result))
+    );
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+}
 
 router.use(authenticate);
 router.use(requireRole('ADMIN'));
@@ -49,6 +80,7 @@ router.post('/professors', userCreateValidation, validate, async (req, res) => {
   const data = { name, email, password: hashPassword(password), role: 'PROFESSOR' };
   if (country) data.country = country;
   if (timezone) data.timezone = timezone;
+  else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.create({
     data,
     select: { id: true, name: true, email: true, country: true, timezone: true },
@@ -62,6 +94,7 @@ router.put('/professors/:id', userUpdateValidation, validate, async (req, res) =
   if (password) data.password = hashPassword(password);
   if (country !== undefined) data.country = country || null;
   if (timezone !== undefined) data.timezone = timezone || null;
+  else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'PROFESSOR' },
     data,
@@ -108,6 +141,7 @@ router.post('/students', userCreateValidation, validate, async (req, res) => {
   const data = { name, email, password: hashPassword(password), role: 'STUDENT' };
   if (country) data.country = country;
   if (timezone) data.timezone = timezone;
+  else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.create({
     data,
     select: { id: true, name: true, email: true, country: true, timezone: true },
@@ -122,6 +156,7 @@ router.put('/students/:id', userUpdateValidation, validate, async (req, res) => 
   if (professorId !== undefined) data.professorId = professorId || null;
   if (country !== undefined) data.country = country || null;
   if (timezone !== undefined) data.timezone = timezone || null;
+  else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'STUDENT' },
     data,
@@ -344,6 +379,55 @@ router.get('/courses/auto-generate/preview', async (req, res) => {
   }
 });
 
+// Overlapping availability between a professor and student (for admin to assign lessons quickly).
+// Returns slots in Africa/Casablanca time; optional weekStart=YYYY-MM-DD (Monday) for week context.
+router.get('/match-availability', async (req, res) => {
+  const professorId = req.query.professorId;
+  const studentId = req.query.studentId;
+  if (!professorId || !studentId) return res.status(400).json({ error: 'professorId and studentId are required' });
+  const [professor, student] = await Promise.all([
+    prisma.user.findFirst({
+      where: { id: professorId, role: 'PROFESSOR' },
+      select: { id: true, name: true, availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] } },
+    }),
+    prisma.user.findFirst({
+      where: { id: studentId, role: 'STUDENT' },
+      select: { id: true, name: true, studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] } },
+    }),
+  ]);
+  if (!professor) return res.status(404).json({ error: 'Professor not found' });
+  if (!student) return res.status(404).json({ error: 'Student not found' });
+  const overlaps = findOverlaps(professor.availability, student.studentAvailability);
+  const weekStart = req.query.weekStart && /^\d{4}-\d{2}-\d{2}$/.test(req.query.weekStart)
+    ? req.query.weekStart
+    : (() => {
+        const d = new Date();
+        const day = d.getUTCDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setUTCDate(d.getUTCDate() + diff);
+        return d.toISOString().slice(0, 10);
+      })();
+  const slotsInMorocco = overlaps.map((ov) => {
+    const { date, time } = utcSlotToMoroccoDateAndTime(ov.dayOfWeek, ov.startUtc, weekStart);
+    const endParts = utcSlotToMoroccoDateAndTime(ov.dayOfWeek, ov.endUtc, weekStart);
+    return {
+      dayOfWeek: ov.dayOfWeek,
+      startUtc: ov.startUtc,
+      endUtc: ov.endUtc,
+      date,
+      time,
+      endTime: endParts.time,
+      display: `${date} ${time} – ${endParts.time}`,
+    };
+  });
+  res.json({
+    professor: { id: professor.id, name: professor.name },
+    student: { id: student.id, name: student.name },
+    weekStart,
+    slots: slotsInMorocco,
+  });
+});
+
 // Student availability in Morocco time (stored in UTC)
 router.get('/students/availability', async (req, res) => {
   const students = await prisma.user.findMany({
@@ -384,6 +468,123 @@ router.delete('/students/:id/availability/:slotId', async (req, res) => {
     where: { id: req.params.slotId, studentId: req.params.id },
   });
   res.json({ ok: true });
+});
+
+// —— Discussions with professors (admin ↔ professor only) ——
+router.get('/professor-discussions', async (req, res) => {
+  const adminId = req.user.id;
+  const messages = await prisma.message.findMany({
+    where: {
+      OR: [
+        { senderId: adminId, receiver: { role: 'PROFESSOR' } },
+        { receiverId: adminId, sender: { role: 'PROFESSOR' } },
+      ],
+    },
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      receiver: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 500,
+  });
+  const byProfessor = {};
+  for (const m of messages) {
+    const profId = m.senderId === adminId ? m.receiverId : m.senderId;
+    const prof = m.senderId === adminId ? m.receiver : m.sender;
+    if (prof?.role !== 'PROFESSOR') continue;
+    if (!byProfessor[profId]) {
+      byProfessor[profId] = { professorId: profId, professorName: prof.name, lastMessage: null, lastMessageAt: null, unreadCount: 0 };
+    }
+    const entry = byProfessor[profId];
+    if (!entry.lastMessageAt || new Date(m.createdAt) > new Date(entry.lastMessageAt)) {
+      entry.lastMessage = m.content?.trim() || (m.attachmentName ? `[${m.attachmentName}]` : '—');
+      entry.lastMessageAt = m.createdAt;
+    }
+    if (m.receiverId === adminId && !m.isSeen) entry.unreadCount += 1;
+  }
+  const list = Object.values(byProfessor).sort((a, b) => new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0));
+  res.json(list);
+});
+
+router.get('/professor-discussions/:professorId', async (req, res) => {
+  const adminId = req.user.id;
+  const professorId = req.params.professorId;
+  const professor = await prisma.user.findFirst({ where: { id: professorId, role: 'PROFESSOR' }, select: { id: true, name: true } });
+  if (!professor) return res.status(404).json({ error: 'Professor not found' });
+  const messages = await prisma.message.findMany({
+    where: {
+      OR: [
+        { senderId: adminId, receiverId: professorId },
+        { senderId: professorId, receiverId: adminId },
+      ],
+    },
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      receiver: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+    take: 200,
+  });
+  res.json({ professor, messages });
+});
+
+router.post('/professor-discussions/:professorId', async (req, res) => {
+  const adminId = req.user.id;
+  const professorId = req.params.professorId;
+  const professor = await prisma.user.findFirst({ where: { id: professorId, role: 'PROFESSOR' }, select: { id: true } });
+  if (!professor) return res.status(404).json({ error: 'Professor not found' });
+  const content = String(req.body.content ?? '').trim().slice(0, 2000);
+  if (!content) return res.status(400).json({ error: 'Message content is required' });
+  const msg = await prisma.message.create({
+    data: { senderId: adminId, receiverId: professorId, content, isSeen: false },
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      receiver: { select: { id: true, name: true, role: true } },
+    },
+  });
+  res.json(msg);
+});
+
+router.post('/professor-discussions/:professorId/attachment', uploadMessageAttachment.single('file'), async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const professorId = req.params.professorId;
+    const professor = await prisma.user.findFirst({ where: { id: professorId, role: 'PROFESSOR' }, select: { id: true } });
+    if (!professor) return res.status(404).json({ error: 'Professor not found' });
+    const content = String(req.body.content || '').trim();
+    const file = req.file;
+    if (!file && !content) return res.status(400).json({ error: 'Message content or file is required' });
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    const uploadResult = await uploadMessageFileToCloudinary(file.buffer, file.originalname);
+    const msg = await prisma.message.create({
+      data: {
+        senderId: adminId,
+        receiverId: professorId,
+        content,
+        attachmentUrl: uploadResult.secure_url,
+        attachmentName: file.originalname,
+        attachmentMimeType: file.mimetype,
+        attachmentSize: file.size,
+        isSeen: false,
+      },
+      include: {
+        sender: { select: { id: true, name: true, role: true } },
+        receiver: { select: { id: true, name: true, role: true } },
+      },
+    });
+    res.json(msg);
+  } catch (err) {
+    captureException(err);
+    res.status(500).json({ error: err.message || 'Attachment upload failed' });
+  }
+});
+
+router.put('/professor-discussions/:professorId/seen', async (req, res) => {
+  const updated = await prisma.message.updateMany({
+    where: { receiverId: req.user.id, senderId: req.params.professorId, isSeen: false },
+    data: { isSeen: true, seenAt: new Date() },
+  });
+  res.json({ ok: true, count: updated.count });
 });
 
 // Messages (admin sees ALL messages sent by everyone)

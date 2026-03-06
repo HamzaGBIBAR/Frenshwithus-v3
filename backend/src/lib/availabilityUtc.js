@@ -1,19 +1,44 @@
 /**
- * Availability slot conversions for UTC storage.
- * Weekly slots: dayOfWeek (1=Mon..7=Sun) + startTime/endTime as HH:mm.
- * All stored in DB as UTC. Display in Admin as Morocco; professor/student in their timezone.
+ * Availability and lesson timezone handling.
+ *
+ * RULES:
+ * - Database: all availability and lesson times are stored in UTC.
+ *   - ProfessorAvailability / StudentAvailability: dayOfWeek (1=Mon..7=Sun) + startTime/endTime as HH:mm in UTC.
+ *   - Course: startUtc (DateTime), plus date/time in Morocco for admin display.
+ *
+ * - Input:
+ *   - Teachers/students enter availability in their LOCAL timezone; we convert to UTC before saving.
+ *   - Admin enters lesson date/time in Africa/Casablanca; we convert to UTC (startUtc) when creating/updating.
+ *
+ * - Display:
+ *   - Admin: all availability and lessons shown in Africa/Casablanca.
+ *   - Teacher/student: availability and lessons shown in their timezone (user.timezone or derived from user.country).
+ *
+ * User timezone: set by admin when creating/updating user with country (see getTimezoneFromCountry).
  */
 
 const MOROCCO_TZ = 'Africa/Casablanca';
 
-// Fallback when user has no timezone set (country code -> IANA)
+/** Country code (ISO or app code) -> IANA timezone. Used to auto-set user timezone when admin sets country. */
 const COUNTRY_TZ = {
-  MA: 'Africa/Casablanca', FR: 'Europe/Paris', US: 'America/New_York', GB: 'Europe/London',
-  DE: 'Europe/Berlin', ES: 'Europe/Madrid', IT: 'Europe/Rome', BE: 'Europe/Brussels', CH: 'Europe/Zurich',
-  DZ: 'Africa/Algiers', TN: 'Africa/Tunis', EG: 'Africa/Cairo', CA: 'America/Toronto',
+  MA: 'Africa/Casablanca', FR: 'Europe/Paris', US: 'America/New_York', 'US-C': 'America/Chicago', 'US-W': 'America/Los_Angeles',
+  GB: 'Europe/London', DE: 'Europe/Berlin', ES: 'Europe/Madrid', IT: 'Europe/Rome', BE: 'Europe/Brussels', CH: 'Europe/Zurich',
+  DZ: 'Africa/Algiers', TN: 'Africa/Tunis', EG: 'Africa/Cairo', CA: 'America/Toronto', 'CA-W': 'America/Vancouver',
+  SA: 'Asia/Riyadh', AE: 'Asia/Dubai', QA: 'Asia/Qatar', KW: 'Asia/Kuwait', LB: 'Asia/Beirut', JO: 'Asia/Amman',
+  TR: 'Europe/Istanbul', CN: 'Asia/Shanghai', JP: 'Asia/Tokyo', KR: 'Asia/Seoul', IN: 'Asia/Kolkata',
+  BR: 'America/Sao_Paulo', MX: 'America/Mexico_City', AU: 'Australia/Sydney', NZ: 'Pacific/Auckland',
+  SN: 'Africa/Dakar', CI: 'Africa/Abidjan', CM: 'Africa/Douala', CD: 'Africa/Kinshasa', NG: 'Africa/Lagos', GH: 'Africa/Accra',
 };
+
 function getUserTz(timezone, country) {
   return timezone || (country && COUNTRY_TZ[country]) || MOROCCO_TZ;
+}
+
+/** Get IANA timezone from country code. Used when admin creates/updates user with country. */
+function getTimezoneFromCountry(country) {
+  if (!country || typeof country !== 'string') return MOROCCO_TZ;
+  const code = country.trim().toUpperCase();
+  return COUNTRY_TZ[code] || MOROCCO_TZ;
 }
 
 // Reference Monday for "week template" conversions (any Monday works)
@@ -195,9 +220,27 @@ function utcToZonedDateTime(utcDate, toTz, locale = 'fr') {
   return { date, time, displayDate, displayTime };
 }
 
+/**
+ * Find overlapping slots between professor and student (both in UTC: dayOfWeek, startTime, endTime).
+ * Returns array of { dayOfWeek, startUtc, endUtc }.
+ */
+function findOverlaps(profSlots, studentSlots) {
+  const result = [];
+  for (const p of profSlots || []) {
+    for (const s of studentSlots || []) {
+      if (p.dayOfWeek !== s.dayOfWeek) continue;
+      const ov = overlapSameDay(p.startTime, p.endTime, s.startTime, s.endTime);
+      if (ov) result.push({ dayOfWeek: p.dayOfWeek, startUtc: ov.start, endUtc: ov.end });
+    }
+  }
+  return result;
+}
+
 export {
   MOROCCO_TZ,
+  COUNTRY_TZ,
   getUserTz,
+  getTimezoneFromCountry,
   localSlotToUtc,
   moroccoSlotToUtc,
   utcSlotToZoned,
@@ -208,4 +251,5 @@ export {
   refDateForDay,
   compareTime,
   overlapSameDay,
+  findOverlaps,
 };

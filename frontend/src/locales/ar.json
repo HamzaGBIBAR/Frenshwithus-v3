@@ -243,7 +243,30 @@
     "phone": "الهاتف",
     "instagram": "إنستغرام",
     "linkedin": "لينكد إن",
-    "cta": "تواصل معنا"
+    "cta": "تواصل معنا",
+    "send": "إرسال"
+  },
+  "discussionAdmin": {
+    "title": "نقاش مع الإدارة",
+    "subtitle": "تواصل مع فريق الإدارة. الرد خلال 24 ساعة.",
+    "withAdmin": "الإدارة",
+    "supportLine": "الدعم والاستفسارات",
+    "noMessages": "لا توجد رسائل بعد. أرسل أول رسالة.",
+    "placeholder": "اكتب رسالتك...",
+    "attachFile": "إرفاق ملف (PDF، Word، Excel)",
+    "attachment": "مرفق",
+    "sendError": "فشل إرسال الرسالة."
+  },
+  "professorDiscussions": {
+    "title": "نقاشات مع الأساتذة",
+    "subtitle": "الرد على رسائل الأساتذة.",
+    "professors": "الأساتذة",
+    "noConversations": "لا توجد نقاشات بعد.",
+    "noMessages": "لا توجد رسائل في هذه المحادثة.",
+    "selectProfessor": "اختر أستاذاً لعرض المحادثة.",
+    "placeholder": "رد...",
+    "sendError": "فشل إرسال الرسالة.",
+    "professor": "أستاذ"
   },
   "chatbot": {
     "logoLabel": "المساعد",
@@ -471,7 +494,8 @@
       "yearPlaceholder": "السنة",
       "hourPlaceholder": "الساعة",
       "empty": "لا توجد رسائل",
-      "selectStudent": "اختر طالبًا لعرض الرسائل"
+      "selectStudent": "اختر طالبًا لعرض الرسائل",
+      "attachmentLabel": "ملف مرفق"
     },
     "professor": {
       "message": "الرسائل",

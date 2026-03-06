@@ -243,7 +243,30 @@
     "phone": "Téléphone",
     "instagram": "Instagram",
     "linkedin": "LinkedIn",
-    "cta": "Écrivez-nous"
+    "cta": "Écrivez-nous",
+    "send": "Envoyer"
+  },
+  "discussionAdmin": {
+    "title": "Discussion avec l'admin",
+    "subtitle": "Échangez avec l'équipe d'administration. Réponses sous 24h.",
+    "withAdmin": "Administration",
+    "supportLine": "Support et questions",
+    "noMessages": "Aucun message pour le moment. Envoyez le premier.",
+    "placeholder": "Écrivez votre message...",
+    "attachFile": "Joindre un fichier (PDF, Word, Excel)",
+    "attachment": "Fichier joint",
+    "sendError": "Échec de l'envoi du message."
+  },
+  "professorDiscussions": {
+    "title": "Discussions avec les professeurs",
+    "subtitle": "Répondez aux messages des professeurs.",
+    "professors": "Professeurs",
+    "noConversations": "Aucune discussion pour le moment.",
+    "noMessages": "Aucun message dans cette conversation.",
+    "selectProfessor": "Sélectionnez un professeur pour voir la conversation.",
+    "placeholder": "Répondre...",
+    "sendError": "Échec de l'envoi du message.",
+    "professor": "Professeur"
   },
   "chatbot": {
     "logoLabel": "Assistant",
@@ -499,7 +522,8 @@
       "yearPlaceholder": "Année",
       "hourPlaceholder": "Heure",
       "empty": "Aucun message",
-      "selectStudent": "Sélectionnez un élève pour voir les messages"
+      "selectStudent": "Sélectionnez un élève pour voir les messages",
+      "attachmentLabel": "Fichier joint"
     },
     "professor": {
       "message": "Messages",
@@ -598,6 +622,9 @@
       "liveCourses": "Cours en direct",
       "viewRecording": "Voir l'enregistrement",
       "noRecording": "Pas encore d'enregistrement",
+      "endReasonCompleted": "Cours bien terminé",
+      "endReasonStudentAbsent": "Étudiant absent",
+      "endReasonMeetingIssue": "Problème au meet",
       "upcomingCourses": "Prochains cours",
       "pastCourses": "Cours passés",
       "frenchCourse": "Cours de français",

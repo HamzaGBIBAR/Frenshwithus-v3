@@ -243,7 +243,30 @@
     "phone": "Phone",
     "instagram": "Instagram",
     "linkedin": "LinkedIn",
-    "cta": "Get in touch"
+    "cta": "Get in touch",
+    "send": "Send"
+  },
+  "discussionAdmin": {
+    "title": "Discussion with admin",
+    "subtitle": "Exchange with the administration team. Replies within 24h.",
+    "withAdmin": "Administration",
+    "supportLine": "Support and enquiries",
+    "noMessages": "No messages yet. Send the first one.",
+    "placeholder": "Type your message...",
+    "attachFile": "Attach file (PDF, Word, Excel)",
+    "attachment": "Attachment",
+    "sendError": "Failed to send message."
+  },
+  "professorDiscussions": {
+    "title": "Discussions with professors",
+    "subtitle": "Reply to professors' messages.",
+    "professors": "Professors",
+    "noConversations": "No discussions yet.",
+    "noMessages": "No messages in this conversation.",
+    "selectProfessor": "Select a professor to view the conversation.",
+    "placeholder": "Reply...",
+    "sendError": "Failed to send message.",
+    "professor": "Professor"
   },
   "chatbot": {
     "logoLabel": "Chat Bot",
@@ -499,7 +522,8 @@
       "yearPlaceholder": "Year",
       "hourPlaceholder": "Hour",
       "empty": "No messages yet",
-      "selectStudent": "Select a student to view messages"
+      "selectStudent": "Select a student to view messages",
+      "attachmentLabel": "Attachment"
     },
     "professor": {
       "message": "Messages",
@@ -598,6 +622,9 @@
       "liveCourses": "Live courses",
       "viewRecording": "View recording",
       "noRecording": "No recording yet",
+      "endReasonCompleted": "Course completed successfully",
+      "endReasonStudentAbsent": "Student absent",
+      "endReasonMeetingIssue": "Meeting technical issue",
       "upcomingCourses": "Upcoming courses",
       "pastCourses": "Past courses",
       "frenchCourse": "French course",

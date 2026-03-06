@@ -6,7 +6,7 @@
 import prisma from './db.js';
 import {
   utcSlotToMoroccoDateAndTime,
-  overlapSameDay,
+  findOverlaps,
   moroccoDateTimeToUtc,
 } from './availabilityUtc.js';
 
@@ -25,29 +25,6 @@ function getMondayOfWeek(dateStr) {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   return `${yy}-${mm}-${dd}`;
-}
-
-/**
- * Find overlapping slots between one professor's slots and one student's slots.
- * Slots are in UTC (dayOfWeek, startTime, endTime).
- * Returns array of { dayOfWeek, startUtc, endUtc }.
- */
-function findOverlaps(profSlots, studentSlots) {
-  const result = [];
-  for (const p of profSlots || []) {
-    for (const s of studentSlots || []) {
-      if (p.dayOfWeek !== s.dayOfWeek) continue;
-      const ov = overlapSameDay(p.startTime, p.endTime, s.startTime, s.endTime);
-      if (ov) {
-        result.push({
-          dayOfWeek: p.dayOfWeek,
-          startUtc: ov.start,
-          endUtc: ov.end,
-        });
-      }
-    }
-  }
-  return result;
 }
 
 /**

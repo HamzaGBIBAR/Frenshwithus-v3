@@ -10,6 +10,7 @@ import Courses from '../pages/admin/Courses';
 import Payments from '../pages/admin/Payments';
 import Availability from '../pages/admin/Availability';
 import Messages from '../pages/admin/Messages';
+import ProfessorDiscussions from '../pages/admin/ProfessorDiscussions';
 import Statistics from '../pages/admin/Statistics';
 import BlockedIps from '../pages/admin/BlockedIps';
 
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/admin/courses', label: 'Courses' },
   { to: '/admin/payments', label: 'Payments' },
   { to: '/admin/messages', label: 'Messages' },
+  { to: '/admin/professor-discussions', label: 'Discussions professeurs' },
   { to: '/admin/statistics', label: 'Statistics' },
   { to: '/admin/blocked-ips', label: 'Blocked IPs' },
 ];
@@ -50,6 +52,7 @@ export default function AdminLayout() {
           <Route path="payments" element={<Payments />} />
           <Route path="availability" element={<Availability />} />
           <Route path="messages" element={<Messages />} />
+          <Route path="professor-discussions" element={<ProfessorDiscussions />} />
           <Route path="statistics" element={<Statistics />} />
           <Route path="blocked-ips" element={<BlockedIps />} />
         </Routes>

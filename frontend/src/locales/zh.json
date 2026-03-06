@@ -243,7 +243,30 @@
     "phone": "电话",
     "instagram": "Instagram",
     "linkedin": "LinkedIn",
-    "cta": "联系我们"
+    "cta": "联系我们",
+    "send": "发送"
+  },
+  "discussionAdmin": {
+    "title": "与管理员对话",
+    "subtitle": "与管理团队交流。24小时内回复。",
+    "withAdmin": "管理员",
+    "supportLine": "支持与咨询",
+    "noMessages": "暂无消息。发送第一条。",
+    "placeholder": "输入消息...",
+    "attachFile": "附件（PDF、Word、Excel）",
+    "attachment": "附件",
+    "sendError": "发送失败。"
+  },
+  "professorDiscussions": {
+    "title": "与教师对话",
+    "subtitle": "回复教师消息。",
+    "professors": "教师",
+    "noConversations": "暂无对话。",
+    "noMessages": "此对话暂无消息。",
+    "selectProfessor": "选择一位教师以查看对话。",
+    "placeholder": "回复...",
+    "sendError": "发送失败。",
+    "professor": "教师"
   },
   "chatbot": {
     "logoLabel": "智能助手",
@@ -471,7 +494,8 @@
       "yearPlaceholder": "年份",
       "hourPlaceholder": "小时",
       "empty": "暂无消息",
-      "selectStudent": "选择一个学生以查看消息"
+      "selectStudent": "选择一个学生以查看消息",
+      "attachmentLabel": "附件"
     },
     "professor": {
       "message": "消息",

@@ -226,8 +226,25 @@ export default function AdminMessages() {
                       ({m.receiver?.role?.toLowerCase()})
                     </span>
                   </td>
-                  <td className="p-3 text-text dark:text-[#f5f5f5] max-w-xs truncate">
-                    {m?.content ?? '—'}
+                  <td className="p-3 text-text dark:text-[#f5f5f5] max-w-xs">
+                    {m?.content?.trim() ? (
+                      <span className="block truncate" title={m.content}>{m.content.trim()}</span>
+                    ) : null}
+                    {m?.attachmentUrl ? (
+                      <a
+                        href={m.attachmentUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1 mt-0.5 text-pink-600 dark:text-pink-400 hover:underline truncate max-w-full"
+                        title={m.attachmentName || t('dashboard.adminMessages.attachmentLabel')}
+                      >
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                        {m.attachmentName?.trim() || t('dashboard.adminMessages.attachmentLabel')}
+                      </a>
+                    ) : null}
+                    {!m?.content?.trim() && !m?.attachmentUrl && '—'}
                   </td>
                   <td className="p-3 text-text/70 dark:text-[#f5f5f5]/70 text-xs">
                     {m?.createdAt ? new Date(m.createdAt).toLocaleString() : '—'}

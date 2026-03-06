@@ -401,6 +401,82 @@ router.post('/messages/attachment', uploadMessageAttachment.single('file'), asyn
   }
 });
 
+// —— Discussion with Admin (professor ↔ admin only) ——
+async function getAdminUserId() {
+  const admin = await prisma.user.findFirst({
+    where: { role: 'ADMIN' },
+    select: { id: true },
+  });
+  return admin?.id ?? null;
+}
+
+router.get('/admin-discussion', async (req, res) => {
+  const adminId = await getAdminUserId();
+  if (!adminId) return res.json([]);
+  const messages = await prisma.message.findMany({
+    where: {
+      OR: [
+        { senderId: req.user.id, receiverId: adminId },
+        { senderId: adminId, receiverId: req.user.id },
+      ],
+    },
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      receiver: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+    take: 200,
+  });
+  res.json(messages);
+});
+
+router.post('/admin-discussion', async (req, res) => {
+  const adminId = await getAdminUserId();
+  if (!adminId) return res.status(503).json({ error: 'Admin not available' });
+  const content = String(req.body.content ?? '').trim().slice(0, 2000);
+  if (!content) return res.status(400).json({ error: 'Message content is required' });
+  const msg = await prisma.message.create({
+    data: { senderId: req.user.id, receiverId: adminId, content, isSeen: false },
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      receiver: { select: { id: true, name: true, role: true } },
+    },
+  });
+  res.json(msg);
+});
+
+router.post('/admin-discussion/attachment', uploadMessageAttachment.single('file'), async (req, res) => {
+  try {
+    const adminId = await getAdminUserId();
+    if (!adminId) return res.status(503).json({ error: 'Admin not available' });
+    const content = String(req.body.content || '').trim();
+    const file = req.file;
+    if (!file && !content) return res.status(400).json({ error: 'Message content or file is required' });
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    const uploadResult = await uploadMessageFileToCloudinary(file.buffer, file.originalname);
+    const msg = await prisma.message.create({
+      data: {
+        senderId: req.user.id,
+        receiverId: adminId,
+        content,
+        attachmentUrl: uploadResult.secure_url,
+        attachmentName: file.originalname,
+        attachmentMimeType: file.mimetype,
+        attachmentSize: file.size,
+        isSeen: false,
+      },
+      include: {
+        sender: { select: { id: true, name: true, role: true } },
+        receiver: { select: { id: true, name: true, role: true } },
+      },
+    });
+    res.json(msg);
+  } catch (err) {
+    captureException(err);
+    res.status(500).json({ error: err.message || 'Attachment upload failed' });
+  }
+});
+
 // My messages (conversations with students)
 router.get('/messages', async (req, res) => {
   const messages = await prisma.message.findMany({

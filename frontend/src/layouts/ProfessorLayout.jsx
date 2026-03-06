@@ -8,6 +8,7 @@ import NotificationBell from '../components/NotificationBell';
 import ProfessorDashboard from '../pages/professor/Dashboard';
 import ProfessorCourses from '../pages/professor/Courses';
 import ProfessorMessages from '../pages/professor/Messages';
+import DiscussionAdmin from '../pages/professor/DiscussionAdmin';
 
 function getInitials(name) {
   if (!name) return '?';
@@ -19,6 +20,7 @@ const navItems = [
   { to: '/professor', label: 'Tableau de bord', end: true },
   { to: '/professor/courses', label: 'Planning' },
   { to: '/professor/messages', label: 'Messages' },
+  { to: '/professor/discussion-admin', label: 'Discussion admin' },
 ];
 
 export default function ProfessorLayout() {
@@ -69,6 +71,7 @@ export default function ProfessorLayout() {
           <Route index element={<ProfessorDashboard />} />
           <Route path="courses" element={<ProfessorCourses />} />
           <Route path="messages" element={<ProfessorMessages />} />
+          <Route path="discussion-admin" element={<DiscussionAdmin />} />
         </Routes>
         </main>
       </div>

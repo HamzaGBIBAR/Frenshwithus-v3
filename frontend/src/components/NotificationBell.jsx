@@ -70,10 +70,8 @@ export default function NotificationBell() {
   };
 
   const archiveAll = async () => {
-    for (const n of items) {
-      await api.delete(`/notifications/${n.id}`).catch(() => {});
-    }
-    loadNotifications();
+    await api.put('/notifications/archive-all').catch(() => {});
+    await loadNotifications();
   };
 
   return (
