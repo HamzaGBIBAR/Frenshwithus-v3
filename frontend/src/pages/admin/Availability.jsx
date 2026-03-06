@@ -120,9 +120,13 @@ export default function AdminAvailability() {
     return `${dayRange} ${formatSlotTime(local.localStart.time)} - ${formatSlotTime(local.localEnd.time)}`;
   };
 
-  // Weekly calendar (Morocco time): which profs/students available per (day, hour)
-  const hourSlots = Array.from({ length: 15 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const slotContains = (start, end, timeStr) => (start && end && timeStr && timeStr >= start && timeStr < end);
+  // Weekly calendar: 24h in Morocco time (API returns prof/student slots in Morocco)
+  const hourSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+  const slotContains = (start, end, timeStr) => {
+    if (!start || !end || !timeStr) return false;
+    if (start <= end) return timeStr >= start && timeStr < end;
+    return timeStr >= start || timeStr < end; // slot crosses midnight
+  };
   const getWeeklyCell = (dayOfWeek, timeStr) => {
     const profs = professors.filter((p) =>
       (p.availability || []).some((s) => s.dayOfWeek === dayOfWeek && slotContains(s.startTime, s.endTime, timeStr))
@@ -142,7 +146,7 @@ export default function AdminAvailability() {
         {t('dashboard.adminAvailability.subtitle')}
       </p>
 
-      {/* Weekly calendar (Morocco time) - overlap of prof + student availability */}
+      {/* Weekly calendar: 24h, Morocco time — P = profs, E = students */}
       <section className="mb-8 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden">
         <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
           <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
@@ -153,48 +157,56 @@ export default function AdminAvailability() {
             {t('dashboard.adminAvailability.weeklyCalendarHint')}
           </p>
         </div>
-        <div className="p-4 overflow-x-auto">
-          <table className="w-full text-sm border-collapse min-w-[600px]">
-            <thead>
-              <tr className="border-b border-pink-soft/50 dark:border-white/10">
-                <th className="text-left p-2 font-medium text-text/70 dark:text-[#f5f5f5]/70 w-14">{t('dashboard.adminAvailability.time')}</th>
+        <div className="p-4 overflow-auto max-h-[480px]">
+          <table className="w-full text-sm border-collapse min-w-[520px]">
+            <thead className="sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] border-b border-pink-soft/50 dark:border-white/10 shadow-sm">
+              <tr>
+                <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-14 shrink-0">{t('dashboard.adminAvailability.time')}</th>
                 {dayLabels.map((d, i) => (
-                  <th key={i} className="p-2 font-medium text-text dark:text-[#f5f5f5]">{d}</th>
+                  <th key={i} className="py-2.5 px-2 font-semibold text-text dark:text-[#f5f5f5] text-center min-w-[72px]">{d}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {hourSlots.map((timeStr) => (
-                <tr key={timeStr} className="border-b border-pink-soft/30 dark:border-white/5 hover:bg-pink-soft/10 dark:hover:bg-white/5">
-                  <td className="p-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs">{timeStr}</td>
-                  {[1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => {
-                    const { profs, studs } = getWeeklyCell(dayOfWeek, timeStr);
-                    return (
-                      <td key={dayOfWeek} className="p-1.5 align-top">
-                        <div className="flex flex-wrap gap-1">
-                          {profs.length > 0 && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-100 dark:bg-pink-500/25 text-pink-800 dark:text-pink-200" title={profs.map((p) => p.name).join(', ')}>
-                              {profs.length}P
-                            </span>
-                          )}
-                          {studs.length > 0 && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200" title={studs.map((s) => s.name).join(', ')}>
-                              {studs.length}E
-                            </span>
-                          )}
-                          {profs.length === 0 && studs.length === 0 && (
-                            <span className="text-[10px] text-text/40 dark:text-[#f5f5f5]/40">—</span>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+              {hourSlots.map((timeStr) => {
+                const hour = parseInt(timeStr, 10);
+                const isNight = hour >= 0 && hour < 6;
+                return (
+                  <tr
+                    key={timeStr}
+                    className={`border-b border-pink-soft/20 dark:border-white/5 hover:bg-pink-soft/10 dark:hover:bg-white/5 ${isNight ? 'bg-pink-soft/5 dark:bg-white/[0.02]' : ''}`}
+                  >
+                    <td className="py-2 px-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs w-14 shrink-0 align-middle">{timeStr}</td>
+                    {[1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => {
+                      const { profs, studs } = getWeeklyCell(dayOfWeek, timeStr);
+                      const hasBoth = profs.length > 0 && studs.length > 0;
+                      return (
+                        <td key={dayOfWeek} className="py-1.5 px-2 align-middle min-w-[72px]">
+                          <div className="flex flex-wrap gap-1 justify-center">
+                            {profs.length > 0 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30" title={profs.map((p) => p.name).join(', ')}>
+                                {profs.length}P
+                              </span>
+                            )}
+                            {studs.length > 0 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30" title={studs.map((s) => s.name).join(', ')}>
+                                {studs.length}E
+                              </span>
+                            )}
+                            {profs.length === 0 && studs.length === 0 && (
+                              <span className="text-[11px] text-text/40 dark:text-[#f5f5f5]/40">—</span>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-          <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50 mt-2">
-            P = {t('dashboard.adminAvailability.professorAvailability').toLowerCase()}, E = {t('dashboard.adminAvailability.studentAvailability').toLowerCase()}. {t('dashboard.adminAvailability.slotMoroccoRef')}.
+          <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50 mt-3 sticky bottom-0 bg-white dark:bg-[#1a1a1a] pt-2">
+            P = {t('dashboard.adminAvailability.professorAvailability').toLowerCase()}, E = {t('dashboard.adminAvailability.studentAvailability').toLowerCase()}. {t('dashboard.adminAvailability.weeklyCalendarHint')}.
           </p>
         </div>
       </section>

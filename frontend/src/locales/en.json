@@ -498,7 +498,7 @@
       "allStudentsAvailability": "All students availability",
       "noStudents": "No students",
       "weeklyCalendar": "Weekly calendar",
-      "weeklyCalendarHint": "Morocco time. P = professors available, E = students available. Compatible slots when both P and E > 0.",
+      "weeklyCalendarHint": "Morocco time (24h). P = professors available, E = students available. Compatible when both P and E > 0.",
       "time": "Time",
       "professorSlotsMoroccoHint": "Teacher local time then Morocco reference (e.g. 9am Paris → 8am Morocco).",
       "professorSlotLocalLabel": "Teacher local time",
