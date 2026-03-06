@@ -502,7 +502,9 @@
       "time": "Time",
       "professorSlotsMoroccoHint": "Teacher local time then Morocco reference (e.g. 9am Paris → 8am Morocco).",
       "professorSlotLocalLabel": "Teacher local time",
-      "slotMoroccoRefProfessor": "Morocco reference"
+      "slotMoroccoRefProfessor": "Morocco reference",
+      "clickToCreateCourse": "Click to create a course",
+      "clickToCreateCourseHint": "Click a slot (P and E) to create a course."
     },
     "adminMessages": {
       "title": "Messages",

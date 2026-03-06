@@ -502,7 +502,9 @@
       "time": "Heure",
       "professorSlotsMoroccoHint": "Heure locale du professeur puis référence Maroc (ex. 9h Paris → 8h Maroc).",
       "professorSlotLocalLabel": "Heure locale professeur",
-      "slotMoroccoRefProfessor": "Référence Maroc"
+      "slotMoroccoRefProfessor": "Référence Maroc",
+      "clickToCreateCourse": "Cliquer pour créer un cours",
+      "clickToCreateCourseHint": "Cliquez sur un créneau (P et E) pour créer un cours."
     },
     "adminMessages": {
       "title": "Messages",

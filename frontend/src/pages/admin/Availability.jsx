@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import COUNTRIES, { convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
+const REF_TZ = 'UTC';
 import { formatTimeAMPM } from '../../utils/format';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -26,6 +27,10 @@ export default function AdminAvailability() {
   const [professors, setProfessors] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [form, setForm] = useState({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' });
+  const [createSlot, setCreateSlot] = useState(null);
+  const [createCourseForm, setCreateCourseForm] = useState({ professorId: '', studentId: '', meetingLink: '', durationMin: '60' });
+  const [createCourseError, setCreateCourseError] = useState('');
+  const [createCourseLoading, setCreateCourseLoading] = useState(false);
 
   const load = () => {
     api.get('/admin/students/availability').then((r) => setStudents(r.data));
@@ -148,6 +153,51 @@ export default function AdminAvailability() {
     return { profs, studs };
   };
 
+  const formatNames = (list, max = 2) => {
+    if (!list?.length) return '';
+    const names = list.slice(0, max).map((x) => x.name).join(', ');
+    return list.length > max ? `${names} +${list.length - max}` : names;
+  };
+
+  const openCreateCourseModal = (dayOfWeek, timeStr, profs, studs) => {
+    if (!profs?.length || !studs?.length) return;
+    const date = dateStrFromDayOfWeek(dayOfWeek);
+    setCreateSlot({ dayOfWeek, timeStr, date, profs, studs });
+    setCreateCourseForm({
+      professorId: profs[0]?.id || '',
+      studentId: studs[0]?.id || '',
+      meetingLink: '',
+      durationMin: '60',
+    });
+    setCreateCourseError('');
+  };
+
+  const handleCreateCourse = async (e) => {
+    e.preventDefault();
+    if (!createSlot) return;
+    setCreateCourseError('');
+    setCreateCourseLoading(true);
+    try {
+      const morocco = convertTimeBetweenTimezones(createSlot.date, createSlot.timeStr, REF_TZ, MOROCCO_TZ);
+      const date = morocco?.date || createSlot.date;
+      const time = morocco?.time || createSlot.timeStr;
+      await api.post('/admin/courses', {
+        professorId: createCourseForm.professorId,
+        studentId: createCourseForm.studentId,
+        date,
+        time,
+        meetingLink: createCourseForm.meetingLink || undefined,
+        durationMin: createCourseForm.durationMin || 60,
+      });
+      setCreateSlot(null);
+      load();
+    } catch (err) {
+      setCreateCourseError(err.response?.data?.error || t('dashboard.adminCourses.errorCreate'));
+    } finally {
+      setCreateCourseLoading(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-6">
@@ -200,16 +250,23 @@ export default function AdminAvailability() {
                       const { profs, studs } = getWeeklyCell(dayOfWeek, timeStr);
                       const hasBoth = profs.length > 0 && studs.length > 0;
                       return (
-                        <td key={dayOfWeek} className="py-1.5 px-2 align-middle min-w-[72px]">
-                          <div className="flex flex-wrap gap-1 justify-center">
+                        <td
+                          key={dayOfWeek}
+                          className={`py-1.5 px-2 align-middle min-w-[72px] ${hasBoth ? 'cursor-pointer hover:bg-pink-soft/20 dark:hover:bg-pink-400/10' : ''}`}
+                          onClick={() => hasBoth && openCreateCourseModal(dayOfWeek, timeStr, profs, studs)}
+                          title={hasBoth ? t('dashboard.adminAvailability.clickToCreateCourse') : undefined}
+                        >
+                          <div className="flex flex-col gap-1 justify-center">
                             {profs.length > 0 && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30" title={profs.map((p) => p.name).join(', ')}>
-                                {profs.length}P
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30">
+                                <span className="shrink-0 mr-1 font-semibold">P:</span>
+                                <span className="truncate" title={profs.map((p) => p.name).join(', ')}>{formatNames(profs)}</span>
                               </span>
                             )}
                             {studs.length > 0 && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30" title={studs.map((s) => s.name).join(', ')}>
-                                {studs.length}E
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30">
+                                <span className="shrink-0 mr-1 font-semibold">E:</span>
+                                <span className="truncate" title={studs.map((s) => s.name).join(', ')}>{formatNames(studs)}</span>
                               </span>
                             )}
                             {profs.length === 0 && studs.length === 0 && (
@@ -225,10 +282,62 @@ export default function AdminAvailability() {
             </tbody>
           </table>
           <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50 mt-3 sticky bottom-0 bg-white dark:bg-[#1a1a1a] pt-2">
-            P = {t('dashboard.adminAvailability.professorAvailability').toLowerCase()}, E = {t('dashboard.adminAvailability.studentAvailability').toLowerCase()}. {t('dashboard.adminAvailability.weeklyCalendarHint')}.
+            P = {t('dashboard.adminAvailability.professorAvailability').toLowerCase()}, E = {t('dashboard.adminAvailability.studentAvailability').toLowerCase()}. {t('dashboard.adminAvailability.weeklyCalendarHint')}. {createSlot === null && t('dashboard.adminAvailability.clickToCreateCourseHint')}
           </p>
         </div>
       </section>
+
+      {/* Modal: créer un cours depuis le créneau */}
+      {createSlot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setCreateSlot(null)}>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-xl max-w-md w-full p-5 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-semibold text-text dark:text-[#f5f5f5] mb-1">{t('dashboard.adminCourses.createCourse')}</h3>
+            <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-4">
+              {dayLabels[createSlot.dayOfWeek - 1]} {createSlot.timeStr} — {t('dashboard.adminAvailability.slotMoroccoRef')}
+            </p>
+            <form onSubmit={handleCreateCourse} className="space-y-3">
+              <div>
+                <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminCourses.selectProfessor')}</label>
+                <select
+                  className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm"
+                  value={createCourseForm.professorId}
+                  onChange={(e) => setCreateCourseForm((f) => ({ ...f, professorId: e.target.value }))}
+                  required
+                >
+                  {createSlot.profs.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-1">{t('dashboard.adminCourses.selectStudent')}</label>
+                <select
+                  className="w-full rounded-lg border border-pink-soft/50 dark:border-white/20 bg-white dark:bg-[#2a2a2a] px-3 py-2 text-sm"
+                  value={createCourseForm.studentId}
+                  onChange={(e) => setCreateCourseForm((f) => ({ ...f, studentId: e.target.value }))}
+                  required
+                >
+                  {createSlot.studs.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-[11px] text-text/50 dark:text-[#f5f5f5]/50">
+                {t('dashboard.adminCourses.date')}: {createSlot.date}, {t('dashboard.adminCourses.time')}: {createSlot.timeStr}
+              </p>
+              {createCourseError && <p className="text-sm text-red-600 dark:text-red-400">{createCourseError}</p>}
+              <div className="flex gap-2 pt-2">
+                <button type="button" className="px-4 py-2 rounded-lg border border-pink-soft/50 dark:border-white/20 text-sm" onClick={() => setCreateSlot(null)}>
+                  {t('dashboard.adminStudents.cancel')}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-lg bg-pink-500 dark:bg-pink-500 text-white text-sm font-medium disabled:opacity-50" disabled={createCourseLoading}>
+                  {createCourseLoading ? '...' : t('dashboard.adminCourses.create')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Student availability */}
