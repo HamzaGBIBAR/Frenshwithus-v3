@@ -120,19 +120,30 @@ export default function AdminAvailability() {
     return `${dayRange} ${formatSlotTime(local.localStart.time)} - ${formatSlotTime(local.localEnd.time)}`;
   };
 
-  // Weekly calendar: 24h in Morocco time (API returns prof/student slots in Morocco)
+  // Weekly calendar: 24h in Référence Maroc (UTC) — use ref* when present so grid matches "Référence Maroc"
   const hourSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
   const slotContains = (start, end, timeStr) => {
     if (!start || !end || !timeStr) return false;
     if (start <= end) return timeStr >= start && timeStr < end;
     return timeStr >= start || timeStr < end; // slot crosses midnight
   };
+  const slotMatchesCell = (slot, dayOfWeek, timeStr) => {
+    const dow = slot.refDayOfWeek ?? slot.dayOfWeek;
+    const start = slot.refStartTime ?? slot.startTime;
+    const end = slot.refEndTime ?? slot.endTime;
+    const endDow = slot.refEndDayOfWeek ?? null;
+    if (!start || !end) return false;
+    if (endDow == null) return dow === dayOfWeek && slotContains(start, end, timeStr);
+    if (dow === dayOfWeek) return timeStr >= start;
+    if (endDow === dayOfWeek) return timeStr < end;
+    return false;
+  };
   const getWeeklyCell = (dayOfWeek, timeStr) => {
     const profs = professors.filter((p) =>
-      (p.availability || []).some((s) => s.dayOfWeek === dayOfWeek && slotContains(s.startTime, s.endTime, timeStr))
+      (p.availability || []).some((s) => slotMatchesCell(s, dayOfWeek, timeStr))
     );
     const studs = students.filter((s) =>
-      (s.studentAvailability || []).some((slot) => slot.dayOfWeek === dayOfWeek && slotContains(slot.startTime, slot.endTime, timeStr))
+      (s.studentAvailability || []).some((slot) => slotMatchesCell(slot, dayOfWeek, timeStr))
     );
     return { profs, studs };
   };
