@@ -149,10 +149,15 @@ export default function AdminAvailability() {
       {/* Weekly calendar: 24h, Morocco time — P = profs, E = students */}
       <section className="mb-8 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden">
         <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 bg-pink-soft/20 dark:bg-white/5">
-          <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-pink-primary dark:bg-pink-400" />
-            {t('dashboard.adminAvailability.weeklyCalendar')}
-          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-semibold text-text dark:text-[#f5f5f5] flex items-center gap-2">
+              <span className="w-1 h-5 rounded-full bg-pink-primary dark:bg-pink-400" />
+              {t('dashboard.adminAvailability.weeklyCalendar')}
+            </h2>
+            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-amber-100 dark:bg-amber-500/25 text-amber-800 dark:text-amber-200 border border-amber-200/60 dark:border-amber-400/30">
+              {t('dashboard.adminAvailability.slotMoroccoRef')}
+            </span>
+          </div>
           <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60 mt-1">
             {t('dashboard.adminAvailability.weeklyCalendarHint')}
           </p>
@@ -161,7 +166,10 @@ export default function AdminAvailability() {
           <table className="w-full text-sm border-collapse min-w-[520px]">
             <thead className="sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] border-b border-pink-soft/50 dark:border-white/10 shadow-sm">
               <tr>
-                <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-14 shrink-0">{t('dashboard.adminAvailability.time')}</th>
+                <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-14 shrink-0">
+                  <span className="block">{t('dashboard.adminAvailability.time')}</span>
+                  <span className="block text-[10px] font-normal text-amber-600 dark:text-amber-400 mt-0.5">{t('dashboard.adminAvailability.slotMoroccoRef')}</span>
+                </th>
                 {dayLabels.map((d, i) => (
                   <th key={i} className="py-2.5 px-2 font-semibold text-text dark:text-[#f5f5f5] text-center min-w-[72px]">{d}</th>
                 ))}
