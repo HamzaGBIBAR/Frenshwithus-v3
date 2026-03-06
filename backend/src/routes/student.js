@@ -105,6 +105,7 @@ router.get('/availability', async (req, res) => {
 });
 
 // Student enters slot in their local timezone; we always convert to UTC before storing (DB must store only UTC).
+// Prefer profile timezone (user.timezone or from user.country) so "student from Canada" uses Canada time even if opened from Morocco.
 router.post('/availability', studentAvailabilityValidation, validate, async (req, res) => {
   const { dayOfWeek, startTime, endTime, timezone: bodyTz } = req.body;
   const user = await prisma.user.findUnique({
@@ -112,14 +113,12 @@ router.post('/availability', studentAvailabilityValidation, validate, async (req
     select: { timezone: true, country: true },
   });
   let tz = getUserTz(user?.timezone, user?.country);
-  if (bodyTz && typeof bodyTz === 'string' && bodyTz.trim().length > 0) {
+  if (!user?.timezone && !user?.country && bodyTz && typeof bodyTz === 'string' && bodyTz.trim().length > 0) {
     tz = bodyTz.trim();
-    if (!user?.timezone) {
-      await prisma.user.update({
-        where: { id: req.user.id },
-        data: { timezone: tz },
-      });
-    }
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { timezone: tz },
+    }).catch(() => {});
   }
   const utc = localSlotToUtc(Number(dayOfWeek), startTime, endTime, tz);
   if (!utc) return res.status(400).json({ error: 'Invalid time slot; could not convert to UTC. Check time format (HH:mm) and timezone.' });
