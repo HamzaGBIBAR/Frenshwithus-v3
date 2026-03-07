@@ -373,11 +373,15 @@ export default function Landing() {
           <div className="section-divider section-divider--tall" />
         </div>
 
-        {/* Testimonials – 5 groups on loop with fade */}
-        <section className="mb-12 sm:mb-16">
+        {/* Testimonials – glass cards, staggered animation, premium section */}
+        <section className="mb-12 sm:mb-16 testimonial-section-bg rounded-3xl py-12 sm:py-16 px-4 sm:px-6 lg:px-10">
           <ScrollReveal>
-            <h2 className="text-2xl lg:text-3xl font-semibold text-text dark:text-[#f5f5f5] mb-2">{t('testimonials.title')}</h2>
-            <p className="text-text/60 dark:text-[#f5f5f5]/60 text-sm mb-10">{t('testimonials.subtitle')}</p>
+            <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 bg-gradient-to-r from-pink-primary via-pink-dark to-pink-primary bg-clip-text text-transparent dark:from-pink-400 dark:via-pink-500 dark:to-pink-400">
+              {t('testimonials.title')}
+            </h2>
+            <p className="text-text/60 dark:text-[#f5f5f5]/60 text-sm sm:text-base mb-10 max-w-2xl">
+              {t('testimonials.subtitle')}
+            </p>
           </ScrollReveal>
           <TestimonialsCarousel />
         </section>

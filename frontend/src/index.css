@@ -887,3 +887,94 @@ textarea::placeholder {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   TESTIMONIALS – Glass cards, staggered entrance, glow
+   ========================================================================== */
+.testimonial-section-bg {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 247, 250, 0.95) 0%,
+    rgba(250, 218, 221, 0.4) 35%,
+    rgba(255, 255, 255, 0.9) 70%,
+    rgba(231, 84, 128, 0.08) 100%
+  );
+}
+
+.dark .testimonial-section-bg {
+  background: linear-gradient(
+    160deg,
+    rgba(17, 17, 17, 0.98) 0%,
+    rgba(231, 84, 128, 0.06) 30%,
+    rgba(17, 17, 17, 0.98) 70%,
+    rgba(244, 114, 182, 0.04) 100%
+  );
+}
+
+.testimonial-glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 24px rgba(231, 84, 128, 0.08),
+    0 0 0 1px rgba(231, 84, 128, 0.06) inset;
+}
+
+.dark .testimonial-glass-card {
+  background: rgba(26, 26, 26, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(244, 114, 182, 0.08) inset;
+}
+
+.testimonial-glass-card:hover {
+  box-shadow:
+    0 20px 48px rgba(231, 84, 128, 0.18),
+    0 0 0 1px rgba(231, 84, 128, 0.12) inset;
+}
+
+.dark .testimonial-glass-card:hover {
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(244, 114, 182, 0.12),
+    0 0 0 1px rgba(244, 114, 182, 0.15) inset;
+}
+
+.testimonial-card-entrance {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: testimonialCardIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes testimonialCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.testimonial-star-glow {
+  filter: drop-shadow(0 0 6px rgba(244, 184, 0, 0.5));
+}
+
+.testimonial-pagination-dot {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.testimonial-pagination-dot.active {
+  box-shadow: 0 0 16px rgba(231, 84, 128, 0.5);
+}
+
+.dark .testimonial-pagination-dot.active {
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-card-entrance {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
