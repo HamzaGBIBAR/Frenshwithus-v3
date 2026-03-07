@@ -124,12 +124,20 @@ export default function Landing() {
                 {t('nav.dashboard')}
               </button>
             ) : (
-              <Link
-                to="/login"
-                className="px-3 xs:px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] whitespace-nowrap flex items-center justify-center shrink-0"
-              >
-                {t('nav.login')}
-              </Link>
+              <>
+                <Link
+                  to="/reservation"
+                  className="px-3 xs:px-4 sm:px-5 py-2 sm:py-2.5 border-2 border-pink-primary dark:border-pink-400 text-pink-primary dark:text-pink-400 rounded-full hover:bg-pink-soft/50 dark:hover:bg-pink-400/10 transition-all duration-300 font-medium text-xs sm:text-sm min-h-[44px] whitespace-nowrap flex items-center justify-center shrink-0"
+                >
+                  {t('nav.reservation')}
+                </Link>
+                <Link
+                  to="/login"
+                  className="px-3 xs:px-4 sm:px-6 py-2 sm:py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-full hover:bg-pink-dark dark:hover:bg-pink-500 transition-all duration-300 btn-glow btn-hover shadow-pink-soft font-medium text-xs sm:text-sm min-h-[44px] whitespace-nowrap flex items-center justify-center shrink-0"
+                >
+                  {t('nav.login')}
+                </Link>
+              </>
             )}
           </div>
         </div>

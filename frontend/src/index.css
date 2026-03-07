@@ -1101,11 +1101,24 @@ textarea::placeholder {
   );
 }
 
+/* Logo "goes up" first – starts lower, moves up into place */
+.footer-logo-go-up {
+  opacity: 0;
+  transform: translateY(56px) scale(0.96);
+  transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.footer-logo-go-up.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 .footer-fade-up {
   opacity: 0;
   transform: translateY(32px);
-  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .footer-fade-up.is-visible {
@@ -1113,12 +1126,22 @@ textarea::placeholder {
   transform: translateY(0);
 }
 
-.footer-fade-up.footer-fade-up--delay-1 { transition-delay: 0.1s; }
-.footer-fade-up.footer-fade-up--delay-2 { transition-delay: 0.2s; }
-.footer-fade-up.footer-fade-up--delay-3 { transition-delay: 0.3s; }
-.footer-fade-up.footer-fade-up--delay-4 { transition-delay: 0.4s; }
+/* Stagger: logo first, then nav, then social, then email (web info revealed after logo) */
+.footer-fade-up--delay-1 { transition-delay: 0.35s; }
+.footer-fade-up--delay-2 { transition-delay: 0.55s; }
+.footer-fade-up--delay-3 { transition-delay: 0.75s; }
+.footer-fade-up--delay-4 { transition-delay: 0.95s; }
 
 @media (prefers-reduced-motion: reduce) {
+  .footer-logo-go-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .footer-logo-go-up.is-visible {
+    opacity: 1;
+    transform: none;
+  }
   .footer-fade-up {
     opacity: 1;
     transform: none;

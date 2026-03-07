@@ -37,9 +37,9 @@ export default function Footer() {
       <div className="footer-curved-overlay" aria-hidden />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Logo – same as header: French with [Eye] */}
+        {/* Logo – goes up first, then web info appears below */}
         <div
-          className={`footer-fade-up ${isVisible ? 'is-visible' : ''} flex flex-col items-center gap-4 mb-8`}
+          className={`footer-logo-go-up ${isVisible ? 'is-visible' : ''} flex flex-col items-center gap-4 mb-8`}
           dir="ltr"
         >
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -55,7 +55,7 @@ export default function Footer() {
           <p className="text-sm text-white/60">{t('footer.tagline')}</p>
         </div>
 
-        {/* Nav + CTA */}
+        {/* Nav + CTA – revealed after logo */}
         <div className={`footer-fade-up footer-fade-up--delay-1 ${isVisible ? 'is-visible' : ''} flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8`}>
           <a
             href="#pricing"
@@ -70,14 +70,14 @@ export default function Footer() {
             {t('footer.contact')}
           </a>
           <Link
-            to="/login"
+            to="/reservation"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-pink-primary rounded-full font-medium text-sm hover:bg-white/90 transition-colors btn-glow"
           >
             <span>{t('pricing.freeSession')}</span>
           </Link>
         </div>
 
-        {/* Social */}
+        {/* Social – Instagram, LinkedIn */}
         <div className={`footer-fade-up footer-fade-up--delay-2 ${isVisible ? 'is-visible' : ''} flex justify-center gap-4 mb-8`}>
           {socialLinks.map(({ href, label, icon }) => (
             <a
@@ -105,10 +105,10 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-white/15 w-full max-w-xs mx-auto mb-6" />
+        <div className={`footer-fade-up footer-fade-up--delay-3 ${isVisible ? 'is-visible' : ''} border-t border-white/15 w-full max-w-xs mx-auto mb-6`} />
 
-        {/* Email + Copyright */}
-        <div className={`footer-fade-up footer-fade-up--delay-3 ${isVisible ? 'is-visible' : ''} flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-6 text-sm text-white/50`}>
+        {/* Email + Copyright – mail, LinkedIn context */}
+        <div className={`footer-fade-up footer-fade-up--delay-4 ${isVisible ? 'is-visible' : ''} flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-6 text-sm text-white/50`}>
           <a
             href={`mailto:${t('footer.email')}`}
             className="hover:text-white/80 transition-colors"

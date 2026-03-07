@@ -40,11 +40,13 @@ export default function Pricing() {
     return () => observer.disconnect();
   }, [visible]);
 
-  const getCtaLink = () => {
-    if (!user) return '/login';
-    if (user.role === 'ADMIN') return '/admin';
-    if (user.role === 'PROFESSOR') return '/professor';
-    return '/student';
+  const getCtaLink = (planId) => {
+    if (user) {
+      if (user.role === 'ADMIN') return '/admin';
+      if (user.role === 'PROFESSOR') return '/professor';
+      if (user.role === 'STUDENT') return '/student';
+    }
+    return `/reservation?pack=${planId || ''}`;
   };
 
   return (
@@ -165,7 +167,7 @@ export default function Pricing() {
               </ul>
 
               <Link
-                to={getCtaLink()}
+                to={getCtaLink(plan.id)}
                 className={`block w-full min-h-touch py-3 rounded-xl text-center font-medium transition-all duration-300 btn-hover shadow-pink-soft touch-manipulation flex items-center justify-center ${
                   plan.highlight
                     ? 'bg-white/90 dark:bg-white/10 backdrop-blur-sm text-pink-dark dark:text-[#f5f5f5] border-2 border-white/60 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 hover:border-white'

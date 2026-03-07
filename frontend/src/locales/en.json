@@ -1,6 +1,7 @@
 {
   "nav": {
     "login": "Login",
+    "reservation": "Reservation",
     "dashboard": "Dashboard",
     "logout": "Logout",
     "tagline": "French learning"
@@ -285,6 +286,37 @@
     "close": "Close",
     "suggested": "Suggested questions:",
     "error": "Sorry, I couldn't respond. Email us at frenchwithus.noreply@gmail.com for a personalized reply."
+  },
+  "reservation": {
+    "back": "Back",
+    "badge": "FREE SESSION",
+    "title": "Offer your child a first encounter with French",
+    "intro": "Share a few details and we will choose the ideal teacher for a free discovery session.",
+    "benefitsTitle": "Parents appreciate this session because:",
+    "benefit1": "The session is adapted to your child's age and confidence level.",
+    "benefit2": "We agree on a schedule that fits your family rhythm.",
+    "benefit3": "No commitment: come meet the teacher and try together.",
+    "benefit4": "Personalized feedback after the session to plan next steps.",
+    "disclaimer": "We progress at your child's pace and stay transparent. Our team will contact you personally after your request.",
+    "formTitle": "Request your free session",
+    "formIntro": "Fill out the form: our pedagogical advisor will call you back within 24 hours.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone number",
+    "age": "Child's age",
+    "pack": "Package chosen",
+    "placeholderFirst": "Your first name",
+    "placeholderLast": "Your last name",
+    "placeholderEmail": "your.email@example.com",
+    "placeholderPhone": "Number",
+    "placeholderAge": "e.g. 8",
+    "submit": "I reserve my session",
+    "submitting": "Sending...",
+    "packIndividuel": "Individual pack",
+    "packGroups": "Groups pack",
+    "packPreparation": "Preparation pack",
+    "packNone": "Not specified"
   },
   "footer": {
     "brand": "French with Me",

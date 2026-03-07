@@ -7,6 +7,7 @@ import FloatingLetters from './components/FloatingLetters';
 import CustomCursor from './components/CustomCursor';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Reservation from './pages/Reservation';
 import Live from './pages/Live';
 import AdminLayout from './layouts/AdminLayout';
 import ProfessorLayout from './layouts/ProfessorLayout';
@@ -25,6 +26,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/reservation" element={<Reservation />} />
       <Route
         path="/live"
         element={

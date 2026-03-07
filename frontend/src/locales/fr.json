@@ -1,6 +1,7 @@
 {
   "nav": {
     "login": "Connexion",
+    "reservation": "Réservation",
     "dashboard": "Tableau de bord",
     "logout": "Déconnexion",
     "tagline": "Apprentissage du français"
@@ -285,6 +286,37 @@
     "close": "Fermer",
     "suggested": "Questions suggérées :",
     "error": "Désolé, je n'ai pas pu répondre. Écrivez-nous à frenchwithus.noreply@gmail.com pour une réponse personnalisée."
+  },
+  "reservation": {
+    "back": "Retour",
+    "badge": "SÉANCE OFFERTE",
+    "title": "Offrez à votre enfant une première rencontre avec le français",
+    "intro": "Partagez quelques informations et nous choisirons l'enseignant idéal pour une séance découverte gratuite.",
+    "benefitsTitle": "Les parents apprécient cette séance car :",
+    "benefit1": "La séance est adaptée à l'âge et au niveau de confiance de votre enfant.",
+    "benefit2": "Nous convenons d'un horaire qui respecte votre rythme familial.",
+    "benefit3": "Sans engagement : venez rencontrer l'enseignant et tester ensemble.",
+    "benefit4": "Un retour personnalisé après la séance pour organiser la suite.",
+    "disclaimer": "Nous avançons au rythme de votre enfant et restons transparents. Notre équipe vous contacte personnellement après votre demande.",
+    "formTitle": "Demander votre séance gratuite",
+    "formIntro": "Remplissez le formulaire : notre conseillère pédagogique vous rappelle sous 24h.",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "phone": "Numéro de téléphone",
+    "age": "Âge de l'enfant",
+    "pack": "Pack choisi",
+    "placeholderFirst": "Votre prénom",
+    "placeholderLast": "Votre nom",
+    "placeholderEmail": "votre.email@exemple.com",
+    "placeholderPhone": "Numéro",
+    "placeholderAge": "Ex. 8",
+    "submit": "Je réserve ma séance",
+    "submitting": "Envoi...",
+    "packIndividuel": "Pack Individuel",
+    "packGroups": "Pack Groupes",
+    "packPreparation": "Pack Préparation",
+    "packNone": "Non précisé"
   },
   "footer": {
     "brand": "French with Me",
