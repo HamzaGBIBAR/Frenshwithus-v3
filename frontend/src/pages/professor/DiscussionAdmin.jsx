@@ -16,7 +16,7 @@ export default function DiscussionAdmin() {
   const fileInputRef = useRef(null);
 
   const loadMessages = () =>
-    api.get('/professor/admin-discussion').then((r) => setMessages(Array.isArray(r.data) ? r.data : [])).catch(() => setMessages([]));
+    api.get('/professor/global-discussion').then((r) => setMessages(Array.isArray(r.data) ? r.data : [])).catch(() => setMessages([]));
 
   useEffect(() => {
     setLoading(true);
@@ -68,12 +68,12 @@ export default function DiscussionAdmin() {
         <div className="px-4 py-3 border-b border-pink-soft/40 dark:border-white/10 bg-gradient-to-r from-pink-soft/30 to-pink-soft/10 dark:from-pink-500/10 dark:to-pink-500/5 flex items-center gap-3 shrink-0">
           <div className="w-10 h-10 rounded-xl bg-pink-primary/20 dark:bg-pink-400/20 flex items-center justify-center ring-2 ring-pink-primary/30 dark:ring-pink-400/30">
             <svg className="w-5 h-5 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v2l-2-2-2 2v-2H9a2 2 0 01-2-2v-6a2 2 0 012-2h2v2l2 2 2-2V8z" />
             </svg>
           </div>
           <div>
-            <p className="font-semibold text-text dark:text-[#f5f5f5]">{t('discussionAdmin.withAdmin')}</p>
-            <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{t('discussionAdmin.supportLine')}</p>
+            <p className="font-semibold text-text dark:text-[#f5f5f5]">{t('discussionAdmin.globalDiscussion')}</p>
+            <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50">{t('discussionAdmin.adminAndProfessors')}</p>
           </div>
         </div>
 
@@ -95,6 +95,7 @@ export default function DiscussionAdmin() {
           ) : (
             messages.map((m, i) => {
               const isMe = m.senderId === user?.id;
+              const senderLabel = m.sender?.role === 'ADMIN' ? t('discussionAdmin.admin') : m.sender?.name || '—';
               return (
                 <div
                   key={m.id}
@@ -108,6 +109,7 @@ export default function DiscussionAdmin() {
                         : 'bg-white dark:bg-[#252525] text-text dark:text-[#f5f5f5] border border-pink-soft/30 dark:border-white/10 rounded-bl-md'
                     }`}
                   >
+                    <p className="text-[10px] font-medium opacity-80 mb-1">{senderLabel}</p>
                     {m.content?.trim() && <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>}
                     {m.attachmentUrl && (
                       <a

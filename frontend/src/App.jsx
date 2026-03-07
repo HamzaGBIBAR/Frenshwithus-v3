@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
 import AnimatedBackground from './components/AnimatedBackground';
 import FloatingLetters from './components/FloatingLetters';
+import CustomCursor from './components/CustomCursor';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Live from './pages/Live';
@@ -66,6 +67,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
+        <CustomCursor />
         <AnimatedBackground />
         <FloatingLetters />
         <div className="relative z-10 transition-all duration-500">

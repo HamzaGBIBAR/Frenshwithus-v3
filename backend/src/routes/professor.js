@@ -476,6 +476,51 @@ router.post('/admin-discussion/attachment', uploadMessageAttachment.single('file
   }
 });
 
+// —— Discussion globale (admin + tous les professeurs, un seul fil) ——
+router.get('/global-discussion', async (req, res) => {
+  const messages = await prisma.globalDiscussionMessage.findMany({
+    include: { sender: { select: { id: true, name: true, role: true } } },
+    orderBy: { createdAt: 'asc' },
+    take: 500,
+  });
+  res.json(messages);
+});
+
+router.post('/global-discussion', async (req, res) => {
+  const content = String(req.body.content ?? '').trim().slice(0, 2000);
+  if (!content) return res.status(400).json({ error: 'Message content is required' });
+  const msg = await prisma.globalDiscussionMessage.create({
+    data: { senderId: req.user.id, content },
+    include: { sender: { select: { id: true, name: true, role: true } } },
+  });
+  res.json(msg);
+});
+
+router.post('/global-discussion/attachment', uploadMessageAttachment.single('file'), async (req, res) => {
+  try {
+    const content = String(req.body.content || '').trim();
+    const file = req.file;
+    if (!file && !content) return res.status(400).json({ error: 'Message content or file is required' });
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    const uploadResult = await uploadMessageFileToCloudinary(file.buffer, file.originalname);
+    const msg = await prisma.globalDiscussionMessage.create({
+      data: {
+        senderId: req.user.id,
+        content,
+        attachmentUrl: uploadResult.secure_url,
+        attachmentName: file.originalname,
+        attachmentMimeType: file.mimetype,
+        attachmentSize: file.size,
+      },
+      include: { sender: { select: { id: true, name: true, role: true } } },
+    });
+    res.json(msg);
+  } catch (err) {
+    captureException(err);
+    res.status(500).json({ error: err.message || 'Attachment upload failed' });
+  }
+});
+
 // My messages (conversations with students)
 router.get('/messages', async (req, res) => {
   const messages = await prisma.message.findMany({

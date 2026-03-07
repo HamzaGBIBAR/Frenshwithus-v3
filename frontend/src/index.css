@@ -45,6 +45,14 @@ body {
   @apply antialiased transition-colors duration-500 ease-in-out;
 }
 
+/* Custom cursor: hide default pointer when our cursor is active (mouse only, respect reduced motion is in JS) */
+@media (pointer: fine) {
+  body.custom-cursor-active,
+  body.custom-cursor-active * {
+    cursor: none !important;
+  }
+}
+
 /* Responsive images and media: scale within container, preserve aspect ratio */
 img,
 video,

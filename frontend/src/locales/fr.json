@@ -251,6 +251,9 @@
     "subtitle": "Échangez avec l'équipe d'administration. Réponses sous 24h.",
     "withAdmin": "Administration",
     "supportLine": "Support et questions",
+    "globalDiscussion": "Discussion globale",
+    "adminAndProfessors": "Admin et tous les professeurs",
+    "admin": "Admin",
     "noMessages": "Aucun message pour le moment. Envoyez le premier.",
     "placeholder": "Écrivez votre message...",
     "attachFile": "Joindre un fichier (PDF, Word, Excel)",
@@ -258,8 +261,12 @@
     "sendError": "Échec de l'envoi du message."
   },
   "professorDiscussions": {
-    "title": "Discussions avec les professeurs",
+    "title": "Discussion avec les professeurs",
     "subtitle": "Répondez aux messages des professeurs.",
+    "subtitleGlobal": "Un seul fil : admin et tous les professeurs peuvent participer.",
+    "globalThread": "Discussion globale",
+    "adminAndProfessors": "Admin et professeurs",
+    "admin": "Admin",
     "professors": "Professeurs",
     "noConversations": "Aucune discussion pour le moment.",
     "noMessages": "Aucun message dans cette conversation.",

@@ -37,6 +37,7 @@ model User {
   payments          Payment[]
   messagesSent      Message[] @relation("SentMessages")
   messagesReceived  Message[] @relation("ReceivedMessages")
+  globalDiscussionMessages GlobalDiscussionMessage[]
   liveSessions      LiveSession[]
   notifications     Notification[]
 }
@@ -112,6 +113,20 @@ model Message {
 
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+// Discussion globale : admin + tous les professeurs (un seul fil)
+model GlobalDiscussionMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  content   String   @db.Text
+  attachmentUrl String?   @db.Text
+  attachmentName String?
+  attachmentMimeType String?
+  attachmentSize Int?
+  createdAt DateTime @default(now())
+
+  sender    User @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model LiveSession {

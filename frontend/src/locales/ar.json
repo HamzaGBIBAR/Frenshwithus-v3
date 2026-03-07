@@ -251,6 +251,9 @@
     "subtitle": "تواصل مع فريق الإدارة. الرد خلال 24 ساعة.",
     "withAdmin": "الإدارة",
     "supportLine": "الدعم والاستفسارات",
+    "globalDiscussion": "نقاش عام",
+    "adminAndProfessors": "الإدارة وجميع الأساتذة",
+    "admin": "الإدارة",
     "noMessages": "لا توجد رسائل بعد. أرسل أول رسالة.",
     "placeholder": "اكتب رسالتك...",
     "attachFile": "إرفاق ملف (PDF، Word، Excel)",
@@ -258,8 +261,12 @@
     "sendError": "فشل إرسال الرسالة."
   },
   "professorDiscussions": {
-    "title": "نقاشات مع الأساتذة",
+    "title": "نقاش مع الأساتذة",
     "subtitle": "الرد على رسائل الأساتذة.",
+    "subtitleGlobal": "خيط واحد: الإدارة وجميع الأساتذة يمكنهم المشاركة.",
+    "globalThread": "نقاش عام",
+    "adminAndProfessors": "الإدارة والأساتذة",
+    "admin": "الإدارة",
     "professors": "الأساتذة",
     "noConversations": "لا توجد نقاشات بعد.",
     "noMessages": "لا توجد رسائل في هذه المحادثة.",

@@ -251,6 +251,9 @@
     "subtitle": "Exchange with the administration team. Replies within 24h.",
     "withAdmin": "Administration",
     "supportLine": "Support and enquiries",
+    "globalDiscussion": "Global discussion",
+    "adminAndProfessors": "Admin and all professors",
+    "admin": "Admin",
     "noMessages": "No messages yet. Send the first one.",
     "placeholder": "Type your message...",
     "attachFile": "Attach file (PDF, Word, Excel)",
@@ -258,8 +261,12 @@
     "sendError": "Failed to send message."
   },
   "professorDiscussions": {
-    "title": "Discussions with professors",
+    "title": "Discussion with professors",
     "subtitle": "Reply to professors' messages.",
+    "subtitleGlobal": "Single thread: admin and all professors can participate.",
+    "globalThread": "Global discussion",
+    "adminAndProfessors": "Admin and professors",
+    "admin": "Admin",
     "professors": "Professors",
     "noConversations": "No discussions yet.",
     "noMessages": "No messages in this conversation.",
