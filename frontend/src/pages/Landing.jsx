@@ -10,6 +10,7 @@ import ScrollCharacter from '../components/ScrollCharacter';
 import Pricing from '../components/Pricing';
 import ScrollReveal from '../components/ScrollReveal';
 import TestimonialsCarousel from '../components/TestimonialsCarousel';
+import Footer from '../components/Footer';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import LogoutButton from '../components/LogoutButton';
@@ -392,53 +393,7 @@ export default function Landing() {
 
         <ContactSection />
 
-        <footer className="footer-glass mt-12 sm:mt-16 pt-10 sm:pt-14 pb-8 sm:pb-10 safe-area-bottom" role="contentinfo">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <div className="footer-enter flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
-                <div dir="ltr" className="flex items-center gap-3">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-lg sm:text-xl bg-gradient-to-r from-pink-primary to-pink-dark dark:from-pink-400 dark:to-pink-500 bg-clip-text text-transparent">
-                      {t('footer.brand')}
-                    </span>
-                    <span className="text-sm text-text/60 dark:text-[#f5f5f5]/60">
-                      {t('footer.tagline')}
-                    </span>
-                  </div>
-                  <span
-                    className="hidden sm:block w-2 h-2 rounded-full bg-pink-primary dark:bg-pink-400 flex-shrink-0 footer-brand-glow"
-                    aria-hidden
-                  />
-                </div>
-                <nav className="flex flex-wrap items-center gap-6 text-sm" aria-label="Footer navigation">
-                  <a
-                    href="#pricing"
-                    className="footer-link text-text/80 dark:text-[#f5f5f5]/80 hover:text-pink-primary dark:hover:text-pink-400 font-medium"
-                  >
-                    {t('footer.pricing')}
-                  </a>
-                  <a
-                    href="#contact"
-                    className="footer-link text-text/80 dark:text-[#f5f5f5]/80 hover:text-pink-primary dark:hover:text-pink-400 font-medium"
-                  >
-                    {t('footer.contact')}
-                  </a>
-                </nav>
-              </div>
-            </ScrollReveal>
-            <div className="mt-8 pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-pink-soft/50 dark:border-white/10">
-              <a
-                href={`mailto:${t('footer.email')}`}
-                className="footer-link text-sm text-text/70 dark:text-[#f5f5f5]/70 hover:text-pink-primary dark:hover:text-pink-400 transition-colors"
-              >
-                {t('footer.email')}
-              </a>
-              <span className="text-sm text-text/50 dark:text-[#f5f5f5]/50">
-                {t('footer.copyright', { year: new Date().getFullYear() })}
-              </span>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </main>
     </div>
   );
