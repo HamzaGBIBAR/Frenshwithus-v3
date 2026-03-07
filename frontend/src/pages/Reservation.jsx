@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CONTACT } from '../config/contact';
+import api from '../api/axios';
+import CountryPhoneInput from '../components/CountryPhoneInput';
 
 const PACK_IDS = ['individuel', 'groups', 'preparation'];
 
@@ -43,10 +44,13 @@ export default function Reservation() {
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phoneCountry: 'MA',
+    phoneNumber: '',
     age: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [visible, setVisible] = useState(false);
 
   const packId = PACK_IDS.includes(packParam) ? packParam : null;
@@ -59,32 +63,27 @@ export default function Reservation() {
     ? t(`reservation.pack${packId.charAt(0).toUpperCase() + packId.slice(1)}`)
     : t('reservation.packNone');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setSubmitting(true);
-
-    const subject = encodeURIComponent(`[Réservation] Séance gratuite - ${form.firstName} ${form.lastName}`);
-    const bodyLines = [
-      'Bonjour,',
-      '',
-      'Je souhaite réserver une séance découverte gratuite pour le français.',
-      '',
-      '--- Informations ---',
-      `Prénom : ${form.firstName}`,
-      `Nom : ${form.lastName}`,
-      `Email : ${form.email}`,
-      `Téléphone : ${form.phone}`,
-      `Âge de l'enfant : ${form.age || '—'}`,
-      `Pack choisi : ${packLabel}`,
-      '',
-      'Merci de me recontacter pour convenir d\'un créneau.',
-      '',
-      'Cordialement',
-    ];
-    const body = encodeURIComponent(bodyLines.join('\n'));
-
-    window.location.href = `mailto:${CONTACT.email}?subject=${subject}&body=${body}`;
-    setTimeout(() => setSubmitting(false), 800);
+    try {
+      await api.post('/reservation', {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        phoneCountry: form.phoneCountry,
+        phoneNumber: form.phoneNumber,
+        age: form.age.trim() || null,
+        pack: packId || null,
+      });
+      setSuccess(true);
+      setForm({ firstName: '', lastName: '', email: '', phoneCountry: 'MA', phoneNumber: '', age: '' });
+    } catch (err) {
+      setError(err.response?.data?.error || t('reservation.sendError'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass =
@@ -168,6 +167,16 @@ export default function Reservation() {
                 {t('reservation.formIntro')}
               </p>
 
+              {success && (
+                <div className="mb-6 p-4 rounded-xl bg-green-500/20 dark:bg-green-500/20 border border-green-500/40 text-green-800 dark:text-green-200 text-sm">
+                  {t('reservation.successMessage')}
+                </div>
+              )}
+              {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-700 dark:text-red-300 text-sm">
+                  {error}
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className={labelClass}>{t('reservation.firstName')}</label>
@@ -202,22 +211,15 @@ export default function Reservation() {
                     className={inputClass}
                   />
                 </div>
-                <div>
-                  <label className={labelClass}>{t('reservation.phone')}</label>
-                  <div className="flex rounded-xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/95 dark:bg-[#252525] focus-within:ring-2 focus-within:ring-pink-primary dark:focus-within:ring-pink-400 focus-within:border-pink-primary transition-all">
-                    <span className="flex items-center px-4 py-3 text-sm text-white/70 dark:text-[#f5f5f5]/70 border-r border-white/20 dark:border-white/10 bg-white/5 dark:bg-black/20">
-                      +33
-                    </span>
-                    <input
-                      type="tel"
-                      required
-                      placeholder={t('reservation.placeholderPhone')}
-                      value={form.phone}
-                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                      className="flex-1 px-4 py-3 bg-transparent text-text dark:text-[#f5f5f5] placeholder:text-text/40 dark:placeholder:text-[#f5f5f5]/40 focus:outline-none"
-                    />
-                  </div>
-                </div>
+                <CountryPhoneInput
+                  countryCode={form.phoneCountry}
+                  onCountryChange={(code) => setForm((f) => ({ ...f, phoneCountry: code }))}
+                  phoneNumber={form.phoneNumber}
+                  onPhoneChange={(value) => setForm((f) => ({ ...f, phoneNumber: value }))}
+                  placeholder={t('reservation.placeholderPhone')}
+                  labelClassName={labelClass}
+                  required
+                />
                 <div>
                   <label className={labelClass}>{t('reservation.age')}</label>
                   <input

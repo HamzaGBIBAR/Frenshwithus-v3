@@ -162,6 +162,19 @@ model Notification {
   @@index([userId, createdAt])
 }
 
+// Réservations séance gratuite (sauvegardées pour admin / création de compte)
+model Reservation {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String
+  phoneCountry String   // e.g. MA, FR
+  phoneNumber  String   // rest of number without dial code
+  age          String?  // âge enfant
+  pack         String?  // individuel, groups, preparation
+  createdAt    DateTime @default(now())
+}
+
 // IPs blocked after exceeding rate limit; admin can unblock
 model BlockedIp {
   id        String   @id @default(cuid())

@@ -316,7 +316,9 @@
     "packIndividuel": "Individual pack",
     "packGroups": "Groups pack",
     "packPreparation": "Preparation pack",
-    "packNone": "Not specified"
+    "packNone": "Not specified",
+    "successMessage": "Thank you! Your request has been saved. Our team will get back to you within 24 hours.",
+    "sendError": "Error sending. Please try again or contact us by email."
   },
   "footer": {
     "brand": "French with Me",
@@ -568,6 +570,20 @@
       "empty": "No messages yet",
       "selectStudent": "Select a student to view messages",
       "attachmentLabel": "Attachment"
+    },
+    "adminReservations": {
+      "title": "Reservations",
+      "subtitle": "Discovery session requests. Useful for creating a student account.",
+      "date": "Date",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "age": "Age",
+      "pack": "Pack",
+      "empty": "No reservations",
+      "loadError": "Could not load reservations.",
+      "createAccount": "Create account"
     },
     "professor": {
       "message": "Messages",

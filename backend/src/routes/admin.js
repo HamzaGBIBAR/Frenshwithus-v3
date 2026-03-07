@@ -980,6 +980,15 @@ router.get('/students/:id/sessions', async (req, res) => {
   res.json(sessions);
 });
 
+// Réservations séance gratuite (liste pour admin / création de compte)
+router.get('/reservations', async (req, res) => {
+  const list = await prisma.reservation.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 500,
+  });
+  res.json(list);
+});
+
 // Blocked IPs (rate-limit blocks); admin can list and unblock
 router.get('/blocked-ips', async (req, res) => {
   const list = await prisma.blockedIp.findMany({

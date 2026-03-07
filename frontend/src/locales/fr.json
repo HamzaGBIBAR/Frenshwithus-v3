@@ -316,7 +316,9 @@
     "packIndividuel": "Pack Individuel",
     "packGroups": "Pack Groupes",
     "packPreparation": "Pack Préparation",
-    "packNone": "Non précisé"
+    "packNone": "Non précisé",
+    "successMessage": "Merci ! Votre demande a été enregistrée. Notre équipe vous recontactera sous 24h.",
+    "sendError": "Erreur lors de l'envoi. Réessayez ou contactez-nous par email."
   },
   "footer": {
     "brand": "French with Me",
@@ -568,6 +570,20 @@
       "empty": "Aucun message",
       "selectStudent": "Sélectionnez un élève pour voir les messages",
       "attachmentLabel": "Fichier joint"
+    },
+    "adminReservations": {
+      "title": "Réservations",
+      "subtitle": "Demandes de séance découverte. Utile pour créer un compte élève.",
+      "date": "Date",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "age": "Âge",
+      "pack": "Pack",
+      "empty": "Aucune réservation",
+      "loadError": "Impossible de charger les réservations.",
+      "createAccount": "Créer un compte"
     },
     "professor": {
       "message": "Messages",

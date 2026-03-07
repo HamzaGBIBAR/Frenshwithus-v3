@@ -30,6 +30,7 @@ import studentRoutes from './routes/student.js';
 import liveRoutes from './routes/live.js';
 import chatRoutes from './routes/chat.js';
 import notificationsRoutes from './routes/notifications.js';
+import reservationRoutes from './routes/reservation.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -75,6 +76,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api', notificationsRoutes);
 app.use('/api', liveRoutes);
 app.use('/api', chatRoutes);
+app.use('/api', reservationRoutes);
 
 // Global error handler for unhandled route errors
 app.use((err, req, res, next) => {

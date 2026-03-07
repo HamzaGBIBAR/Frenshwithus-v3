@@ -12,11 +12,13 @@ import Availability from '../pages/admin/Availability';
 import Messages from '../pages/admin/Messages';
 import ProfessorDiscussions from '../pages/admin/ProfessorDiscussions';
 import BlockedIps from '../pages/admin/BlockedIps';
+import Reservations from '../pages/admin/Reservations';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/professors', label: 'Professors' },
   { to: '/admin/students', label: 'Students' },
+  { to: '/admin/reservations', label: 'Réservations' },
   { to: '/admin/availability', label: 'Availability' },
   { to: '/admin/courses', label: 'Courses' },
   { to: '/admin/payments', label: 'Payments' },
@@ -46,6 +48,7 @@ export default function AdminLayout() {
           <Route index element={<AdminDashboard />} />
           <Route path="professors" element={<Professors />} />
           <Route path="students" element={<Students />} />
+          <Route path="reservations" element={<Reservations />} />
           <Route path="courses" element={<Courses />} />
           <Route path="payments" element={<Payments />} />
           <Route path="availability" element={<Availability />} />

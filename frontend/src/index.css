@@ -1069,86 +1069,39 @@ textarea::placeholder {
   }
 }
 
-/* Footer curved section – dark bg + pink overlay, fade-up on scroll */
-.footer-curved-wrap {
-  background: #111111;
-  position: relative;
-  overflow: hidden;
+/* Footer – design épuré, intégré au site (clair / dark) */
+.footer-new {
+  background: linear-gradient(180deg, rgba(255, 247, 250, 0.6) 0%, rgba(250, 218, 221, 0.25) 100%);
+  border-top: 1px solid rgba(231, 84, 128, 0.12);
 }
 
-.footer-curved-overlay {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 180%;
-  height: 180%;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 70% 50% at 50% 50%,
-    rgba(231, 84, 128, 0.35) 0%,
-    rgba(231, 84, 128, 0.12) 45%,
-    transparent 70%
-  );
+.dark .footer-new {
+  background: linear-gradient(180deg, rgba(17, 17, 17, 0.5) 0%, rgba(26, 26, 26, 0.8) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.dark .footer-curved-overlay {
-  background: radial-gradient(
-    ellipse 70% 50% at 50% 50%,
-    rgba(244, 114, 182, 0.25) 0%,
-    rgba(244, 114, 182, 0.08) 45%,
-    transparent 70%
-  );
-}
-
-/* Logo "goes up" first – starts lower, moves up into place */
-.footer-logo-go-up {
+.footer-new-row,
+.footer-new-bottom {
   opacity: 0;
-  transform: translateY(56px) scale(0.96);
-  transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.footer-logo-go-up.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.footer-fade-up {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.footer-fade-up.is-visible {
+.footer-new-row.footer-new-visible,
+.footer-new-bottom.footer-new-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Stagger: logo first, then nav, then social, then email (web info revealed after logo) */
-.footer-fade-up--delay-1 { transition-delay: 0.35s; }
-.footer-fade-up--delay-2 { transition-delay: 0.55s; }
-.footer-fade-up--delay-3 { transition-delay: 0.75s; }
-.footer-fade-up--delay-4 { transition-delay: 0.95s; }
+.footer-new-bottom.footer-new-visible {
+  transition-delay: 0.1s;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .footer-logo-go-up {
+  .footer-new-row,
+  .footer-new-bottom {
     opacity: 1;
     transform: none;
     transition: none;
-  }
-  .footer-logo-go-up.is-visible {
-    opacity: 1;
-    transform: none;
-  }
-  .footer-fade-up {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-  .footer-fade-up.is-visible {
-    opacity: 1;
-    transform: none;
   }
 }
