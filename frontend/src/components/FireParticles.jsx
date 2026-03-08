@@ -1,17 +1,17 @@
 /**
- * FireParticles – purple floating particles across the full background
- * - Many small particles that rise and drift like embers
+ * FireParticles – rose/pink floating particles across the full background
+ * - Few particles, low opacity, rise and drift like embers
  * - Respects prefers-reduced-motion (particles static or reduced)
  * - Fixed, behind content (z-0), pointer-events-none
  */
 import { useMemo } from 'react';
 
-const PARTICLE_COUNT = 60;
-const PURPLE_COLORS = [
-  'rgba(139, 92, 246, 0.85)',   // violet-500
-  'rgba(167, 139, 250, 0.75)',   // violet-400
-  'rgba(196, 181, 253, 0.65)',   // violet-300
-  'rgba(124, 58, 237, 0.7)',     // violet-600
+const PARTICLE_COUNT = 22;
+const ROSE_COLORS = [
+  'rgba(231, 84, 128, 0.45)',   // pink-primary
+  'rgba(250, 218, 221, 0.4)',   // pink-soft
+  'rgba(244, 114, 182, 0.4)',   // pink
+  'rgba(194, 24, 91, 0.35)',    // pink-dark
 ];
 
 function seed(str) {
@@ -36,7 +36,7 @@ export default function FireParticles() {
         size: seededRandom(s + 1, 4, 12),
         duration: 8 + seededRandom(s + 2, 0, 12),
         delay: seededRandom(s + 3, 0, 8),
-        color: PURPLE_COLORS[i % PURPLE_COLORS.length],
+        color: ROSE_COLORS[i % ROSE_COLORS.length],
       };
     });
   }, []);

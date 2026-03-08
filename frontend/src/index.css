@@ -722,7 +722,7 @@ textarea::placeholder {
 }
 
 .fire-particle {
-  opacity: 0.9;
+  opacity: 0.5;
   animation: fireParticleRise 18s ease-in infinite;
 }
 
@@ -732,14 +732,14 @@ textarea::placeholder {
     opacity: 0;
   }
   5% {
-    opacity: 0.85;
+    opacity: 0.4;
   }
   50% {
     transform: translateY(-60vh) translateX(20px) scale(1.1);
-    opacity: 0.75;
+    opacity: 0.35;
   }
   95% {
-    opacity: 0.4;
+    opacity: 0.2;
   }
   100% {
     transform: translateY(-120vh) translateX(-15px) scale(0.8);
@@ -750,7 +750,7 @@ textarea::placeholder {
 @media (prefers-reduced-motion: reduce) {
   .fire-particle {
     animation: none;
-    opacity: 0.35;
+    opacity: 0.2;
     will-change: auto;
   }
 }
