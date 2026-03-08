@@ -170,8 +170,9 @@ model Reservation {
   email        String
   phoneCountry String   // e.g. MA, FR
   phoneNumber  String   // rest of number without dial code
-  age          String?  // âge enfant
+  age          String?  // âge enfant ou adulte
   pack         String?  // individuel, groups, preparation
+  audience     String?  // adults | children
   createdAt    DateTime @default(now())
 }
 

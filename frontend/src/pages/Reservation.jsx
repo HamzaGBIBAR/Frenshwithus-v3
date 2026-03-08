@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import CountryPhoneInput from '../components/CountryPhoneInput';
@@ -39,6 +39,10 @@ export default function Reservation() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const packParam = searchParams.get('pack') || '';
+  const audienceParam = searchParams.get('audience') || '';
+  const audience = audienceParam === 'adults' || audienceParam === 'children' ? audienceParam : null;
+
+  if (!audience) return <Navigate to="/reservation" replace />;
 
   const [form, setForm] = useState({
     firstName: '',
@@ -76,6 +80,7 @@ export default function Reservation() {
         phoneNumber: form.phoneNumber,
         age: form.age.trim() || null,
         pack: packId || null,
+        audience,
       });
       setSuccess(true);
       setForm({ firstName: '', lastName: '', email: '', phoneCountry: 'MA', phoneNumber: '', age: '' });
@@ -94,7 +99,7 @@ export default function Reservation() {
     <div className="min-h-screen bg-[#1a1a1a] text-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <Link
-          to="/"
+          to="/reservation"
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white/90 text-sm font-medium transition-all duration-300 mb-8 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}
           style={{ transition: 'opacity 0.5s ease, transform 0.5s ease' }}
         >
@@ -114,10 +119,10 @@ export default function Reservation() {
               {t('reservation.badge')}
             </span>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
-              {t('reservation.title')}
+              {t(audience === 'adults' ? 'reservation.titleAdults' : 'reservation.title')}
             </h1>
             <p className="text-white/70 dark:text-[#f5f5f5]/70 text-sm sm:text-base">
-              {t('reservation.intro')}
+              {t(audience === 'adults' ? 'reservation.introAdults' : 'reservation.intro')}
             </p>
 
             <div
@@ -125,14 +130,14 @@ export default function Reservation() {
               style={{ transitionDelay: '0.2s' }}
             >
               <h2 className="font-semibold text-white dark:text-[#f5f5f5] text-sm">
-                {t('reservation.benefitsTitle')}
+                {t(audience === 'adults' ? 'reservation.benefitsTitleAdults' : 'reservation.benefitsTitle')}
               </h2>
               <ul className="space-y-3">
                 {[
-                  { key: 'benefit1', icon: 'sparkle' },
-                  { key: 'benefit2', icon: 'calendar' },
-                  { key: 'benefit3', icon: 'search' },
-                  { key: 'benefit4', icon: 'heart' },
+                  { key: audience === 'adults' ? 'benefit1Adults' : 'benefit1', icon: 'sparkle' },
+                  { key: audience === 'adults' ? 'benefit2Adults' : 'benefit2', icon: 'calendar' },
+                  { key: audience === 'adults' ? 'benefit3Adults' : 'benefit3', icon: 'search' },
+                  { key: audience === 'adults' ? 'benefit4Adults' : 'benefit4', icon: 'heart' },
                 ].map(({ key, icon }, i) => (
                   <li
                     key={key}
@@ -150,7 +155,7 @@ export default function Reservation() {
             </div>
 
             <p className="text-xs text-white/50 dark:text-[#f5f5f5]/50 max-w-md">
-              {t('reservation.disclaimer')}
+              {t(audience === 'adults' ? 'reservation.disclaimerAdults' : 'reservation.disclaimer')}
             </p>
           </div>
 
@@ -221,11 +226,11 @@ export default function Reservation() {
                   required
                 />
                 <div>
-                  <label className={labelClass}>{t('reservation.age')}</label>
-                  <input
+<label className={labelClass}>{t(audience === 'adults' ? 'reservation.ageAdults' : 'reservation.age')}</label>
+                    <input
                     type="text"
                     inputMode="numeric"
-                    placeholder={t('reservation.placeholderAge')}
+                    placeholder={t(audience === 'adults' ? 'reservation.placeholderAgeAdults' : 'reservation.placeholderAge')}
                     value={form.age}
                     onChange={(e) => setForm((f) => ({ ...f, age: e.target.value.replace(/\D/g, '').slice(0, 3) }))}
                     className={inputClass}

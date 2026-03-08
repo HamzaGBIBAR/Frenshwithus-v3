@@ -5,13 +5,14 @@ const router = Router();
 
 // POST /api/reservation – public, enregistre une demande de réservation
 router.post('/reservation', async (req, res) => {
-  const { firstName, lastName, email, phoneCountry, phoneNumber, age, pack } = req.body;
+  const { firstName, lastName, email, phoneCountry, phoneNumber, age, pack, audience } = req.body;
   if (!firstName?.trim() || !lastName?.trim() || !email?.trim()) {
     return res.status(400).json({ error: 'Prénom, nom et email requis' });
   }
   const country = String(phoneCountry || 'FR').trim().slice(0, 10);
   const number = String(phoneNumber || '').trim().replace(/\D/g, '').slice(0, 20);
   if (!number) return res.status(400).json({ error: 'Numéro de téléphone requis' });
+  const audienceVal = audience === 'adults' || audience === 'children' ? audience : null;
 
   const reservation = await prisma.reservation.create({
     data: {
@@ -22,6 +23,7 @@ router.post('/reservation', async (req, res) => {
       phoneNumber: number,
       age: age != null && String(age).trim() ? String(age).trim().slice(0, 20) : null,
       pack: pack != null && String(pack).trim() ? String(pack).trim().slice(0, 50) : null,
+      audience: audienceVal,
     },
   });
   res.status(201).json(reservation);

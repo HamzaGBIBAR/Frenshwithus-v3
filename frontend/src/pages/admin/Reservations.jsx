@@ -57,13 +57,14 @@ export default function Reservations() {
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.phone')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.age')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.pack')}</th>
+                <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.audience')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.createAccount')}</th>
               </tr>
             </thead>
             <tbody>
               {list.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/60">
+                  <td colSpan={9} className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/60">
                     {t('dashboard.adminReservations.empty')}
                   </td>
                 </tr>
@@ -93,6 +94,7 @@ export default function Reservations() {
                     </td>
                     <td className="p-3">{r.age ?? '—'}</td>
                     <td className="p-3">{packLabel(r.pack)}</td>
+                    <td className="p-3">{r.audience === 'adults' ? t('dashboard.adminReservations.audienceAdults') : r.audience === 'children' ? t('dashboard.adminReservations.audienceChildren') : '—'}</td>
                     <td className="p-3">
                       <Link
                         to={`/admin/students?createFrom=${encodeURIComponent(r.email || '')}&name=${encodeURIComponent([r.firstName, r.lastName].filter(Boolean).join(' '))}`}
