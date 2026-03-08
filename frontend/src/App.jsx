@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
 import AnimatedBackground from './components/AnimatedBackground';
+import FireParticles from './components/FireParticles';
 import FloatingLetters from './components/FloatingLetters';
 import CustomCursor from './components/CustomCursor';
 import Landing from './pages/Landing';
@@ -73,6 +74,7 @@ export default function App() {
         <ToastProvider>
         <CustomCursor />
         <AnimatedBackground />
+        <FireParticles />
         <FloatingLetters />
         <div className="relative z-10 transition-all duration-500">
           <AppRoutes />

@@ -716,6 +716,45 @@ textarea::placeholder {
   }
 }
 
+/* FireParticles – purple rising particles (full background) */
+.fire-particles {
+  z-index: 0;
+}
+
+.fire-particle {
+  opacity: 0.9;
+  animation: fireParticleRise 18s ease-in infinite;
+}
+
+@keyframes fireParticleRise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-60vh) translateX(20px) scale(1.1);
+    opacity: 0.75;
+  }
+  95% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-120vh) translateX(-15px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-particle {
+    animation: none;
+    opacity: 0.35;
+    will-change: auto;
+  }
+}
+
 /* FloatingLetters – scroll parallax wrapper */
 .floating-letter-wrapper {
   transition: transform 0.1s ease-out;
