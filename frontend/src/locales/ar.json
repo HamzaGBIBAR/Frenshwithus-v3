@@ -573,6 +573,9 @@
       "audienceChildren": "أطفال",
       "empty": "لا توجد حجوزات",
       "loadError": "تعذّر تحميل الحجوزات.",
+      "delete": "حذف",
+      "confirmDelete": "حذف هذا الحجز؟",
+      "deleteError": "خطأ في حذف الحجز.",
       "createAccount": "إنشاء حساب"
     },
     "professor": {

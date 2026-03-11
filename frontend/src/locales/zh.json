@@ -573,6 +573,9 @@
       "audienceChildren": "儿童",
       "empty": "暂无预约",
       "loadError": "无法加载预约。",
+      "delete": "删除",
+      "confirmDelete": "删除此预约？",
+      "deleteError": "删除失败。",
       "createAccount": "创建账户"
     },
     "professor": {

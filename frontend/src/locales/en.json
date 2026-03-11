@@ -607,6 +607,9 @@
       "audienceChildren": "Children",
       "empty": "No reservations",
       "loadError": "Could not load reservations.",
+      "delete": "Delete",
+      "confirmDelete": "Delete this reservation?",
+      "deleteError": "Error deleting reservation.",
       "createAccount": "Create account"
     },
     "professor": {

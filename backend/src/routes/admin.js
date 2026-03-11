@@ -989,6 +989,11 @@ router.get('/reservations', async (req, res) => {
   res.json(list);
 });
 
+router.delete('/reservations/:id', async (req, res) => {
+  await prisma.reservation.delete({ where: { id: req.params.id } });
+  res.json({ ok: true });
+});
+
 // Blocked IPs (rate-limit blocks); admin can list and unblock
 router.get('/blocked-ips', async (req, res) => {
   const list = await prisma.blockedIp.findMany({

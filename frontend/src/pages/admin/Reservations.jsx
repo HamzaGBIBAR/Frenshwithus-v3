@@ -31,6 +31,16 @@ export default function Reservations() {
 
   const packLabel = (pack) => (pack ? (PACK_LABELS[pack] || pack) : '—');
 
+  const handleDelete = async (id) => {
+    if (!window.confirm(t('dashboard.adminReservations.confirmDelete'))) return;
+    try {
+      await api.delete(`/admin/reservations/${id}`);
+      setList((prev) => prev.filter((r) => r.id !== id));
+    } catch {
+      setError(t('dashboard.adminReservations.deleteError'));
+    }
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5] mb-1">
@@ -63,12 +73,13 @@ export default function Reservations() {
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.pack')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.audience')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.createAccount')}</th>
+                <th className="p-3 font-medium text-text dark:text-[#f5f5f5]"></th>
               </tr>
             </thead>
             <tbody>
               {list.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/60">
+                  <td colSpan={11} className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/60">
                     {t('dashboard.adminReservations.empty')}
                   </td>
                 </tr>
@@ -107,6 +118,18 @@ export default function Reservations() {
                       >
                         {t('dashboard.adminReservations.createAccount')}
                       </Link>
+                    </td>
+                    <td className="p-3">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(r.id)}
+                        className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/30 transition"
+                        title={t('dashboard.adminReservations.delete')}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </td>
                   </tr>
                 ))
