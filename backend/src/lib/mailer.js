@@ -30,13 +30,26 @@ function getTransporter() {
 }
 
 export async function sendMail({ to, subject, html, text }) {
+  console.log('[Mailer] Attempting to send email to:', to);
+  console.log('[Mailer] SMTP_HOST:', process.env.SMTP_HOST || '(not set)');
+  console.log('[Mailer] SMTP_USER:', process.env.SMTP_USER || '(not set)');
+  console.log('[Mailer] SMTP_PASS:', process.env.SMTP_PASS ? '****' + process.env.SMTP_PASS.slice(-4) : '(not set)');
   const t = getTransporter();
   if (!t) {
-    console.warn('Mailer not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing). Skipping email.');
+    console.warn('[Mailer] Not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing). Skipping email.');
     return null;
   }
   const from = `"French With Us" <${process.env.SMTP_USER}>`;
-  return t.sendMail({ from, to, subject, html, text });
+  try {
+    const result = await t.sendMail({ from, to, subject, html, text });
+    console.log('[Mailer] Email sent successfully. MessageId:', result.messageId);
+    return result;
+  } catch (err) {
+    console.error('[Mailer] Failed to send:', err.message);
+    console.error('[Mailer] Error code:', err.code);
+    console.error('[Mailer] Full error:', JSON.stringify({ code: err.code, command: err.command, response: err.response }, null, 2));
+    throw err;
+  }
 }
 
 export function getContactEmail() {

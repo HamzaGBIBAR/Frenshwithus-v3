@@ -34,7 +34,9 @@ async function generateAdminNotifications(userId) {
   const now = new Date();
   const in7Days = new Date(now.getTime() + 7 * DAY_MS);
 
-  const [duePayments, absentCourses] = await Promise.all([
+  const threeDaysAgo = new Date(now.getTime() - 3 * DAY_MS);
+
+  const [duePayments, absentCourses, recentReservations] = await Promise.all([
     prisma.payment.findMany({
       where: {
         status: 'paid',
@@ -52,6 +54,11 @@ async function generateAdminNotifications(userId) {
       },
       take: 20,
       orderBy: [{ date: 'desc' }, { time: 'desc' }],
+    }),
+    prisma.reservation.findMany({
+      where: { createdAt: { gte: threeDaysAgo } },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
     }),
   ]);
 
@@ -72,6 +79,17 @@ async function generateAdminNotifications(userId) {
       body: `${c.professor?.name || 'Prof'} / ${c.student?.name || 'Eleve'} - ${c.date} ${c.time}`,
       type: 'warning',
       link: '/admin/courses',
+    });
+  }
+
+  for (const r of recentReservations) {
+    const audienceLabel = r.audience === 'adults' ? 'Adulte' : r.audience === 'children' ? 'Enfant' : '';
+    await ensureNotification(userId, {
+      dedupeKey: `admin-reservation-${r.id}`,
+      title: 'Nouvelle reservation',
+      body: `${r.firstName} ${r.lastName} (${r.email})${audienceLabel ? ` - ${audienceLabel}` : ''}`,
+      type: 'info',
+      link: '/admin/reservations',
     });
   }
 }
