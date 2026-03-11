@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { getDialCode, getCountryName } from '../../utils/countryDialCodes';
+import COUNTRIES from '../../utils/countries';
+
+const getResidenceCountryName = (code) => COUNTRIES.find((c) => c.code === code)?.name || code || '—';
 
 const PACK_LABELS = { decouverte: 'Découverte', individuel: 'Individuel', groups: 'Groupes', preparation: 'Préparation' };
 
@@ -55,6 +58,7 @@ export default function Reservations() {
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.lastName')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.email')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.phone')}</th>
+                <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.country')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.age')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.pack')}</th>
                 <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.audience')}</th>
@@ -64,7 +68,7 @@ export default function Reservations() {
             <tbody>
               {list.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/60">
+                  <td colSpan={10} className="p-8 text-center text-text/60 dark:text-[#f5f5f5]/60">
                     {t('dashboard.adminReservations.empty')}
                   </td>
                 </tr>
@@ -92,6 +96,7 @@ export default function Reservations() {
                         </span>
                       )}
                     </td>
+                    <td className="p-3">{r.country ? getResidenceCountryName(r.country) : '—'}</td>
                     <td className="p-3">{r.age ?? '—'}</td>
                     <td className="p-3">{packLabel(r.pack)}</td>
                     <td className="p-3">{r.audience === 'adults' ? t('dashboard.adminReservations.audienceAdults') : r.audience === 'children' ? t('dashboard.adminReservations.audienceChildren') : '—'}</td>

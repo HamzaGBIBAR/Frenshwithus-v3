@@ -173,6 +173,7 @@ model Reservation {
   age          String?  // âge enfant ou adulte
   pack         String?  // individuel, groups, preparation
   audience     String?  // adults | children
+  country      String?  // country of residence (ISO code)
   createdAt    DateTime @default(now())
 }
 

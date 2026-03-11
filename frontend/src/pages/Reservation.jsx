@@ -3,6 +3,7 @@ import { Link, useSearchParams, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import CountryPhoneInput from '../components/CountryPhoneInput';
+import COUNTRIES from '../utils/countries';
 
 const PACK_IDS = ['individuel', 'groups', 'preparation'];
 
@@ -50,6 +51,7 @@ export default function Reservation() {
     email: '',
     phoneCountry: 'MA',
     phoneNumber: '',
+    country: '',
     age: '',
   });
   const [submitting, setSubmitting] = useState(false);
@@ -78,12 +80,13 @@ export default function Reservation() {
         email: form.email.trim(),
         phoneCountry: form.phoneCountry,
         phoneNumber: form.phoneNumber,
+        country: form.country || null,
         age: form.age.trim() || null,
         pack: packId || null,
         audience,
       });
       setSuccess(true);
-      setForm({ firstName: '', lastName: '', email: '', phoneCountry: 'MA', phoneNumber: '', age: '' });
+      setForm({ firstName: '', lastName: '', email: '', phoneCountry: 'MA', phoneNumber: '', country: '', age: '' });
     } catch (err) {
       setError(err.response?.data?.error || t('reservation.sendError'));
     } finally {
@@ -225,6 +228,20 @@ export default function Reservation() {
                   labelClassName={labelClass}
                   required
                 />
+                <div>
+                  <label className={labelClass}>{t('reservation.country')}</label>
+                  <select
+                    required
+                    value={form.country}
+                    onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
+                    className={inputClass}
+                  >
+                    <option value="">{t('reservation.placeholderCountry')}</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <div>
 <label className={labelClass}>{t(audience === 'adults' ? 'reservation.ageAdults' : 'reservation.age')}</label>
                     <input
