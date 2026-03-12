@@ -160,7 +160,7 @@ export default function StudentProfileModal({ onClose }) {
       const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
       const formData = new FormData();
       formData.append('avatar', file);
-      const r = await api.put('/student/profile/avatar', formData);
+      const r = await api.post('/student/profile/avatar', formData);
       setProfile(r.data);
       setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
       if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);

@@ -149,7 +149,7 @@ router.put('/profile', profileUpdateValidation, validate, async (req, res) => {
   res.json(user);
 });
 
-router.put('/profile/avatar', uploadAvatar.single('avatar'), async (req, res) => {
+router.post('/profile/avatar', uploadAvatar.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
