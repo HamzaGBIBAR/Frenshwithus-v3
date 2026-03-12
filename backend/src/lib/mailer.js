@@ -1,18 +1,13 @@
 import nodemailer from 'nodemailer';
-import dns from 'dns';
-import net from 'net';
+import { Resolver } from 'dns';
 
-try { dns.setDefaultResultOrder('ipv4first'); } catch { /* Node < 16.4 */ }
+const googleDns = new Resolver();
+googleDns.setServers(['8.8.8.8', '8.8.4.4']);
 
 /**
  * Mailer – sends email via SMTP (Gmail app password recommended).
- *
- * Required env vars:
- *   SMTP_HOST    – e.g. smtp.gmail.com
- *   SMTP_PORT    – e.g. 587
- *   SMTP_USER    – e.g. frenchwithus.noreply@gmail.com
- *   SMTP_PASS    – app password (not your normal password)
- *   CONTACT_EMAIL – destination email for notifications (defaults to SMTP_USER)
+ * Uses Google Public DNS (8.8.8.8) to resolve SMTP hostnames,
+ * bypassing Railway container DNS issues.
  */
 
 let transporter = null;
@@ -34,8 +29,13 @@ function getTransporter() {
     socketTimeout: 15000,
     tls: { rejectUnauthorized: false },
     dnsLookup: (hostname, options, callback) => {
-      dns.resolve4(hostname, (err, addresses) => {
-        if (err) return dns.lookup(hostname, { family: 4 }, callback);
+      console.log('[Mailer] Resolving', hostname, 'via Google DNS (8.8.8.8)...');
+      googleDns.resolve4(hostname, (err, addresses) => {
+        if (err || !addresses || addresses.length === 0) {
+          console.error('[Mailer] Google DNS resolve4 failed:', err?.message || 'no addresses');
+          return callback(err || new Error('No addresses found'));
+        }
+        console.log('[Mailer] Resolved', hostname, '->', addresses[0]);
         callback(null, addresses[0], 4);
       });
     },
