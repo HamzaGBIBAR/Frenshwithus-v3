@@ -149,30 +149,55 @@ export default function StudentProfileModal({ onClose }) {
     e.target.value = '';
   };
 
+  const doUpload = async (fileToUpload) => {
+    const formData = new FormData();
+    formData.append('avatar', fileToUpload);
+    const r = await api.post('/student/profile/avatar', formData);
+    setProfile(r.data);
+    setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
+    refreshUser?.();
+    showToast(t('profile.saved'));
+  };
+
   const confirmAvatarPreview = async () => {
     if (!avatarPreview || !avatarFile) {
       showToast(t('profile.selectImageFirst'));
       return;
     }
     setAvatarLoading(true);
+    let lastError = null;
     try {
-      const blob = await applyTransformAndGetBlob(avatarFile, avatarZoom, avatarRotation);
-      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-      const formData = new FormData();
-      formData.append('avatar', file);
-      const r = await api.post('/student/profile/avatar', formData);
-      setProfile(r.data);
-      setForm((f) => ({ ...f, avatarUrl: r.data.avatarUrl }));
+      if (avatarZoom === 1 && avatarRotation === 0) {
+        await doUpload(avatarFile);
+      } else {
+        const blob = await applyTransformAndGetBlob(avatarFile, avatarZoom, avatarRotation);
+        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+        await doUpload(file);
+      }
       if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(null);
       setAvatarFile(null);
-      refreshUser?.();
-      showToast(t('profile.saved'));
     } catch (err) {
       console.error('Avatar upload error:', err);
-      showToast(err.response?.data?.error || t('profile.errorSave'));
+      lastError = err;
+      if (avatarZoom !== 1 || avatarRotation !== 0) {
+        try {
+          await doUpload(avatarFile);
+          if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);
+          setAvatarPreview(null);
+          setAvatarFile(null);
+          lastError = null;
+        } catch (retryErr) {
+          console.error('Avatar retry error:', retryErr);
+          lastError = retryErr;
+        }
+      }
     } finally {
       setAvatarLoading(false);
+      if (lastError) {
+        const msg = lastError.response?.data?.error || lastError.response?.data?.message || lastError.message;
+        showToast(msg || t('profile.errorSave'));
+      }
     }
   };
 
