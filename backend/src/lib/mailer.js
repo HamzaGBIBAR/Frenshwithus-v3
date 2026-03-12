@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
 import dns from 'dns';
+import net from 'net';
 
-// Force IPv4 DNS resolution (fixes ENOTFOUND on Railway/Docker containers)
-dns.setDefaultResultOrder('ipv4first');
+try { dns.setDefaultResultOrder('ipv4first'); } catch { /* Node < 16.4 */ }
 
 /**
  * Mailer – sends email via SMTP (Gmail app password recommended).
@@ -33,6 +33,12 @@ function getTransporter() {
     greetingTimeout: 15000,
     socketTimeout: 15000,
     tls: { rejectUnauthorized: false },
+    dnsLookup: (hostname, options, callback) => {
+      dns.resolve4(hostname, (err, addresses) => {
+        if (err) return dns.lookup(hostname, { family: 4 }, callback);
+        callback(null, addresses[0], 4);
+      });
+    },
   });
   return transporter;
 }
