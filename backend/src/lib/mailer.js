@@ -1,78 +1,42 @@
-import nodemailer from 'nodemailer';
-import { Resolver } from 'dns';
-import net from 'net';
+import { Resend } from 'resend';
 
 /**
- * Mailer – sends email via SMTP (Gmail app password recommended).
- * Resolves SMTP host via Google Public DNS (8.8.8.8) to bypass
- * Railway container DNS issues, then connects to the resolved IP.
+ * Mailer – sends email via Resend HTTP API.
+ * Works on Railway (no SMTP, no DNS issues).
+ *
+ * Required env vars:
+ *   RESEND_API_KEY  – from resend.com dashboard
+ *   CONTACT_EMAIL   – destination email for notifications
  */
 
-const googleDns = new Resolver();
-googleDns.setServers(['8.8.8.8', '8.8.4.4']);
+let resendClient = null;
 
-function resolveHost(hostname) {
-  if (net.isIP(hostname)) return Promise.resolve(hostname);
-  return new Promise((resolve, reject) => {
-    googleDns.resolve4(hostname, (err, addresses) => {
-      if (err || !addresses?.length) return reject(err || new Error('No addresses'));
-      resolve(addresses[0]);
-    });
-  });
-}
-
-let cachedIp = null;
-
-async function createTransporter() {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT, 10) || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  if (!host || !user || !pass) return null;
-
-  if (!cachedIp) {
-    console.log('[Mailer] Resolving', host, 'via Google DNS (8.8.8.8)...');
-    cachedIp = await resolveHost(host);
-    console.log('[Mailer] Resolved', host, '->', cachedIp);
-  }
-
-  return nodemailer.createTransport({
-    host: cachedIp,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-    tls: { servername: host, rejectUnauthorized: false },
-  });
+function getResend() {
+  if (resendClient) return resendClient;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  resendClient = new Resend(apiKey);
+  return resendClient;
 }
 
 export async function sendMail({ to, subject, html, text }) {
   console.log('[Mailer] Attempting to send email to:', to);
-  console.log('[Mailer] SMTP_HOST:', process.env.SMTP_HOST || '(not set)');
-  console.log('[Mailer] SMTP_USER:', process.env.SMTP_USER || '(not set)');
-  console.log('[Mailer] SMTP_PASS:', process.env.SMTP_PASS ? '****' + process.env.SMTP_PASS.slice(-4) : '(not set)');
-
-  const t = await createTransporter();
-  if (!t) {
-    console.warn('[Mailer] Not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing). Skipping email.');
+  const r = getResend();
+  if (!r) {
+    console.warn('[Mailer] RESEND_API_KEY not set. Skipping email.');
     return null;
   }
-  const from = `"French With Us" <${process.env.SMTP_USER}>`;
+  const from = process.env.RESEND_FROM || 'French With Us <onboarding@resend.dev>';
   try {
-    const result = await t.sendMail({ from, to, subject, html, text });
-    console.log('[Mailer] Email sent successfully. MessageId:', result.messageId);
+    const result = await r.emails.send({ from, to, subject, html, text });
+    console.log('[Mailer] Email sent successfully:', JSON.stringify(result));
     return result;
   } catch (err) {
-    console.error('[Mailer] Failed to send:', err.message);
-    console.error('[Mailer] Error code:', err.code);
-    console.error('[Mailer] Full error:', JSON.stringify({ code: err.code, command: err.command, response: err.response }, null, 2));
-    cachedIp = null;
+    console.error('[Mailer] Failed to send:', err.message || JSON.stringify(err));
     throw err;
   }
 }
 
 export function getContactEmail() {
-  return process.env.CONTACT_EMAIL || process.env.SMTP_USER || null;
+  return process.env.CONTACT_EMAIL || null;
 }
