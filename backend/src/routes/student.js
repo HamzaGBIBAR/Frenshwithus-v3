@@ -4,10 +4,53 @@ import streamifier from 'streamifier';
 import prisma from '../lib/db.js';
 import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { validate, messageValidation, studentAvailabilityValidation } from '../middleware/validate.js';
+import { validate, messageValidation, studentAvailabilityValidation, profileUpdateValidation, passwordChangeValidation } from '../middleware/validate.js';
+import { captureException } from '../lib/sentry.js';
 import { localSlotToUtc, utcSlotToZoned, getUserTz } from '../lib/availabilityUtc.js';
 
 const router = Router();
+
+const AVATAR_MIMES = ['image/jpeg', 'image/jpg', 'image/png'];
+const AVATAR_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+const uploadAvatar = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: AVATAR_MAX_SIZE },
+  fileFilter: (req, file, cb) => {
+    if (!AVATAR_MIMES.includes(file.mimetype)) {
+      return cb(new Error('Invalid file type. Only jpg, jpeg, png allowed.'));
+    }
+    cb(null, true);
+  },
+});
+
+function uploadAvatarToCloudinary(buffer, publicId) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'frenchwithus/avatars',
+        public_id: publicId,
+        overwrite: true,
+        resource_type: 'image',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+}
+
+function extractPublicIdFromUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  try {
+    const match = url.match(/\/v\d+\/(.+)\.(?:jpg|jpeg|png)/i);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
 
 const MESSAGE_ALLOWED_MIMES = [
   'application/msword',
@@ -17,7 +60,7 @@ const MESSAGE_ALLOWED_MIMES = [
   'application/pdf',
 ];
 const MESSAGE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const PAYMENT_PROOF_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+const PAYMENT_PROOF_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf'];
 const PAYMENT_PROOF_MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 const uploadMessageAttachment = multer({
@@ -56,13 +99,14 @@ const uploadPaymentProof = multer({
   limits: { fileSize: PAYMENT_PROOF_MAX_SIZE },
   fileFilter: (req, file, cb) => {
     if (!PAYMENT_PROOF_MIMES.includes(file.mimetype)) {
-      return cb(new Error('Invalid file type. Only JPEG, PNG and WebP images are allowed.'));
+      return cb(new Error('Invalid file type. Only JPEG, PNG, WebP images and PDF are allowed.'));
     }
     cb(null, true);
   },
 });
 
-function uploadPaymentProofToCloudinary(buffer) {
+function uploadPaymentProofToCloudinary(buffer, mimetype) {
+  const isPdf = mimetype === 'application/pdf';
   const publicId = `payment-proof-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -70,7 +114,7 @@ function uploadPaymentProofToCloudinary(buffer) {
         folder: 'frenchwithus/payment-proofs',
         public_id: publicId,
         overwrite: false,
-        resource_type: 'image',
+        resource_type: isPdf ? 'raw' : 'image',
       },
       (error, result) => {
         if (error) return reject(error);
@@ -83,6 +127,89 @@ function uploadPaymentProofToCloudinary(buffer) {
 
 router.use(authenticate);
 router.use(requireRole('STUDENT'));
+
+// My profile
+router.get('/profile', async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  res.json(user);
+});
+
+router.put('/profile', profileUpdateValidation, validate, async (req, res) => {
+  const { name } = req.body;
+  const data = {};
+  if (name !== undefined) data.name = name;
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data,
+    select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+  });
+  res.json(user);
+});
+
+router.put('/profile/avatar', uploadAvatar.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      captureException(new Error('Cloudinary env vars not configured'));
+      return res.status(503).json({ error: 'Avatar upload not configured' });
+    }
+    const result = await uploadAvatarToCloudinary(req.file.buffer, req.user.id);
+    const avatarUrl = result.secure_url;
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { avatarUrl },
+      select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+    });
+    res.json(user);
+  } catch (err) {
+    captureException(err);
+    console.error('Avatar upload error:', err);
+    res.status(500).json({ error: err.message || 'Avatar upload failed' });
+  }
+});
+
+router.delete('/profile/avatar', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { avatarUrl: true },
+    });
+    const publicId = extractPublicIdFromUrl(user?.avatarUrl);
+    if (publicId && process.env.CLOUDINARY_API_KEY) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { avatarUrl: null },
+      select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
+    });
+    res.json(updated);
+  } catch (err) {
+    captureException(err);
+    console.error('Avatar delete error:', err);
+    res.status(500).json({ error: err.message || 'Avatar delete failed' });
+  }
+});
+
+router.put('/profile/password', passwordChangeValidation, validate, async (req, res) => {
+  const bcrypt = (await import('bcryptjs')).default;
+  const { currentPassword, newPassword } = req.body;
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const valid = await bcrypt.compare(currentPassword, user.password);
+  if (!valid) return res.status(400).json({ error: 'Current password is incorrect' });
+  const hashed = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: req.user.id },
+    data: { password: hashed },
+  });
+  res.json({ ok: true });
+});
 
 // My weekly availability (stored in UTC; returned in student's timezone)
 router.get('/availability', async (req, res) => {
@@ -219,7 +346,7 @@ router.post('/payments/:id/proof', uploadPaymentProof.single('proof'), async (re
   });
   if (!payment) return res.status(404).json({ error: 'Payment not found or already paid' });
 
-  const uploadResult = await uploadPaymentProofToCloudinary(file.buffer);
+  const uploadResult = await uploadPaymentProofToCloudinary(file.buffer, file.mimetype);
   await prisma.payment.update({
     where: { id: paymentId },
     data: { proofUrl: uploadResult.secure_url, proofUploadedAt: new Date() },

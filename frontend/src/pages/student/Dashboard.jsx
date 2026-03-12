@@ -3,10 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
+import StudentWeekView from '../../components/StudentWeekView';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime, shouldShowProfessorAbsent } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
 import { getLocalDateTime, convertMoroccoToLocal, convertTimeBetweenTimezones, getTimezoneByCountry, formatUtcInTimezone } from '../../utils/countries';
+import { getStudentCalendarStyle } from '../../utils/calendarStyles';
 import COUNTRIES from '../../utils/countries';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -88,7 +90,7 @@ function StudentPaymentsSection({ payments, onRefresh, t }) {
                   <label className="cursor-pointer">
                     <input
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      accept="image/jpeg,image/png,image/webp,image/jpg,application/pdf"
                       className="hidden"
                       onChange={(e) => handleUploadProof(p.id, e)}
                       disabled={uploadingId === p.id}
@@ -258,6 +260,19 @@ export default function StudentDashboard() {
   const { courses, payments, availability, loading, error, fetchCourses, fetchAvailability, fetchAll } = useStudentData();
   const [selectedDate, setSelectedDate] = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
+  const [viewMode, setViewMode] = useState('mois');
+  const [calendarStyle, setCalendarStyle] = useState(getStudentCalendarStyle);
+  const [weekStart, setWeekStart] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1));
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
+  useEffect(() => {
+    const handler = () => setCalendarStyle(getStudentCalendarStyle());
+    window.addEventListener('studentCalendarStyleChanged', handler);
+    return () => window.removeEventListener('studentCalendarStyleChanged', handler);
+  }, []);
   const [localTime, setLocalTime] = useState(() => user?.country ? getLocalDateTime(user.country, i18n.language) : null);
   const studentTz = user?.timezone || (user?.country ? getTimezoneByCountry(user.country) : null);
   const [availForm, setAvailForm] = useState({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' });
@@ -569,19 +584,47 @@ export default function StudentDashboard() {
         )}
       </section>
 
-      {/* Calendar */}
+      {/* Calendar / Planning */}
       <section>
-        <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-4">{t('dashboard.student.planning')}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <h2 className="font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.student.planning')}</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('mois')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition ${viewMode === 'mois' ? 'bg-pink-primary dark:bg-pink-400 text-white' : 'bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20'}`}
+            >
+              {t('calendar.month')}
+            </button>
+            <button
+              onClick={() => setViewMode('semaine')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition ${viewMode === 'semaine' ? 'bg-pink-primary dark:bg-pink-400 text-white' : 'bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20'}`}
+            >
+              {t('calendar.week')}
+            </button>
+          </div>
+        </div>
         <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden">
-          <Calendar
-            events={calendarEvents}
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-            onSelectEvent={handleSelectEvent}
-            viewMode="mois"
-            embedded
-            calendarStyle="default"
-          />
+          {viewMode === 'mois' ? (
+            <Calendar
+              events={calendarEvents}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              onSelectEvent={handleSelectEvent}
+              viewMode="mois"
+              embedded
+              calendarStyle={calendarStyle}
+            />
+          ) : (
+            <StudentWeekView
+              events={calendarEvents}
+              weekStart={weekStart}
+              onWeekChange={setWeekStart}
+              onSelectEvent={handleSelectEvent}
+              calendarStyle={calendarStyle}
+              dayNames={typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']}
+              t={t}
+            />
+          )}
         </div>
       </section>
 

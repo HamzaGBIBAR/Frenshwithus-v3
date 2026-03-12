@@ -1,8 +1,10 @@
 /**
- * Calendar card styles for professor planning.
- * Stored in localStorage as professorCalendarStyle.
+ * Calendar card styles for professor and student planning.
+ * Professors: professorCalendarStyle
+ * Students: studentCalendarStyle
  */
 export const CALENDAR_STYLE_KEY = 'professorCalendarStyle';
+export const STUDENT_CALENDAR_STYLE_KEY = 'studentCalendarStyle';
 
 export const CALENDAR_STYLES = [
   { id: 'default', key: 'default' },
@@ -26,6 +28,22 @@ export function setCalendarStyle(style) {
   try {
     localStorage.setItem(CALENDAR_STYLE_KEY, style);
     window.dispatchEvent(new CustomEvent('calendarStyleChanged', { detail: style }));
+  } catch (_) {}
+}
+
+export function getStudentCalendarStyle() {
+  try {
+    const s = localStorage.getItem(STUDENT_CALENDAR_STYLE_KEY);
+    return CALENDAR_STYLES.some((x) => x.id === s) ? s : 'default';
+  } catch {
+    return 'default';
+  }
+}
+
+export function setStudentCalendarStyle(style) {
+  try {
+    localStorage.setItem(STUDENT_CALENDAR_STYLE_KEY, style);
+    window.dispatchEvent(new CustomEvent('studentCalendarStyleChanged', { detail: style }));
   } catch (_) {}
 }
 
