@@ -14,6 +14,7 @@ export default function CountryPhoneInput({
   phoneNumber,
   onPhoneChange,
   placeholder = 'Numéro',
+  label,
   className = '',
   labelClassName = '',
   inputClassName = '',
@@ -43,12 +44,12 @@ export default function CountryPhoneInput({
 
   return (
     <div ref={ref} className={`relative ${className}`.trim()}>
-      <label className={labelClassName}>Numéro de téléphone</label>
+      {label != null && <label className={labelClassName}>{label}</label>}
       <div className="flex rounded-xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/95 dark:bg-[#252525] focus-within:ring-2 focus-within:ring-pink-primary dark:focus-within:ring-pink-400 focus-within:border-pink-primary transition-all">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 px-3 py-3 min-w-[120px] border-r border-white/20 dark:border-white/10 bg-white/5 dark:bg-black/20 text-left text-sm text-text dark:text-[#f5f5f5] hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
+          className="flex items-center gap-2 px-3 py-3 min-w-[120px] border-e border-white/20 dark:border-white/10 bg-white/5 dark:bg-black/20 text-start text-sm text-text dark:text-[#f5f5f5] hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
         >
           <span className="text-lg leading-none" aria-hidden>
             {FLAG_EMOJI(selected.code)}
@@ -85,7 +86,7 @@ export default function CountryPhoneInput({
                     setOpen(false);
                     setSearch('');
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-start text-sm transition-colors ${
                     c.code === countryCode
                       ? 'bg-pink-primary/20 dark:bg-pink-400/20 text-pink-primary dark:text-pink-400'
                       : 'text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/10'

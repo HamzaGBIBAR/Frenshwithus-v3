@@ -82,7 +82,7 @@ h1, h2, h3, h4, h5, h6,
   font-family: var(--font-heading);
 }
 
-/* Arabic: improved spacing and line-height */
+/* Arabic / RTL: improved spacing, line-height, and form text alignment */
 [lang="ar"],
 [dir="rtl"] {
   letter-spacing: 0.02em;
@@ -91,6 +91,18 @@ h1, h2, h3, h4, h5, h6,
 [lang="ar"] body,
 [dir="rtl"] body {
   line-height: 1.75;
+}
+
+/* RTL: form inputs and text align to the right (start of reading direction) */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
 }
 
 [lang="zh"] body {

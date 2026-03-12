@@ -106,14 +106,14 @@ export default function Reservation() {
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white/90 text-sm font-medium transition-all duration-300 mb-8 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}
           style={{ transition: 'opacity 0.5s ease, transform 0.5s ease' }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           {t('reservation.back')}
         </Link>
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-          {/* Left column – info & benefits */}
+          {/* Info & benefits – appears left in LTR, right in RTL (Arabic) */}
           <div
             className={`space-y-6 transition-all duration-700 ease-out ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ transitionDelay: '0.1s' }}
@@ -225,6 +225,7 @@ export default function Reservation() {
                   phoneNumber={form.phoneNumber}
                   onPhoneChange={(value) => setForm((f) => ({ ...f, phoneNumber: value }))}
                   placeholder={t('reservation.placeholderPhone')}
+                  label={t('reservation.phone')}
                   labelClassName={labelClass}
                   required
                 />

@@ -65,7 +65,7 @@ export default function LanguageSwitcher({ className = '' }) {
             key={lang.code}
             type="button"
             onClick={() => handleSelect(lang.code)}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors duration-200 ease-in-out ${
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-start text-sm transition-colors duration-200 ease-in-out ${
               lang.code === i18n.language
                 ? 'bg-pink-soft/60 dark:bg-pink-400/20 text-pink-dark dark:text-pink-400 font-medium'
                 : 'text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/10'

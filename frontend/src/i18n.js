@@ -31,8 +31,9 @@ i18n
   });
 
 const applyRtl = (lng) => {
-  document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
-  document.documentElement.lang = lng;
+  const isRtl = (lng || '').slice(0, 2) === 'ar';
+  document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+  document.documentElement.lang = isRtl ? 'ar' : (lng || 'en');
 };
 
 i18n.on('languageChanged', (lng) => {
