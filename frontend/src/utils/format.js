@@ -44,13 +44,27 @@ export function formatDateToAMPM(dateOrISO) {
 }
 
 /**
- * Get course start as Date. Uses startUtc (UTC) when set, else parses date+time as Morocco.
+ * Get course start as Date. Uses startUtc (UTC) when set, else parses date+time as Africa/Casablanca.
+ * Dynamically resolves the Morocco UTC offset (handles Ramadan UTC+0 vs standard UTC+1).
  */
 export function getCourseStartMorocco(course) {
   if (course?.startUtc) return new Date(course.startUtc);
   if (!course?.date || !course?.time) return null;
   const timePart = course.time.length <= 5 ? `${course.time}:00` : course.time;
-  return new Date(`${course.date}T${timePart}+01:00`);
+  const isoStr = `${course.date}T${timePart}`;
+  try {
+    // Determine Morocco's actual UTC offset for this date using Africa/Casablanca IANA timezone
+    const probe = new Date(`${isoStr}Z`); // treat as UTC to get a reference point
+    const moroccoStr = probe.toLocaleString('sv-SE', { timeZone: 'Africa/Casablanca' });
+    const moroccoProbeTime = new Date(`${moroccoStr.replace(' ', 'T')}Z`);
+    const offsetMs = probe.getTime() - moroccoProbeTime.getTime();
+    // Adjust: course local time - offset = UTC
+    const courseLocal = new Date(`${isoStr}Z`);
+    return new Date(courseLocal.getTime() + offsetMs);
+  } catch (_) {
+    // Fallback to standard Morocco offset UTC+1
+    return new Date(`${isoStr}+01:00`);
+  }
 }
 
 /** True only when we should show "professor absent": course has that reason AND we're past start + 15 min (Morocco). */

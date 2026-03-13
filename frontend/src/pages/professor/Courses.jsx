@@ -85,16 +85,18 @@ function getCourseStatus(course) {
   // Future course (Morocco time): always "upcoming", never "professor absent"
   if (now.getTime() < d.getTime()) return 'upcoming';
 
-  // Extra guard: compare raw date+time strings to protect against timezone offset issues (e.g. Ramadan UTC+0 vs standard UTC+1).
-  // If the course date+time is strictly in the future based on the browser clock, treat as upcoming.
+  // Extra guard using Africa/Casablanca IANA timezone (correctly handles Ramadan UTC+0 vs standard UTC+1).
+  // Prevents courses from appearing as professor_absent before their Morocco start time.
   if (course.date && course.time) {
-    const pad = (n) => String(n).padStart(2, '0');
-    const localDateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-    const localTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    const courseTimeShort = course.time.slice(0, 5);
-    if (course.date > localDateStr || (course.date === localDateStr && courseTimeShort > localTimeStr)) {
-      return 'upcoming';
-    }
+    try {
+      const moroccoNow = now.toLocaleString('sv-SE', { timeZone: 'Africa/Casablanca' });
+      const moroccoDateStr = moroccoNow.slice(0, 10); // "2026-03-13"
+      const moroccoTimeStr = moroccoNow.slice(11, 16); // "23:30"
+      const courseTimeShort = course.time.slice(0, 5);
+      if (course.date > moroccoDateStr || (course.date === moroccoDateStr && courseTimeShort > moroccoTimeStr)) {
+        return 'upcoming';
+      }
+    } catch (_) { /* Intl not available, fall through */ }
   }
 
   if (course.sessionEnded) return 'completed';

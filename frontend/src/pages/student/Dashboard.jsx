@@ -168,12 +168,17 @@ function useStudentData() {
 }
 
 function isCourseDefinitelyFuture(c, now) {
-  // String-based comparison as extra guard against timezone offset bugs (e.g. Ramadan UTC+0 vs UTC+1)
-  const pad = (n) => String(n).padStart(2, '0');
-  const localDateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  const localTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  const courseTimeShort = (c.time || '').slice(0, 5);
-  return c.date > localDateStr || (c.date === localDateStr && courseTimeShort > localTimeStr);
+  // Use Africa/Casablanca IANA timezone (handles Ramadan UTC+0 vs standard UTC+1 correctly)
+  if (!c?.date || !c?.time) return false;
+  try {
+    const moroccoNow = now.toLocaleString('sv-SE', { timeZone: 'Africa/Casablanca' });
+    const moroccoDateStr = moroccoNow.slice(0, 10);
+    const moroccoTimeStr = moroccoNow.slice(11, 16);
+    const courseTimeShort = c.time.slice(0, 5);
+    return c.date > moroccoDateStr || (c.date === moroccoDateStr && courseTimeShort > moroccoTimeStr);
+  } catch (_) {
+    return false;
+  }
 }
 
 function categorizeCourses(courses) {
