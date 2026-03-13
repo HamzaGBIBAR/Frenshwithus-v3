@@ -463,22 +463,17 @@ textarea::placeholder {
 
 /* FrenchWordBubble – floating mascot, random French word discovery */
 @keyframes frenchWordBubbleIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.7) translateY(10px);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.05) translateY(-2px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  0%   { opacity: 0; transform: scale(0) rotate(-15deg); }
+  40%  { opacity: 1; transform: scale(1.18) rotate(6deg); }
+  60%  { transform: scale(0.92) rotate(-3deg); }
+  75%  { transform: scale(1.07) rotate(2deg); }
+  88%  { transform: scale(0.97) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-.french-word-bubble svg {
-  animation: frenchWordBubbleFloat 3s ease-in-out infinite;
+.french-word-bubble img {
+  animation: frenchWordBubbleFloat 3.5s ease-in-out infinite;
+  transform-origin: center bottom;
 }
 
 .french-word-bubble-pulse {
@@ -487,13 +482,16 @@ textarea::placeholder {
 }
 
 @keyframes frenchWordBubbleFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  0%   { transform: translateY(0) rotate(0deg); }
+  25%  { transform: translateY(-4px) rotate(1.5deg); }
+  50%  { transform: translateY(-6px) rotate(0deg); }
+  75%  { transform: translateY(-3px) rotate(-1.5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
 }
 
 @keyframes frenchWordBubblePulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.08); }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.12); }
 }
 
 /* Light mode: image normale, ombre rose douce */
@@ -508,18 +506,13 @@ textarea::placeholder {
 }
 
 .french-word-modal {
-  animation: frenchWordModalIn 0.3s ease-out;
+  animation: frenchWordModalIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes frenchWordModalIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  0%   { opacity: 0; transform: scale(0.85) translateY(20px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
