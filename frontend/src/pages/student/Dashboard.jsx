@@ -167,6 +167,15 @@ function useStudentData() {
   return { courses, payments, availability, loading, error, fetchCourses, fetchAvailability, fetchAll };
 }
 
+function isCourseDefinitelyFuture(c, now) {
+  // String-based comparison as extra guard against timezone offset bugs (e.g. Ramadan UTC+0 vs UTC+1)
+  const pad = (n) => String(n).padStart(2, '0');
+  const localDateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const localTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const courseTimeShort = (c.time || '').slice(0, 5);
+  return c.date > localDateStr || (c.date === localDateStr && courseTimeShort > localTimeStr);
+}
+
 function categorizeCourses(courses) {
   const now = new Date();
   const upcoming = [];
@@ -178,7 +187,8 @@ function categorizeCourses(courses) {
     const d = new Date(`${c.date}T${c.time}`);
     if (isNaN(d.getTime())) continue;
 
-    const timeReached = now >= d;
+    // Use string comparison as extra guard so future courses are never sent to past
+    const timeReached = now >= d && !isCourseDefinitelyFuture(c, now);
     const withinWindow = now - d < TWO_HOURS_MS;
     const professorAbsentPast = timeReached && !c.isStarted && c.endReason === 'professor_absent';
     const ended = c.sessionEnded || professorAbsentPast;

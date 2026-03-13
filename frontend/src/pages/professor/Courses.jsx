@@ -85,9 +85,21 @@ function getCourseStatus(course) {
   // Future course (Morocco time): always "upcoming", never "professor absent"
   if (now.getTime() < d.getTime()) return 'upcoming';
 
+  // Extra guard: compare raw date+time strings to protect against timezone offset issues (e.g. Ramadan UTC+0 vs standard UTC+1).
+  // If the course date+time is strictly in the future based on the browser clock, treat as upcoming.
+  if (course.date && course.time) {
+    const pad = (n) => String(n).padStart(2, '0');
+    const localDateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const localTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const courseTimeShort = course.time.slice(0, 5);
+    if (course.date > localDateStr || (course.date === localDateStr && courseTimeShort > localTimeStr)) {
+      return 'upcoming';
+    }
+  }
+
   if (course.sessionEnded) return 'completed';
   if (course.isStarted && now.getTime() - d.getTime() < twoHours) return 'live';
-  // Professor did not start: show "professor absent" ONLY after 15 min past course start (Morocco time)
+  // Professor did not start: show "professor absent" ONLY after 15 min past course start
   if (!course.isStarted) {
     if (now.getTime() < courseStartPlus15) return 'upcoming';
     return 'professor_absent';
