@@ -36,6 +36,7 @@ export default function StudentLayout() {
           <MobileMenuButton onClick={() => setSidebarOpen(true)} />
           <span className="font-semibold text-text dark:text-[#f5f5f5]">French With Us</span>
           <div className="ml-auto flex items-center gap-2">
+            <NotificationBell />
             <button
               type="button"
               onClick={() => setProfileOpen(true)}
@@ -50,10 +51,10 @@ export default function StudentLayout() {
                 </div>
               )}
             </button>
-            <NotificationBell />
           </div>
         </header>
         <div className="hidden md:flex sticky top-0 z-20 items-center justify-end gap-3 px-4 sm:px-6 py-3 bg-transparent border-b border-pink-soft/30 dark:border-white/5">
+          <NotificationBell />
           <button
             type="button"
             onClick={() => setProfileOpen(true)}
@@ -68,7 +69,6 @@ export default function StudentLayout() {
               </div>
             )}
           </button>
-          <NotificationBell />
         </div>
         <main className="flex-1 p-4 sm:p-6 overflow-auto bg-white/50 dark:bg-[#111111]/80 transition-colors duration-500 scroll-smooth">
         <Routes>
