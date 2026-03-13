@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getRandomFrenchWord, getTranslation } from '../data/frenchWords';
 
-const MIN_DELAY_MS = 8000;   // Min 8s before first appearance
-const MAX_DELAY_MS = 18000;  // Max 18s
-const VISIBLE_DURATION_MS = 12000; // Stays visible 12s
+const MIN_DELAY_MS = 2000;   // Min 2s before first appearance
+const MAX_DELAY_MS = 6000;   // Max 6s
+const VISIBLE_DURATION_MS = 15000; // Stays visible 15s
 const POSITIONS = [
   { bottom: '12%', left: '6%' },
   { bottom: '18%', right: '5%' },
@@ -20,7 +20,11 @@ export default function FrenchWordBubble() {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentWord, setCurrentWord] = useState(null);
   const [position, setPosition] = useState(POSITIONS[0]);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const showBubble = useCallback(() => {
     setCurrentWord(getRandomFrenchWord());
@@ -33,16 +37,6 @@ export default function FrenchWordBubble() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduceMotion(mq.matches);
-    mq.addEventListener('change', () => setReduceMotion(mq.matches));
-    return () => mq.removeEventListener('change', () => {});
-  }, []);
-
-  useEffect(() => {
-    if (reduceMotion) return;
-
     let showTimer;
     let hideTimer;
 
@@ -62,7 +56,7 @@ export default function FrenchWordBubble() {
       if (showTimer) clearTimeout(showTimer);
       if (hideTimer) clearTimeout(hideTimer);
     };
-  }, [reduceMotion, showBubble, hideBubble]);
+  }, [showBubble, hideBubble]);
 
   const handleClick = () => {
     if (currentWord) {
@@ -89,7 +83,7 @@ export default function FrenchWordBubble() {
     return () => document.removeEventListener('keydown', onEscape);
   }, [modalOpen, handleCloseModal]);
 
-  if (reduceMotion) return null;
+  if (!mounted) return null;
 
   return (
     <>
@@ -98,7 +92,7 @@ export default function FrenchWordBubble() {
         <button
           type="button"
           onClick={handleClick}
-          className="french-word-bubble fixed z-[9] w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer"
+          className="french-word-bubble fixed z-[25] w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer"
           style={{
             ...position,
             animation: 'frenchWordBubbleIn 0.5s ease-out',
