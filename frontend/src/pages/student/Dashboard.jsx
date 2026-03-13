@@ -210,22 +210,33 @@ function categorizeCourses(courses) {
     const d = new Date(`${c.date}T${c.time}`);
     if (isNaN(d.getTime())) continue;
 
-    // Use Morocco timezone string comparison as primary guard
+    // IMPORTANT: If professor started the course, NEVER consider it as professor_absent
+    // The professor showed up, even if late
+    if (c.isStarted) {
+      if (c.sessionEnded) {
+        past.push(c);
+      } else if (now - d < TWO_HOURS_MS) {
+        live.push(c);
+      } else {
+        past.push(c);
+      }
+      continue;
+    }
+
+    // Professor has NOT started the course
     const isFuture = isCourseDefinitelyFuture(c, moroccoNow);
     const inGracePeriod = isWithin15MinGracePeriod(c, moroccoNow);
-    
-    // timeReached: course time has arrived and we're past it
     const timeReached = !isFuture && !inGracePeriod;
     const withinWindow = now - d < TWO_HOURS_MS;
     
-    // Only consider professor_absent if backend has marked it
-    const professorAbsentMarked = (c.endReason === 'professor_absent' || c.absenceReason === 'professor_absent');
-    const professorAbsentPast = timeReached && !c.isStarted && professorAbsentMarked;
+    // Only mark as professor_absent if endReason explicitly says so
+    // (absenceReason in DB may be stale)
+    const professorAbsentPast = timeReached && c.endReason === 'professor_absent';
     const ended = c.sessionEnded || professorAbsentPast;
 
     if (isFuture) {
       upcoming.push(c);
-    } else if (inGracePeriod && !c.isStarted && !c.sessionEnded) {
+    } else if (inGracePeriod && !c.sessionEnded) {
       // Within 15 min grace period - show as live (can join)
       live.push(c);
     } else if (!ended && withinWindow) {

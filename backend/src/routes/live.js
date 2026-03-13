@@ -85,9 +85,11 @@ router.post('/live/session/start', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Ce cours est déjà terminé. Vous ne pouvez pas le redémarrer.' });
   }
 
+  // Mark course as started and clear any absence reason
+  // (professor may have been marked absent by the cron job before arriving)
   await prisma.course.update({
     where: { id: courseId },
-    data: { isStarted: true },
+    data: { isStarted: true, absenceReason: null },
   });
 
   const session = await prisma.liveSession.create({

@@ -295,9 +295,11 @@ router.put('/courses/:id/start', async (req, res) => {
     where: { id: req.params.id, professorId: req.user.id },
   });
   if (!course) return res.status(404).json({ error: 'Course not found' });
+  // Mark course as started and clear any absence reason
+  // (professor may have been marked absent by the cron job before arriving)
   const updated = await prisma.course.update({
     where: { id: course.id },
-    data: { isStarted: true },
+    data: { isStarted: true, absenceReason: null },
   });
   res.json(updated);
 });

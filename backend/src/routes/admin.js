@@ -817,7 +817,7 @@ router.get('/analytics/teachers', async (req, res) => {
       name: true,
       availability: { select: { id: true } },
       coursesAsProfessor: {
-        select: { id: true, date: true, time: true, absenceReason: true },
+        select: { id: true, date: true, time: true, absenceReason: true, isStarted: true },
       },
     },
   });
@@ -847,7 +847,9 @@ router.get('/analytics/teachers', async (req, res) => {
       // Use proper Morocco timezone conversion (handles Ramadan UTC+0 vs standard UTC+1)
       const courseStart = c.startUtc ? new Date(c.startUtc) : moroccoDateTimeToUtc(c.date, c.time);
       const endReason = endReasonByCourse[c.id] || c.absenceReason;
-      if (courseStart && courseStart <= now && endReason === 'professor_absent') {
+      // Only count as absent if: professor did NOT start the course AND endReason is professor_absent
+      // If professor started (even late), they showed up - don't count as absent
+      if (!c.isStarted && courseStart && courseStart <= now && endReason === 'professor_absent') {
         professorIdsAbsent.add(p.id);
       }
       if (c.date >= weekStart) {

@@ -80,6 +80,14 @@ function getCourseStatus(course) {
   if (!d || isNaN(d.getTime())) return 'upcoming';
   const twoHours = 2 * 60 * 60 * 1000;
 
+  // IMPORTANT: If professor started the course, NEVER show professor_absent
+  // This handles the case where the cron job marked absence before the professor arrived
+  if (course.isStarted) {
+    if (course.sessionEnded) return 'completed';
+    if (now.getTime() - d.getTime() < twoHours) return 'live';
+    return 'completed'; // Course started but window passed
+  }
+
   // Use Africa/Casablanca string comparison as the PRIMARY guard (handles Ramadan correctly)
   if (course.date && course.time) {
     try {
@@ -93,50 +101,37 @@ function getCourseStatus(course) {
         return 'upcoming';
       }
       
-      // Course has ended
-      if (course.sessionEnded) return 'completed';
+      // Professor did not start yet (isStarted = false at this point)
+      // Calculate minutes elapsed since course start in Morocco timezone
+      const [ch, cm] = courseTimeShort.split(':').map(Number);
+      const [nh, nm] = moroccoTimeStr.split(':').map(Number);
+      const courseMinutes = ch * 60 + cm;
+      const nowMinutes = nh * 60 + nm;
       
-      // Course is live (started by professor)
-      if (course.isStarted && now.getTime() - d.getTime() < twoHours) return 'live';
-      
-      // Professor did not start yet
-      if (!course.isStarted) {
-        // Calculate minutes elapsed since course start in Morocco timezone
-        const [ch, cm] = courseTimeShort.split(':').map(Number);
-        const [nh, nm] = moroccoTimeStr.split(':').map(Number);
-        const courseMinutes = ch * 60 + cm;
-        const nowMinutes = nh * 60 + nm;
-        
-        // Same day: check if 15 minutes have passed
-        if (course.date === moroccoDateStr) {
-          if (nowMinutes < courseMinutes + 15) return 'upcoming';
-          // Only show professor_absent if the backend has marked it
-          if (course.absenceReason === 'professor_absent' || course.endReason === 'professor_absent') {
-            return 'professor_absent';
-          }
-          return 'upcoming'; // Still within grace period or backend hasn't marked yet
-        }
-        // Course date is in the past (different day) - should be professor_absent if not started
-        if (course.absenceReason === 'professor_absent' || course.endReason === 'professor_absent') {
+      // Same day: check if 15 minutes have passed
+      if (course.date === moroccoDateStr) {
+        if (nowMinutes < courseMinutes + 15) return 'upcoming';
+        // Only show professor_absent if endReason specifically says so
+        // (absenceReason in DB may be stale if professor eventually started)
+        if (course.endReason === 'professor_absent') {
           return 'professor_absent';
         }
-        return 'completed';
+        return 'upcoming';
       }
-      
-      return 'upcoming';
+      // Course date is in the past (different day) - professor_absent if not started
+      if (course.endReason === 'professor_absent') {
+        return 'professor_absent';
+      }
+      return 'completed';
     } catch (_) { /* Intl not available, fall through to UTC-based logic */ }
   }
 
   // Fallback: UTC-based logic (less reliable during Ramadan)
   if (now.getTime() < d.getTime()) return 'upcoming';
   if (course.sessionEnded) return 'completed';
-  if (course.isStarted && now.getTime() - d.getTime() < twoHours) return 'live';
-  if (!course.isStarted) {
-    if (now.getTime() < d.getTime() + 15 * 60 * 1000) return 'upcoming';
-    if (course.absenceReason === 'professor_absent' || course.endReason === 'professor_absent') {
-      return 'professor_absent';
-    }
-    return 'upcoming';
+  if (now.getTime() < d.getTime() + 15 * 60 * 1000) return 'upcoming';
+  if (course.endReason === 'professor_absent') {
+    return 'professor_absent';
   }
   return 'upcoming';
 }

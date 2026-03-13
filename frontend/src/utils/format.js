@@ -67,9 +67,17 @@ export function getCourseStartMorocco(course) {
   }
 }
 
-/** True only when we should show "professor absent": course has that reason AND we're past start + 15 min (Morocco). */
+/** True only when we should show "professor absent": 
+ * - Professor did NOT start the course (isStarted = false)
+ * - endReason is explicitly 'professor_absent'
+ * - We're past start + 15 min (Morocco)
+ */
 export function shouldShowProfessorAbsent(course) {
-  if (course?.endReason !== 'professor_absent' && course?.absenceReason !== 'professor_absent') return false;
+  // If professor started the course, NEVER show professor_absent
+  if (course?.isStarted) return false;
+  
+  // Only check endReason (not absenceReason which may be stale)
+  if (course?.endReason !== 'professor_absent') return false;
   
   // Use Morocco timezone string comparison for accuracy during Ramadan
   if (course?.date && course?.time) {
