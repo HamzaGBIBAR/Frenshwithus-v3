@@ -70,10 +70,6 @@ export default function FrenchWordBubble() {
     setCurrentWord(null);
   }, []);
 
-  const handleNextWord = () => {
-    setCurrentWord(getRandomFrenchWord());
-  };
-
   useEffect(() => {
     if (!modalOpen) return;
     const onEscape = (e) => {
@@ -138,22 +134,13 @@ export default function FrenchWordBubble() {
               <p className="text-lg text-text/80 dark:text-[#f5f5f5]/80 mb-6">
                 {getTranslation(currentWord, i18n.language)}
               </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleNextWord}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition-colors"
-                >
-                  {t('frenchWord.another')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2.5 rounded-xl border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 font-medium hover:bg-pink-soft/30 dark:hover:bg-white/10 transition-colors"
-                >
-                  {t('frenchWord.close')}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="w-full px-4 py-2.5 rounded-xl border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 font-medium hover:bg-pink-soft/30 dark:hover:bg-white/10 transition-colors"
+              >
+                {t('frenchWord.close')}
+              </button>
             </div>
           </div>
         </div>
