@@ -88,7 +88,7 @@ export default function FrenchWordBubble() {
         <button
           type="button"
           onClick={handleClick}
-          className="french-word-bubble fixed z-[25] w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer overflow-hidden p-1"
+          className="french-word-bubble fixed z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer overflow-hidden p-1"
           style={{
             ...position,
             animation: 'frenchWordBubbleIn 0.5s ease-out',
