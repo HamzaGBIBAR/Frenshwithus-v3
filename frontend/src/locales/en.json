@@ -287,6 +287,12 @@
     "suggested": "Suggested questions:",
     "error": "Sorry, I couldn't respond. Email us at frenchwithus.noreply@gmail.com for a personalized reply."
   },
+  "frenchWord": {
+    "badge": "French tip",
+    "discover": "Discover a French word",
+    "another": "Another word",
+    "close": "Close"
+  },
   "reservationChoice": {
     "title": "Who is this reservation for?",
     "subtitle": "Choose an option to access the free discovery session booking form.",

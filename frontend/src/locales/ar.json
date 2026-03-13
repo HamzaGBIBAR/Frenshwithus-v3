@@ -287,6 +287,12 @@
     "suggested": "أسئلة مقترحة:",
     "error": "عذراً، لم أستطع الرد. راسلنا على frenchwithus.noreply@gmail.com للحصول على رد شخصي."
   },
+  "frenchWord": {
+    "badge": "كلمة فرنسية",
+    "discover": "اكتشف كلمة فرنسية",
+    "another": "كلمة أخرى",
+    "close": "إغلاق"
+  },
   "reservationChoice": {
     "title": "لمن تريد الحجز؟",
     "subtitle": "اختر خياراً للوصول إلى نموذج حجز الحصة التجريبية المجانية.",

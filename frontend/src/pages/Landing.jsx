@@ -7,6 +7,7 @@ import HeroMotionWrapper from '../components/HeroMotionWrapper';
 import PlanningSection from '../components/PlanningSection';
 import ContactSection from '../components/ContactSection';
 import ScrollCharacter from '../components/ScrollCharacter';
+import FrenchWordBubble from '../components/FrenchWordBubble';
 import Pricing from '../components/Pricing';
 import ScrollReveal from '../components/ScrollReveal';
 import TestimonialsCarousel from '../components/TestimonialsCarousel';
@@ -91,6 +92,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-transparent transition-colors duration-500 relative overflow-x-hidden">
       <ScrollCharacter />
+      <FrenchWordBubble />
       <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-500">
         <div className="w-full px-3 xs:px-5 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-wrap justify-between items-center gap-x-2 gap-y-2 min-w-0">
           {/* Logo: can shrink on very small screens so nav has room */}

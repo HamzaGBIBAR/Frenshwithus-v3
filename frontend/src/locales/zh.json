@@ -287,6 +287,12 @@
     "suggested": "建议问题：",
     "error": "抱歉，无法回复。请发邮件至 frenchwithus.noreply@gmail.com 获取个性化回复。"
   },
+  "frenchWord": {
+    "badge": "法语小贴士",
+    "discover": "发现一个法语词汇",
+    "another": "换一个词",
+    "close": "关闭"
+  },
   "reservationChoice": {
     "title": "您想为谁预约？",
     "subtitle": "选择一个选项，进入免费体验课预约表。",

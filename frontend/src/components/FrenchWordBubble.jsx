@@ -1,0 +1,169 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getRandomFrenchWord, getTranslation } from '../data/frenchWords';
+
+const MIN_DELAY_MS = 8000;   // Min 8s before first appearance
+const MAX_DELAY_MS = 18000;  // Max 18s
+const VISIBLE_DURATION_MS = 12000; // Stays visible 12s
+const POSITIONS = [
+  { bottom: '12%', left: '6%' },
+  { bottom: '18%', right: '5%' },
+  { bottom: '25%', left: '8%' },
+  { bottom: '15%', right: '10%' },
+  { bottom: '22%', left: '4%' },
+  { bottom: '10%', right: '7%' },
+];
+
+export default function FrenchWordBubble() {
+  const { t, i18n } = useTranslation();
+  const [visible, setVisible] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentWord, setCurrentWord] = useState(null);
+  const [position, setPosition] = useState(POSITIONS[0]);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  const showBubble = useCallback(() => {
+    setCurrentWord(getRandomFrenchWord());
+    setPosition(POSITIONS[Math.floor(Math.random() * POSITIONS.length)]);
+    setVisible(true);
+  }, []);
+
+  const hideBubble = useCallback(() => {
+    setVisible(false);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(mq.matches);
+    mq.addEventListener('change', () => setReduceMotion(mq.matches));
+    return () => mq.removeEventListener('change', () => {});
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    let showTimer;
+    let hideTimer;
+
+    const scheduleNext = () => {
+      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
+      showTimer = setTimeout(() => {
+        showBubble();
+        hideTimer = setTimeout(() => {
+          hideBubble();
+          scheduleNext();
+        }, VISIBLE_DURATION_MS);
+      }, delay);
+    };
+
+    scheduleNext();
+    return () => {
+      if (showTimer) clearTimeout(showTimer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
+  }, [reduceMotion, showBubble, hideBubble]);
+
+  const handleClick = () => {
+    if (currentWord) {
+      setModalOpen(true);
+      setVisible(false);
+    }
+  };
+
+  const handleCloseModal = useCallback(() => {
+    setModalOpen(false);
+    setCurrentWord(null);
+  }, []);
+
+  const handleNextWord = () => {
+    setCurrentWord(getRandomFrenchWord());
+  };
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onEscape = (e) => {
+      if (e.key === 'Escape') handleCloseModal();
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [modalOpen, handleCloseModal]);
+
+  if (reduceMotion) return null;
+
+  return (
+    <>
+      {/* Floating bubble – appears randomly */}
+      {visible && !modalOpen && (
+        <button
+          type="button"
+          onClick={handleClick}
+          className="french-word-bubble fixed z-[9] w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer"
+          style={{
+            ...position,
+            animation: 'frenchWordBubbleIn 0.5s ease-out',
+          }}
+          aria-label={t('frenchWord.discover')}
+        >
+          <svg viewBox="0 0 100 100" className="w-10 h-10 sm:w-12 sm:h-12 text-pink-primary dark:text-pink-400" fill="none">
+            <circle cx="50" cy="50" r="38" fill="#FADADD" stroke="#E75480" strokeWidth="1.5" className="french-word-bubble-face" />
+            <ellipse cx="50" cy="32" rx="28" ry="8" fill="#C2185B" className="dark:fill-pink-600" />
+            <ellipse cx="50" cy="28" rx="25" ry="6" fill="#E75480" className="dark:fill-pink-500" />
+            <circle cx="50" cy="26" r="5" fill="#F4B400" opacity="0.9" />
+            <ellipse cx="42" cy="52" rx="3" ry="4" fill="#1F1F1F" className="french-word-bubble-eyes" />
+            <ellipse cx="58" cy="52" rx="3" ry="4" fill="#1F1F1F" className="french-word-bubble-eyes" />
+            <path d="M42 62 Q50 68 58 62" stroke="#C2185B" strokeWidth="1.5" fill="none" strokeLinecap="round" className="french-word-bubble-smile" />
+          </svg>
+          <span className="french-word-bubble-pulse absolute inset-0 rounded-2xl border-2 border-pink-primary/30 dark:border-pink-400/30" aria-hidden="true" />
+        </button>
+      )}
+
+      {/* Modal – French word + translation */}
+      {modalOpen && currentWord && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 dark:bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={handleCloseModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="french-word-title"
+        >
+          <div
+            className="french-word-modal relative w-full max-w-md rounded-2xl shadow-2xl border border-pink-soft/50 dark:border-white/10 bg-white dark:bg-[#1a1a1a] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-primary via-pink-dark to-pink-primary dark:from-pink-400 dark:via-pink-500 dark:to-pink-400" />
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-0.5 rounded-md bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-400 text-xs font-medium uppercase tracking-wider">
+                  {t('frenchWord.badge')}
+                </span>
+              </div>
+              <h2 id="french-word-title" className="text-3xl sm:text-4xl font-bold text-pink-primary dark:text-pink-400 mb-2 font-heading" dir="ltr">
+                {currentWord.french}
+              </h2>
+              <p className="text-lg text-text/80 dark:text-[#f5f5f5]/80 mb-6">
+                {getTranslation(currentWord, i18n.language)}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleNextWord}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition-colors"
+                >
+                  {t('frenchWord.another')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2.5 rounded-xl border-2 border-pink-soft dark:border-white/20 text-pink-dark dark:text-pink-400 font-medium hover:bg-pink-soft/30 dark:hover:bg-white/10 transition-colors"
+                >
+                  {t('frenchWord.close')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

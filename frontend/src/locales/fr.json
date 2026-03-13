@@ -287,6 +287,12 @@
     "suggested": "Questions suggérées :",
     "error": "Désolé, je n'ai pas pu répondre. Écrivez-nous à frenchwithus.noreply@gmail.com pour une réponse personnalisée."
   },
+  "frenchWord": {
+    "badge": "Mot français",
+    "discover": "Découvrir un mot français",
+    "another": "Un autre mot",
+    "close": "Fermer"
+  },
   "reservationChoice": {
     "title": "Pour qui souhaitez-vous réserver ?",
     "subtitle": "Choisissez une option pour accéder au formulaire de réservation de votre séance découverte gratuite.",
