@@ -844,9 +844,10 @@ router.get('/analytics/teachers', async (req, res) => {
 
   for (const p of professors) {
     for (const c of p.coursesAsProfessor) {
-      const courseStart = new Date(`${c.date}T${c.time}`);
+      // Use proper Morocco timezone conversion (handles Ramadan UTC+0 vs standard UTC+1)
+      const courseStart = c.startUtc ? new Date(c.startUtc) : moroccoDateTimeToUtc(c.date, c.time);
       const endReason = endReasonByCourse[c.id] || c.absenceReason;
-      if (courseStart <= now && endReason === 'professor_absent') {
+      if (courseStart && courseStart <= now && endReason === 'professor_absent') {
         professorIdsAbsent.add(p.id);
       }
       if (c.date >= weekStart) {

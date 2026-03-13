@@ -70,6 +70,36 @@ export function getCourseStartMorocco(course) {
 /** True only when we should show "professor absent": course has that reason AND we're past start + 15 min (Morocco). */
 export function shouldShowProfessorAbsent(course) {
   if (course?.endReason !== 'professor_absent' && course?.absenceReason !== 'professor_absent') return false;
+  
+  // Use Morocco timezone string comparison for accuracy during Ramadan
+  if (course?.date && course?.time) {
+    try {
+      const now = new Date();
+      const moroccoNow = now.toLocaleString('sv-SE', { timeZone: 'Africa/Casablanca' });
+      const moroccoDateStr = moroccoNow.slice(0, 10);
+      const moroccoTimeStr = moroccoNow.slice(11, 16);
+      const courseTimeShort = course.time.slice(0, 5);
+      
+      // If course is still in the future, don't show professor absent
+      if (course.date > moroccoDateStr || (course.date === moroccoDateStr && courseTimeShort > moroccoTimeStr)) {
+        return false;
+      }
+      
+      // Check if 15 minutes have passed since course start
+      if (course.date === moroccoDateStr) {
+        const [ch, cm] = courseTimeShort.split(':').map(Number);
+        const [nh, nm] = moroccoTimeStr.split(':').map(Number);
+        const courseMinutes = ch * 60 + cm;
+        const nowMinutes = nh * 60 + nm;
+        return nowMinutes >= courseMinutes + 15;
+      }
+      
+      // Course date is in the past - professor absent should show
+      return true;
+    } catch (_) { /* Fall through to UTC-based check */ }
+  }
+  
+  // Fallback: UTC-based check
   const d = getCourseStartMorocco(course);
   if (!d || isNaN(d.getTime())) return false;
   const now = new Date();

@@ -167,22 +167,40 @@ function useStudentData() {
   return { courses, payments, availability, loading, error, fetchCourses, fetchAvailability, fetchAll };
 }
 
-function isCourseDefinitelyFuture(c, now) {
-  // Use Africa/Casablanca IANA timezone (handles Ramadan UTC+0 vs standard UTC+1 correctly)
-  if (!c?.date || !c?.time) return false;
+function getMoroccoTime(now) {
   try {
     const moroccoNow = now.toLocaleString('sv-SE', { timeZone: 'Africa/Casablanca' });
-    const moroccoDateStr = moroccoNow.slice(0, 10);
-    const moroccoTimeStr = moroccoNow.slice(11, 16);
-    const courseTimeShort = c.time.slice(0, 5);
-    return c.date > moroccoDateStr || (c.date === moroccoDateStr && courseTimeShort > moroccoTimeStr);
+    return {
+      dateStr: moroccoNow.slice(0, 10),
+      timeStr: moroccoNow.slice(11, 16),
+    };
   } catch (_) {
-    return false;
+    return null;
   }
+}
+
+function isCourseDefinitelyFuture(c, moroccoNow) {
+  // Use Africa/Casablanca IANA timezone (handles Ramadan UTC+0 vs standard UTC+1 correctly)
+  if (!c?.date || !c?.time || !moroccoNow) return false;
+  const courseTimeShort = c.time.slice(0, 5);
+  return c.date > moroccoNow.dateStr || (c.date === moroccoNow.dateStr && courseTimeShort > moroccoNow.timeStr);
+}
+
+function isWithin15MinGracePeriod(c, moroccoNow) {
+  // Returns true if course started less than 15 minutes ago in Morocco time
+  if (!c?.date || !c?.time || !moroccoNow) return false;
+  if (c.date !== moroccoNow.dateStr) return false; // Different day
+  const courseTimeShort = c.time.slice(0, 5);
+  const [ch, cm] = courseTimeShort.split(':').map(Number);
+  const [nh, nm] = moroccoNow.timeStr.split(':').map(Number);
+  const courseMinutes = ch * 60 + cm;
+  const nowMinutes = nh * 60 + nm;
+  return nowMinutes < courseMinutes + 15;
 }
 
 function categorizeCourses(courses) {
   const now = new Date();
+  const moroccoNow = getMoroccoTime(now);
   const upcoming = [];
   const live = [];
   const past = [];
@@ -192,14 +210,24 @@ function categorizeCourses(courses) {
     const d = new Date(`${c.date}T${c.time}`);
     if (isNaN(d.getTime())) continue;
 
-    // Use string comparison as extra guard so future courses are never sent to past
-    const timeReached = now >= d && !isCourseDefinitelyFuture(c, now);
+    // Use Morocco timezone string comparison as primary guard
+    const isFuture = isCourseDefinitelyFuture(c, moroccoNow);
+    const inGracePeriod = isWithin15MinGracePeriod(c, moroccoNow);
+    
+    // timeReached: course time has arrived and we're past it
+    const timeReached = !isFuture && !inGracePeriod;
     const withinWindow = now - d < TWO_HOURS_MS;
-    const professorAbsentPast = timeReached && !c.isStarted && c.endReason === 'professor_absent';
+    
+    // Only consider professor_absent if backend has marked it
+    const professorAbsentMarked = (c.endReason === 'professor_absent' || c.absenceReason === 'professor_absent');
+    const professorAbsentPast = timeReached && !c.isStarted && professorAbsentMarked;
     const ended = c.sessionEnded || professorAbsentPast;
 
-    if (!timeReached) {
+    if (isFuture) {
       upcoming.push(c);
+    } else if (inGracePeriod && !c.isStarted && !c.sessionEnded) {
+      // Within 15 min grace period - show as live (can join)
+      live.push(c);
     } else if (!ended && withinWindow) {
       live.push(c);
     } else {
