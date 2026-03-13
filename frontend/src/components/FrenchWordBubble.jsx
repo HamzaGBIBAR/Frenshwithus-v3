@@ -88,22 +88,19 @@ export default function FrenchWordBubble() {
         <button
           type="button"
           onClick={handleClick}
-          className="french-word-bubble fixed z-[25] w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer"
+          className="french-word-bubble fixed z-[25] w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shadow-lg border-2 border-pink-soft/60 dark:border-pink-500/40 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md hover:scale-110 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-[#111] cursor-pointer overflow-hidden p-1"
           style={{
             ...position,
             animation: 'frenchWordBubbleIn 0.5s ease-out',
           }}
           aria-label={t('frenchWord.discover')}
         >
-          <svg viewBox="0 0 100 100" className="w-10 h-10 sm:w-12 sm:h-12 text-pink-primary dark:text-pink-400" fill="none">
-            <circle cx="50" cy="50" r="38" fill="#FADADD" stroke="#E75480" strokeWidth="1.5" className="french-word-bubble-face" />
-            <ellipse cx="50" cy="32" rx="28" ry="8" fill="#C2185B" className="dark:fill-pink-600" />
-            <ellipse cx="50" cy="28" rx="25" ry="6" fill="#E75480" className="dark:fill-pink-500" />
-            <circle cx="50" cy="26" r="5" fill="#F4B400" opacity="0.9" />
-            <ellipse cx="42" cy="52" rx="3" ry="4" fill="#1F1F1F" className="french-word-bubble-eyes" />
-            <ellipse cx="58" cy="52" rx="3" ry="4" fill="#1F1F1F" className="french-word-bubble-eyes" />
-            <path d="M42 62 Q50 68 58 62" stroke="#C2185B" strokeWidth="1.5" fill="none" strokeLinecap="round" className="french-word-bubble-smile" />
-          </svg>
+          <img
+            src="/mascot-logo.png"
+            alt="French With Us mascot"
+            className="w-full h-full object-contain french-word-bubble-img"
+            draggable={false}
+          />
           <span className="french-word-bubble-pulse absolute inset-0 rounded-2xl border-2 border-pink-primary/30 dark:border-pink-400/30" aria-hidden="true" />
         </button>
       )}
