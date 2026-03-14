@@ -12,7 +12,197 @@
    - Section dividers and tables adapt at each breakpoint.
    - Touch targets (min 44px) and .touch-target, .safe-area-* utilities.
    - Reduced motion respected; overflow-x hidden on html/body.
+   - Android and tablet-specific optimizations.
    ========================================================================== */
+
+/* ==========================================================================
+   ANDROID & TABLET SPECIFIC OPTIMIZATIONS
+   ========================================================================== */
+
+/* Android Chrome viewport handling */
+@supports (-webkit-touch-callout: none) or (not (overflow: overlay)) {
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Android font rendering improvements */
+@media screen and (max-width: 1024px) {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Tablet-specific optimizations (768px - 1024px) */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  /* Better padding for tablet */
+  .px-4 { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .px-6 { padding-left: 2rem; padding-right: 2rem; }
+  
+  /* Tablet grid - 2 columns for most grids */
+  .grid-cols-3:not(.keep-cols-3), 
+  .md\:grid-cols-3:not(.keep-cols-3) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .lg\:grid-cols-4:not(.keep-cols-4) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .lg\:grid-cols-5:not(.keep-cols-5) {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  /* Sidebar width adjustment for tablet */
+  aside, [class*="sidebar"], [class*="Sidebar"] {
+    width: 220px !important;
+  }
+  
+  /* Better table handling on tablet */
+  table {
+    font-size: 0.875rem;
+  }
+  
+  th, td {
+    padding: 0.75rem 0.5rem !important;
+  }
+  
+  /* Modal sizing for tablet */
+  [role="dialog"], .modal, [class*="Modal"] {
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+  }
+  
+  /* Calendar adjustments for tablet */
+  [class*="calendar"] .min-h-\[110px\],
+  [class*="Calendar"] .min-h-\[110px\] {
+    min-height: 90px !important;
+  }
+}
+
+/* Tablet landscape specific */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  /* Reduce vertical spacing */
+  .py-12, .py-16 { padding-top: 2rem; padding-bottom: 2rem; }
+  .py-24 { padding-top: 3rem; padding-bottom: 3rem; }
+  .mb-12, .mb-16 { margin-bottom: 2rem; }
+  
+  /* Hero section adjustment */
+  section[class*="hero"], [class*="Hero"] {
+    min-height: auto;
+  }
+}
+
+/* Android touch scrolling improvements */
+@media (pointer: coarse) {
+  /* Momentum scrolling for Android */
+  .overflow-y-auto, .overflow-x-auto, .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Better scrollbar visibility on Android */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(231, 84, 128, 0.3);
+    border-radius: 4px;
+  }
+  
+  /* Prevent text selection on buttons */
+  button, [role="button"], a {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Larger touch areas for small interactive elements */
+  input[type="checkbox"], input[type="radio"] {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+/* Fix for Android Chrome address bar resize */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+  
+  .h-screen {
+    height: 100dvh;
+  }
+}
+
+/* Small Android phones (< 360px width) */
+@media screen and (max-width: 359px) {
+  html {
+    font-size: 13px;
+  }
+  
+  /* Even more compact layout */
+  .px-3, .px-4 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .gap-3, .gap-4 { gap: 0.5rem; }
+  
+  /* Stack everything vertically */
+  .flex-row { flex-direction: column !important; }
+  .flex-wrap { flex-wrap: wrap !important; }
+  
+  /* Smaller buttons */
+  button, [role="button"] {
+    padding: 0.5rem 0.625rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Medium Android phones (360px - 480px) */
+@media screen and (min-width: 360px) and (max-width: 480px) {
+  /* Standard Android phone optimizations */
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+  
+  /* Better button sizing */
+  button, [role="button"] {
+    min-height: 44px;
+    padding: 0.625rem 1rem;
+  }
+  
+  /* Grid spacing */
+  .gap-4, .gap-6 { gap: 0.875rem; }
+}
+
+/* Large Android phones (480px - 640px) */
+@media screen and (min-width: 480px) and (max-width: 640px) {
+  /* Two-column grids work well at this size */
+  .grid-cols-1:not(.keep-cols-1) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Better padding */
+  .px-4 { padding-left: 1.25rem; padding-right: 1.25rem; }
+}
+
+/* Fix Android Chrome's 100vh issue */
+@media screen and (max-width: 1024px) {
+  .h-screen, .min-h-screen {
+    height: calc(var(--vh, 1vh) * 100);
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* END ANDROID & TABLET OPTIMIZATIONS */
+/* ========================================================================== */
 
 /* ==========================================================================
    MOBILE DEVICE OPTIMIZATIONS
