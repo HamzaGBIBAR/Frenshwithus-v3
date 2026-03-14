@@ -499,26 +499,42 @@ Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
   res.status(201).json(reservation);
 });
 
-// Test email endpoint (admin only - for debugging)
+// Simple config check endpoint (no email parameter needed)
+router.get('/email-config', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    config: {
+      GMAIL_USER: process.env.GMAIL_USER || 'NOT SET',
+      GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ SET (' + process.env.GMAIL_APP_PASS.length + ' chars)' : '✗ NOT SET',
+      CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'NOT SET',
+    }
+  });
+});
+
+// Test email endpoint
 router.get('/test-email', async (req, res) => {
   const testEmail = req.query.email;
   
+  console.log('[Test Email] Endpoint called');
+  console.log('[Test Email] GMAIL_USER:', process.env.GMAIL_USER);
+  console.log('[Test Email] GMAIL_APP_PASS length:', process.env.GMAIL_APP_PASS?.length);
+  console.log('[Test Email] Test email to:', testEmail);
+  
   if (!testEmail) {
-    return res.status(400).json({ 
-      error: 'Email required',
-      usage: '/api/test-email?email=your@email.com',
+    return res.json({ 
+      error: 'Add ?email=your@email.com to test',
+      example: '/api/test-email?email=gbibarhamza1@gmail.com',
       config: {
-        GMAIL_USER: process.env.GMAIL_USER ? '✓ Set' : '✗ Missing',
-        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ Set' : '✗ Missing',
-        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ Set' : '✗ Missing',
-        CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'Not set',
+        GMAIL_USER: process.env.GMAIL_USER || 'NOT SET',
+        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ SET' : '✗ NOT SET',
+        CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'NOT SET',
       }
     });
   }
 
-  console.log('[Test Email] Sending test to:', testEmail);
-
   try {
+    console.log('[Test Email] Calling sendMail...');
     const result = await sendMail({
       to: testEmail,
       subject: '✅ Test Email - French With Us',
@@ -536,30 +552,22 @@ router.get('/test-email', async (req, res) => {
       text: 'Test email from French With Us. If you received this, email is working!',
     });
 
+    console.log('[Test Email] Result:', JSON.stringify(result));
+
+    const success = result.results && result.results.length > 0;
     res.json({
-      success: result.results && result.results.length > 0,
-      message: result.results && result.results.length > 0 
-        ? `Email sent via: ${result.results.join(', ')}` 
-        : 'No email sent - check configuration',
+      success,
+      message: success ? `✓ Email sent via: ${result.results.join(', ')}` : '✗ No email sent',
       sentTo: testEmail,
       providers: result.results || [],
       errors: result.errors || [],
-      config: {
-        GMAIL_USER: process.env.GMAIL_USER ? '✓ Set' : '✗ Missing',
-        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ Set' : '✗ Missing',
-        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ Set' : '✗ Missing',
-      }
     });
   } catch (err) {
     console.error('[Test Email] Error:', err);
     res.status(500).json({
       success: false,
       error: err.message,
-      config: {
-        GMAIL_USER: process.env.GMAIL_USER ? '✓ Set' : '✗ Missing',
-        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ Set' : '✗ Missing',
-        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ Set' : '✗ Missing',
-      }
+      stack: err.stack,
     });
   }
 });
