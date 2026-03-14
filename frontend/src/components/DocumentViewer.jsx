@@ -2,16 +2,17 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { renderAsync } from 'docx-preview';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure PDF.js worker - use jsDelivr CDN (more reliable than unpkg)
+// Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const FILE_TYPE_INFO = {
   'application/pdf': { name: 'PDF', icon: '📄', canPreview: true },
-  'application/msword': { name: 'Word', icon: '📝', canPreview: false },
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { name: 'Word', icon: '📝', canPreview: false },
+  'application/msword': { name: 'Word (.doc)', icon: '📝', canPreview: false }, // .doc not supported
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { name: 'Word', icon: '📝', canPreview: true }, // .docx supported!
   'application/vnd.ms-powerpoint': { name: 'PowerPoint', icon: '📊', canPreview: false },
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': { name: 'PowerPoint', icon: '📊', canPreview: false },
   'application/vnd.ms-excel': { name: 'Excel', icon: '📈', canPreview: false },
@@ -35,6 +36,80 @@ function isPdf(mimeType) {
   return mimeType === 'application/pdf';
 }
 
+function isDocx(mimeType) {
+  return mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+}
+
+// Convert base64 data URI to ArrayBuffer
+function base64ToArrayBuffer(dataUri) {
+  const base64Data = dataUri.split(',')[1];
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+// Word Document Viewer Component using docx-preview
+function WordViewer({ url, onLoad, onError }) {
+  const containerRef = useRef(null);
+  const [rendered, setRendered] = useState(false);
+
+  useEffect(() => {
+    if (!url || !containerRef.current) return;
+
+    const renderDocx = async () => {
+      try {
+        // Clear previous content
+        containerRef.current.innerHTML = '';
+        
+        let arrayBuffer;
+        if (url.startsWith('data:')) {
+          arrayBuffer = base64ToArrayBuffer(url);
+        } else {
+          const response = await fetch(url);
+          arrayBuffer = await response.arrayBuffer();
+        }
+
+        await renderAsync(arrayBuffer, containerRef.current, undefined, {
+          className: 'docx-viewer',
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          useBase64URL: true,
+          renderHeaders: true,
+          renderFooters: true,
+          renderFootnotes: true,
+          renderEndnotes: true,
+        });
+
+        setRendered(true);
+        onLoad?.();
+      } catch (err) {
+        console.error('DOCX render error:', err);
+        onError?.(err);
+      }
+    };
+
+    renderDocx();
+  }, [url, onLoad, onError]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="docx-container w-full min-h-full bg-white"
+      style={{ 
+        padding: '20px',
+        maxWidth: '100%',
+        overflow: 'auto',
+      }}
+    />
+  );
+}
+
 export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
   const { t } = useTranslation();
   const [scale, setScale] = useState(1.0);
@@ -45,13 +120,12 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
   const contentRef = useRef(null);
 
   const fileInfo = getFileTypeInfo(mimeType);
-  const canPreview = fileInfo.canPreview && (isImage(mimeType) || isPdf(mimeType));
+  const canPreview = fileInfo.canPreview && (isImage(mimeType) || isPdf(mimeType) || isDocx(mimeType));
 
   // Convert base64 data URI to proper format for react-pdf
   const pdfFile = useMemo(() => {
     if (!url || !isPdf(mimeType)) return null;
     
-    // If it's a base64 data URI, convert to ArrayBuffer which react-pdf handles better
     if (url.startsWith('data:')) {
       try {
         const base64Data = url.split(',')[1];
@@ -108,6 +182,16 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
     setError(t('documentViewer.loadError'));
   }, [t]);
 
+  const onWordLoadSuccess = useCallback(() => {
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  const onWordLoadError = useCallback(() => {
+    setLoading(false);
+    setError(t('documentViewer.loadError'));
+  }, [t]);
+
   const handleDownload = () => {
     if (!url) return;
     
@@ -142,6 +226,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
   };
 
   const zoomPercent = Math.round(scale * 100);
+  const showZoomControls = canPreview && !isDocx(mimeType); // Zoom not applicable for docx
 
   const content = (
     <div
@@ -169,7 +254,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
           
           {/* Controls */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {canPreview && (
+            {showZoomControls && (
               <>
                 <button
                   onClick={() => setScale((s) => Math.max(s - 0.25, 0.5))}
@@ -284,6 +369,14 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                     />
                   ))}
                 </Document>
+              ) : isDocx(mimeType) ? (
+                <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+                  <WordViewer 
+                    url={url} 
+                    onLoad={onWordLoadSuccess}
+                    onError={onWordLoadError}
+                  />
+                </div>
               ) : null}
             </div>
           ) : (
@@ -309,8 +402,8 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
             </div>
           )}
 
-          {/* Loading state for images */}
-          {loading && isImage(mimeType) && (
+          {/* Loading state */}
+          {loading && (isImage(mimeType) || isDocx(mimeType)) && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-[#0a0a0a]">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-3 border-pink-primary dark:border-pink-400 border-t-transparent rounded-full animate-spin" />
@@ -345,7 +438,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
         {/* Footer with keyboard shortcuts hint */}
         <div className="hidden sm:flex items-center justify-center px-4 py-2 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#111] text-xs text-text/50 dark:text-[#f5f5f5]/50 gap-4">
           <span><kbd className="px-1.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 font-mono">Esc</kbd> {t('documentViewer.toClose')}</span>
-          {canPreview && (
+          {showZoomControls && (
             <>
               <span><kbd className="px-1.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 font-mono">+</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 font-mono">-</kbd> {t('documentViewer.toZoom')}</span>
               <span><kbd className="px-1.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 font-mono">0</kbd> {t('documentViewer.toReset')}</span>
