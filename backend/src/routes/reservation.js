@@ -373,9 +373,13 @@ router.post('/reservation', async (req, res) => {
   const countryName = COUNTRY_NAMES[reservation.country] || reservation.country || '';
   const audienceLabel = reservation.audience === 'adults' ? 'Adulte' : reservation.audience === 'children' ? 'Enfant' : '';
 
+  // Send both emails
+  const emailPromises = [];
+
   // 1. Email de notification à l'admin (French With Us)
   const contactEmail = getContactEmail();
   if (contactEmail) {
+    console.log('[Reservation] Sending admin notification to:', contactEmail);
     const adminTextContent = `
 🎓 NOUVELLE RÉSERVATION - FRENCH WITH US
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -403,16 +407,25 @@ ${packName}
 Email automatique - French With Us
     `.trim();
 
-    sendMail({
-      to: contactEmail,
-      subject: `🔔 [Réservation ${refId}] ${reservation.firstName} ${reservation.lastName} - ${packName}`,
-      html: buildNotificationEmail(reservation),
-      text: adminTextContent,
-    }).catch((err) => console.error('Failed to send admin notification email:', err.message));
+    emailPromises.push(
+      sendMail({
+        to: contactEmail,
+        subject: `🔔 [Réservation ${refId}] ${reservation.firstName} ${reservation.lastName} - ${packName}`,
+        html: buildNotificationEmail(reservation),
+        text: adminTextContent,
+      }).then(result => {
+        console.log('[Reservation] ✓ Admin email result:', result);
+        return { type: 'admin', ...result };
+      }).catch((err) => {
+        console.error('[Reservation] ✗ Admin email failed:', err.message);
+        return { type: 'admin', error: err.message };
+      })
+    );
   }
 
   // 2. Email de confirmation à l'utilisateur
   if (reservation.email) {
+    console.log('[Reservation] Sending user confirmation to:', reservation.email);
     const userTextContent = `
 Bonjour ${reservation.firstName},
 
@@ -460,12 +473,27 @@ Cet email a été envoyé suite à votre demande de réservation (${refId}).
 Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
     `.trim();
 
-    sendMail({
-      to: reservation.email,
-      subject: `✅ Confirmation de votre demande (${refId}) - French With Us`,
-      html: buildUserConfirmationEmail(reservation),
-      text: userTextContent,
-    }).catch((err) => console.error('Failed to send user confirmation email:', err.message));
+    emailPromises.push(
+      sendMail({
+        to: reservation.email,
+        subject: `✅ Confirmation de votre demande (${refId}) - French With Us`,
+        html: buildUserConfirmationEmail(reservation),
+        text: userTextContent,
+      }).then(result => {
+        console.log('[Reservation] ✓ User confirmation email result:', result);
+        return { type: 'user', ...result };
+      }).catch((err) => {
+        console.error('[Reservation] ✗ User confirmation email failed:', err.message);
+        return { type: 'user', error: err.message };
+      })
+    );
+  }
+
+  // Wait for all emails to be sent (don't block the response too long)
+  if (emailPromises.length > 0) {
+    Promise.all(emailPromises).then(results => {
+      console.log('[Reservation] All emails processed:', JSON.stringify(results));
+    });
   }
 
   res.status(201).json(reservation);
