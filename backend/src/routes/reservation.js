@@ -6,7 +6,12 @@ const router = Router();
 
 const DIAL_CODES = { MA: '+212', FR: '+33', DZ: '+213', US: '+1', GB: '+44', DE: '+49', BE: '+32', CA: '+1', ES: '+34', IT: '+39', CH: '+41', AE: '+971', SA: '+966', EG: '+20', TN: '+216', LB: '+961', JO: '+962', TR: '+90', CN: '+86', JP: '+81', BR: '+55', IN: '+91', QA: '+974', KW: '+965' };
 const COUNTRY_NAMES = { MA: 'Maroc', FR: 'France', US: 'États-Unis', GB: 'Royaume-Uni', CA: 'Canada', DE: 'Allemagne', ES: 'Espagne', IT: 'Italie', BE: 'Belgique', CH: 'Suisse', DZ: 'Algérie', TN: 'Tunisie', EG: 'Égypte', SA: 'Arabie Saoudite', AE: 'Émirats arabes unis', QA: 'Qatar', KW: 'Koweït', LB: 'Liban', JO: 'Jordanie', TR: 'Turquie', CN: 'Chine', JP: 'Japon', KR: 'Corée du Sud', IN: 'Inde', BR: 'Brésil', MX: 'Mexique', AU: 'Australie', NZ: 'Nouvelle-Zélande', SN: 'Sénégal', CI: "Côte d'Ivoire", CM: 'Cameroun', CD: 'RD Congo', NG: 'Nigeria', GH: 'Ghana' };
-const PACK_NAMES = { individuel: 'Individuel', groups: 'Groupes', preparation: 'Préparation' };
+const PACK_NAMES = { individuel: 'Cours Individuel', groups: 'Cours en Groupe', preparation: 'Préparation aux Examens' };
+const PACK_DESCRIPTIONS = {
+  individuel: 'Cours particuliers personnalisés avec un professeur dédié',
+  groups: 'Apprenez en petit groupe pour une expérience interactive',
+  preparation: 'Préparation intensive aux examens DELF/DALF/TCF'
+};
 
 function buildNotificationEmail(r) {
   const dial = DIAL_CODES[r.phoneCountry] || `+${r.phoneCountry}`;
@@ -15,75 +20,118 @@ function buildNotificationEmail(r) {
   const countryName = COUNTRY_NAMES[r.country] || r.country || '—';
   const packName = PACK_NAMES[r.pack] || r.pack || '—';
   const date = new Date(r.createdAt).toLocaleString('fr-FR', { timeZone: 'Africa/Casablanca', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const refId = `FWU-${String(r.id).padStart(5, '0')}`;
 
   const row = (icon, label, value) => `
     <tr>
-      <td style="padding:10px 16px;color:#888;font-size:13px;white-space:nowrap;vertical-align:top;">${icon} ${label}</td>
-      <td style="padding:10px 16px;color:#1F1F1F;font-size:14px;font-weight:500;">${value}</td>
+      <td style="padding:12px 16px;color:#888;font-size:13px;white-space:nowrap;vertical-align:top;width:120px;">${icon} ${label}</td>
+      <td style="padding:12px 16px;color:#1F1F1F;font-size:14px;font-weight:500;">${value}</td>
     </tr>`;
 
   return `
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f5f0f0;font-family:'Nunito Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0f0;padding:32px 16px;">
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Nouvelle Réservation - French With Us</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; max-width: 100% !important; }
+      .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }
+      .mobile-stack { display: block !important; width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f5f0f0;font-family:'Segoe UI','Nunito Sans',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0f0;padding:24px 12px;">
     <tr><td align="center">
-      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(231,84,128,0.08);">
+      <table role="presentation" class="email-container" width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(231,84,128,0.1);max-width:100%;">
 
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);padding:32px 40px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:0.5px;">French With Us</h1>
-            <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Nouvelle demande de réservation</p>
+          <td style="background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);padding:32px 24px;text-align:center;">
+            <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:0.5px;">🎓 French With Us</h1>
+            <p style="margin:10px 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:500;">Nouvelle demande de réservation</p>
+            <p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:12px;">Référence: ${refId}</p>
+          </td>
+        </tr>
+
+        <!-- Alert Badge -->
+        <tr>
+          <td class="mobile-padding" style="padding:24px 40px 0;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:10px 20px;">
+                  <span style="color:#92400E;font-size:13px;font-weight:600;">⚡ Action requise: Contacter le client</span>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
         <!-- Audience badge -->
         <tr>
-          <td style="padding:24px 40px 0;text-align:center;">
-            <span style="display:inline-block;padding:6px 20px;border-radius:20px;background:#FADADD;color:#E75480;font-size:13px;font-weight:600;">${audienceLabel}</span>
+          <td class="mobile-padding" style="padding:20px 40px 0;text-align:center;">
+            <span style="display:inline-block;padding:8px 24px;border-radius:20px;background:#FADADD;color:#E75480;font-size:13px;font-weight:600;">${audienceLabel}</span>
           </td>
         </tr>
 
         <!-- Name -->
         <tr>
-          <td style="padding:20px 40px 4px;text-align:center;">
-            <h2 style="margin:0;color:#1F1F1F;font-size:24px;font-weight:700;">${r.firstName} ${r.lastName}</h2>
+          <td class="mobile-padding" style="padding:20px 40px 8px;text-align:center;">
+            <h2 style="margin:0;color:#1F1F1F;font-size:26px;font-weight:700;">${r.firstName} ${r.lastName}</h2>
           </td>
         </tr>
 
         <!-- Details -->
         <tr>
-          <td style="padding:16px 40px 8px;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+          <td class="mobile-padding" style="padding:16px 40px 8px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#faf8f8;border-radius:12px;overflow:hidden;">
               <tr><td colspan="2" style="padding:0 0 8px;border-bottom:1px solid #f0e8e8;"></td></tr>
-              ${row('📧', 'Email', `<a href="mailto:${r.email}" style="color:#E75480;text-decoration:none;">${r.email}</a>`)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
-              ${row('📱', 'Téléphone', phone)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
+              ${row('📧', 'Email', `<a href="mailto:${r.email}" style="color:#E75480;text-decoration:none;font-weight:600;">${r.email}</a>`)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
+              ${row('📱', 'Téléphone', `<a href="tel:${dial}${r.phoneNumber}" style="color:#1F1F1F;text-decoration:none;">${phone}</a>`)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
               ${row('🌍', 'Pays', countryName)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
-              ${r.age ? row('🎂', 'Âge', r.age) + '<tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>' : ''}
-              ${row('📦', 'Pack', packName)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
+              <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
+              ${r.age ? row('🎂', 'Âge', `${r.age} ans`) + '<tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>' : ''}
+              ${row('📦', 'Pack', `<strong style="color:#E75480;">${packName}</strong>`)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
               ${row('🕐', 'Reçu le', date)}
             </table>
           </td>
         </tr>
 
-        <!-- CTA -->
+        <!-- Quick Actions -->
         <tr>
-          <td style="padding:24px 40px;text-align:center;">
-            <a href="https://frenchwithus.up.railway.app/admin/reservations" style="display:inline-block;padding:12px 32px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">Voir dans le dashboard</a>
+          <td class="mobile-padding" style="padding:24px 40px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="padding:0 8px;">
+                  <a href="mailto:${r.email}?subject=Votre%20demande%20French%20With%20Us%20-%20${refId}" style="display:inline-block;padding:14px 28px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">📧 Répondre par email</a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:16px 0 0;"><a href="https://frenchwithus.up.railway.app/admin/reservations" style="color:#E75480;font-size:13px;text-decoration:none;font-weight:500;">Voir dans le dashboard →</a></p>
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="background:#faf7f7;padding:20px 40px;text-align:center;border-top:1px solid #f0e8e8;">
+          <td style="background:#faf7f7;padding:20px 24px;text-align:center;border-top:1px solid #f0e8e8;">
             <p style="margin:0;color:#aaa;font-size:11px;">French With Us — frenchwithus.up.railway.app</p>
-            <p style="margin:4px 0 0;color:#ccc;font-size:10px;">Email envoyé automatiquement. Ne pas répondre.</p>
+            <p style="margin:4px 0 0;color:#ccc;font-size:10px;">Email de notification automatique • ${date}</p>
           </td>
         </tr>
 
@@ -94,12 +142,15 @@ function buildNotificationEmail(r) {
 </html>`;
 }
 
-// Email de confirmation pour l'utilisateur
 function buildUserConfirmationEmail(r) {
-  const PACK_NAMES = { individuel: 'Individuel', groups: 'Groupes', preparation: 'Préparation' };
   const packName = PACK_NAMES[r.pack] || r.pack || 'Non spécifié';
+  const packDesc = PACK_DESCRIPTIONS[r.pack] || '';
   const audienceLabel = r.audience === 'adults' ? 'Adulte' : r.audience === 'children' ? 'Enfant' : '';
+  const countryName = COUNTRY_NAMES[r.country] || r.country || '';
+  const dial = DIAL_CODES[r.phoneCountry] || `+${r.phoneCountry}`;
+  const phone = `${dial} ${r.phoneNumber}`;
   const date = new Date(r.createdAt).toLocaleString('fr-FR', { timeZone: 'Africa/Casablanca', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const refId = `FWU-${String(r.id).padStart(5, '0')}`;
 
   return `
 <!DOCTYPE html>
@@ -107,128 +158,179 @@ function buildUserConfirmationEmail(r) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Confirmation de réservation - French With Us</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; max-width: 100% !important; }
+      .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }
+      .mobile-stack { display: block !important; width: 100% !important; }
+      .mobile-center { text-align: center !important; }
+      .step-number { width: 28px !important; height: 28px !important; line-height: 28px !important; font-size: 13px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:#f5f0f0;font-family:'Nunito Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0f0;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#f5f0f0;font-family:'Segoe UI','Nunito Sans',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0f0;padding:24px 12px;">
     <tr><td align="center">
-      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(231,84,128,0.08);">
+      <table role="presentation" class="email-container" width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(231,84,128,0.1);max-width:100%;">
 
         <!-- Header avec logo -->
         <tr>
-          <td style="background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);padding:40px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.5px;">French With Us</h1>
-            <p style="margin:12px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">Votre partenaire pour apprendre le français</p>
+          <td style="background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);padding:40px 24px;text-align:center;">
+            <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.5px;">🎓 French With Us</h1>
+            <p style="margin:12px 0 0;color:rgba(255,255,255,0.95);font-size:15px;font-weight:500;">Votre partenaire pour apprendre le français</p>
           </td>
         </tr>
 
-        <!-- Message de bienvenue -->
+        <!-- Success Icon & Message -->
         <tr>
-          <td style="padding:40px 40px 24px;text-align:center;">
-            <div style="width:64px;height:64px;margin:0 auto 20px;background:#FADADD;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:28px;">✓</span>
-            </div>
-            <h2 style="margin:0 0 12px;color:#1F1F1F;font-size:24px;font-weight:700;">Merci pour votre demande, ${r.firstName} !</h2>
-            <p style="margin:0;color:#666;font-size:15px;line-height:1.6;">
-              Nous avons bien reçu votre demande de réservation.<br>
-              Notre équipe vous contactera très prochainement.
+          <td class="mobile-padding" style="padding:40px 40px 24px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+              <tr>
+                <td style="width:72px;height:72px;background:linear-gradient(135deg,#D4EDDA 0%,#C3E6CB 100%);border-radius:50%;text-align:center;vertical-align:middle;">
+                  <span style="font-size:32px;line-height:72px;">✓</span>
+                </td>
+              </tr>
+            </table>
+            <h2 style="margin:0 0 12px;color:#1F1F1F;font-size:26px;font-weight:700;">Merci ${r.firstName} !</h2>
+            <p style="margin:0;color:#555;font-size:16px;line-height:1.6;">
+              Votre demande de réservation a bien été enregistrée.<br>
+              <strong style="color:#E75480;">Notre équipe vous contactera sous 24h.</strong>
             </p>
           </td>
         </tr>
 
-        <!-- Récapitulatif -->
+        <!-- Reference Badge -->
         <tr>
-          <td style="padding:0 40px 32px;">
-            <div style="background:#faf7f7;border-radius:12px;padding:24px;border:1px solid #f0e8e8;">
-              <h3 style="margin:0 0 16px;color:#E75480;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Récapitulatif de votre demande</h3>
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+          <td class="mobile-padding" style="padding:0 40px 24px;text-align:center;">
+            <span style="display:inline-block;padding:10px 24px;border-radius:8px;background:#F0F4FF;border:1px solid #C7D2FE;color:#4338CA;font-size:13px;font-weight:600;">📋 Référence: ${refId}</span>
+          </td>
+        </tr>
+
+        <!-- Récapitulatif complet -->
+        <tr>
+          <td class="mobile-padding" style="padding:0 40px 32px;">
+            <div style="background:linear-gradient(180deg,#faf8f8 0%,#fff 100%);border-radius:12px;padding:24px;border:1px solid #f0e8e8;">
+              <h3 style="margin:0 0 20px;color:#E75480;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">📝 Récapitulatif de votre demande</h3>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
                 <tr>
-                  <td style="padding:8px 0;color:#888;font-size:13px;">Nom complet</td>
-                  <td style="padding:8px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;">${r.firstName} ${r.lastName}</td>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Nom complet</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:600;text-align:right;border-bottom:1px solid #f0e8e8;">${r.firstName} ${r.lastName}</td>
                 </tr>
-                <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
                 <tr>
-                  <td style="padding:8px 0;color:#888;font-size:13px;">Email</td>
-                  <td style="padding:8px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;">${r.email}</td>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Email</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;border-bottom:1px solid #f0e8e8;">${r.email}</td>
                 </tr>
-                <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
                 <tr>
-                  <td style="padding:8px 0;color:#888;font-size:13px;">Pack choisi</td>
-                  <td style="padding:8px 0;color:#E75480;font-size:14px;font-weight:600;text-align:right;">${packName}</td>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Téléphone</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;border-bottom:1px solid #f0e8e8;">${phone}</td>
                 </tr>
-                ${audienceLabel ? `
-                <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
+                ${countryName ? `
                 <tr>
-                  <td style="padding:8px 0;color:#888;font-size:13px;">Type</td>
-                  <td style="padding:8px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;">${audienceLabel}</td>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Pays</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;border-bottom:1px solid #f0e8e8;">🌍 ${countryName}</td>
                 </tr>
                 ` : ''}
-                <tr><td colspan="2" style="border-bottom:1px solid #f0e8e8;"></td></tr>
+                ${r.age ? `
                 <tr>
-                  <td style="padding:8px 0;color:#888;font-size:13px;">Date de demande</td>
-                  <td style="padding:8px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;">${date}</td>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Âge</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;border-bottom:1px solid #f0e8e8;">${r.age} ans</td>
+                </tr>
+                ` : ''}
+                ${audienceLabel ? `
+                <tr>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Type</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;border-bottom:1px solid #f0e8e8;">${audienceLabel}</td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding:12px 0;color:#888;font-size:13px;border-bottom:1px solid #f0e8e8;">Pack choisi</td>
+                  <td style="padding:12px 0;color:#E75480;font-size:14px;font-weight:700;text-align:right;border-bottom:1px solid #f0e8e8;">${packName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0;color:#888;font-size:13px;">Date de demande</td>
+                  <td style="padding:12px 0;color:#1F1F1F;font-size:14px;font-weight:500;text-align:right;">${date}</td>
                 </tr>
               </table>
+              ${packDesc ? `
+              <div style="margin-top:16px;padding:12px 16px;background:#FDF2F8;border-radius:8px;border-left:3px solid #E75480;">
+                <p style="margin:0;color:#831843;font-size:13px;line-height:1.5;"><strong>📦 ${packName}:</strong> ${packDesc}</p>
+              </div>
+              ` : ''}
             </div>
           </td>
         </tr>
 
         <!-- Prochaines étapes -->
         <tr>
-          <td style="padding:0 40px 32px;">
-            <h3 style="margin:0 0 16px;color:#1F1F1F;font-size:16px;font-weight:600;">Prochaines étapes</h3>
-            <table width="100%" cellpadding="0" cellspacing="0">
+          <td class="mobile-padding" style="padding:0 40px 32px;">
+            <h3 style="margin:0 0 20px;color:#1F1F1F;font-size:18px;font-weight:700;">🚀 Prochaines étapes</h3>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="padding:12px 0;vertical-align:top;width:32px;">
-                  <div style="width:24px;height:24px;background:#E75480;border-radius:50%;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:24px;">1</div>
+                <td style="padding:16px 0;vertical-align:top;width:40px;">
+                  <div class="step-number" style="width:32px;height:32px;background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);border-radius:50%;color:#fff;font-size:14px;font-weight:700;text-align:center;line-height:32px;">1</div>
                 </td>
-                <td style="padding:12px 0 12px 12px;color:#555;font-size:14px;line-height:1.5;">
-                  <strong style="color:#1F1F1F;">Confirmation par téléphone</strong><br>
-                  Un membre de notre équipe vous appellera pour discuter de vos objectifs.
+                <td style="padding:16px 0 16px 16px;color:#555;font-size:14px;line-height:1.6;border-bottom:1px solid #f5f0f0;">
+                  <strong style="color:#1F1F1F;font-size:15px;">📞 Confirmation par téléphone</strong><br>
+                  <span style="color:#666;">Un membre de notre équipe vous appellera pour discuter de vos objectifs d'apprentissage et répondre à vos questions.</span>
                 </td>
               </tr>
               <tr>
-                <td style="padding:12px 0;vertical-align:top;width:32px;">
-                  <div style="width:24px;height:24px;background:#E75480;border-radius:50%;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:24px;">2</div>
+                <td style="padding:16px 0;vertical-align:top;width:40px;">
+                  <div class="step-number" style="width:32px;height:32px;background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);border-radius:50%;color:#fff;font-size:14px;font-weight:700;text-align:center;line-height:32px;">2</div>
                 </td>
-                <td style="padding:12px 0 12px 12px;color:#555;font-size:14px;line-height:1.5;">
-                  <strong style="color:#1F1F1F;">Planification de votre cours</strong><br>
-                  Nous définirons ensemble un horaire adapté à votre disponibilité.
+                <td style="padding:16px 0 16px 16px;color:#555;font-size:14px;line-height:1.6;border-bottom:1px solid #f5f0f0;">
+                  <strong style="color:#1F1F1F;font-size:15px;">📅 Planification de votre cours</strong><br>
+                  <span style="color:#666;">Ensemble, nous définirons un horaire adapté à votre disponibilité et à votre fuseau horaire.</span>
                 </td>
               </tr>
               <tr>
-                <td style="padding:12px 0;vertical-align:top;width:32px;">
-                  <div style="width:24px;height:24px;background:#E75480;border-radius:50%;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:24px;">3</div>
+                <td style="padding:16px 0;vertical-align:top;width:40px;">
+                  <div class="step-number" style="width:32px;height:32px;background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);border-radius:50%;color:#fff;font-size:14px;font-weight:700;text-align:center;line-height:32px;">3</div>
                 </td>
-                <td style="padding:12px 0 12px 12px;color:#555;font-size:14px;line-height:1.5;">
-                  <strong style="color:#1F1F1F;">Début de votre aventure</strong><br>
-                  Commencez vos cours de français avec nos professeurs qualifiés !
+                <td style="padding:16px 0 16px 16px;color:#555;font-size:14px;line-height:1.6;">
+                  <strong style="color:#1F1F1F;font-size:15px;">🎉 Début de votre aventure</strong><br>
+                  <span style="color:#666;">Commencez vos cours de français avec nos professeurs qualifiés et passionnés !</span>
                 </td>
               </tr>
             </table>
           </td>
         </tr>
 
-        <!-- Contact -->
+        <!-- Contact CTA -->
         <tr>
-          <td style="padding:0 40px 32px;text-align:center;">
-            <p style="margin:0 0 16px;color:#666;font-size:14px;">Des questions ? Contactez-nous :</p>
-            <a href="mailto:frenchwithus.edu@gmail.com" style="display:inline-block;padding:12px 28px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">frenchwithus.edu@gmail.com</a>
+          <td class="mobile-padding" style="padding:0 40px 32px;text-align:center;">
+            <div style="background:linear-gradient(180deg,#FDF2F8 0%,#FCE7F3 100%);border-radius:12px;padding:24px;border:1px solid #FBCFE8;">
+              <p style="margin:0 0 16px;color:#831843;font-size:15px;font-weight:500;">Des questions ? Nous sommes là pour vous aider !</p>
+              <a href="mailto:frenchwithus.edu@gmail.com" style="display:inline-block;padding:14px 32px;border-radius:10px;background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(231,84,128,0.3);">📧 frenchwithus.edu@gmail.com</a>
+            </div>
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="background:#faf7f7;padding:24px 40px;text-align:center;border-top:1px solid #f0e8e8;">
-            <p style="margin:0 0 8px;color:#E75480;font-size:14px;font-weight:600;">French With Us</p>
-            <p style="margin:0 0 12px;color:#888;font-size:12px;">Apprenez le français avec passion</p>
-            <p style="margin:0;color:#bbb;font-size:11px;">
-              <a href="https://frenchwithus.up.railway.app" style="color:#E75480;text-decoration:none;">frenchwithus.up.railway.app</a>
+          <td style="background:linear-gradient(180deg,#faf7f7 0%,#f5f0f0 100%);padding:28px 24px;text-align:center;border-top:1px solid #f0e8e8;">
+            <p style="margin:0 0 8px;color:#E75480;font-size:16px;font-weight:700;">French With Us</p>
+            <p style="margin:0 0 12px;color:#888;font-size:13px;">Apprenez le français avec passion 🇫🇷</p>
+            <p style="margin:0 0 16px;color:#aaa;font-size:12px;">
+              <a href="https://frenchwithus.up.railway.app" style="color:#E75480;text-decoration:none;font-weight:500;">frenchwithus.up.railway.app</a>
             </p>
-            <p style="margin:12px 0 0;color:#ccc;font-size:10px;">
-              Cet email a été envoyé suite à votre demande de réservation.<br>
-              Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
-            </p>
+            <div style="border-top:1px solid #e8e0e0;padding-top:16px;margin-top:8px;">
+              <p style="margin:0;color:#bbb;font-size:10px;line-height:1.6;">
+                Cet email a été envoyé suite à votre demande de réservation (${refId}).<br>
+                Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
+              </p>
+            </div>
           </td>
         </tr>
 
@@ -264,24 +366,105 @@ router.post('/reservation', async (req, res) => {
     },
   });
 
+  const refId = `FWU-${String(reservation.id).padStart(5, '0')}`;
+  const dial = DIAL_CODES[reservation.phoneCountry] || `+${reservation.phoneCountry}`;
+  const phone = `${dial} ${reservation.phoneNumber}`;
+  const packName = PACK_NAMES[reservation.pack] || reservation.pack || 'Non spécifié';
+  const countryName = COUNTRY_NAMES[reservation.country] || reservation.country || '';
+  const audienceLabel = reservation.audience === 'adults' ? 'Adulte' : reservation.audience === 'children' ? 'Enfant' : '';
+
   // 1. Email de notification à l'admin (French With Us)
   const contactEmail = getContactEmail();
   if (contactEmail) {
+    const adminTextContent = `
+🎓 NOUVELLE RÉSERVATION - FRENCH WITH US
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Référence: ${refId}
+
+👤 INFORMATIONS CLIENT
+━━━━━━━━━━━━━━━━━━━━━
+• Nom: ${reservation.firstName} ${reservation.lastName}
+• Email: ${reservation.email}
+• Téléphone: ${phone}
+• Pays: ${countryName || 'Non spécifié'}
+${reservation.age ? `• Âge: ${reservation.age} ans` : ''}
+${audienceLabel ? `• Type: ${audienceLabel}` : ''}
+
+📦 PACK CHOISI
+━━━━━━━━━━━━━
+${packName}
+
+⚡ ACTION REQUISE: Contacter le client
+
+🔗 Dashboard: https://frenchwithus.up.railway.app/admin/reservations
+
+---
+Email automatique - French With Us
+    `.trim();
+
     sendMail({
       to: contactEmail,
-      subject: `[Réservation] ${reservation.firstName} ${reservation.lastName}`,
+      subject: `🔔 [Réservation ${refId}] ${reservation.firstName} ${reservation.lastName} - ${packName}`,
       html: buildNotificationEmail(reservation),
-      text: `Nouvelle réservation de ${reservation.firstName} ${reservation.lastName} (${reservation.email})`,
+      text: adminTextContent,
     }).catch((err) => console.error('Failed to send admin notification email:', err.message));
   }
 
   // 2. Email de confirmation à l'utilisateur
   if (reservation.email) {
+    const userTextContent = `
+Bonjour ${reservation.firstName},
+
+Merci pour votre demande de réservation chez French With Us ! 🎓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 CONFIRMATION DE VOTRE DEMANDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Référence: ${refId}
+
+📝 Récapitulatif:
+• Nom: ${reservation.firstName} ${reservation.lastName}
+• Email: ${reservation.email}
+• Téléphone: ${phone}
+${countryName ? `• Pays: ${countryName}` : ''}
+${reservation.age ? `• Âge: ${reservation.age} ans` : ''}
+${audienceLabel ? `• Type: ${audienceLabel}` : ''}
+• Pack choisi: ${packName}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 PROCHAINES ÉTAPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣ Confirmation par téléphone
+   Un membre de notre équipe vous appellera pour discuter de vos objectifs.
+
+2️⃣ Planification de votre cours
+   Nous définirons ensemble un horaire adapté à votre disponibilité.
+
+3️⃣ Début de votre aventure
+   Commencez vos cours avec nos professeurs qualifiés !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Des questions ? Contactez-nous:
+📧 frenchwithus.edu@gmail.com
+🌐 https://frenchwithus.up.railway.app
+
+À très bientôt !
+L'équipe French With Us 🇫🇷
+
+---
+Cet email a été envoyé suite à votre demande de réservation (${refId}).
+Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
+    `.trim();
+
     sendMail({
       to: reservation.email,
-      subject: `Confirmation de votre demande - French With Us`,
+      subject: `✅ Confirmation de votre demande (${refId}) - French With Us`,
       html: buildUserConfirmationEmail(reservation),
-      text: `Bonjour ${reservation.firstName},\n\nMerci pour votre demande de réservation chez French With Us.\n\nNous avons bien reçu votre demande et notre équipe vous contactera très prochainement.\n\nRécapitulatif:\n- Nom: ${reservation.firstName} ${reservation.lastName}\n- Pack: ${reservation.pack || 'Non spécifié'}\n\nÀ bientôt,\nL'équipe French With Us`,
+      text: userTextContent,
     }).catch((err) => console.error('Failed to send user confirmation email:', err.message));
   }
 
