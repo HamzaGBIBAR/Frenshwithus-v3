@@ -30,9 +30,16 @@ function getGmailTransporter() {
   
   if (!user || !pass) return null;
   
+  console.log('[Mailer] Creating Gmail transporter for:', user);
+  
   gmailTransporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
   
   return gmailTransporter;
@@ -44,19 +51,29 @@ async function sendGmail({ to, subject, html, text }) {
   
   const from = `French With Us <${process.env.GMAIL_USER}>`;
   console.log('[Mailer] Sending email via Gmail SMTP to:', to);
+  console.log('[Mailer] From:', from);
   
   try {
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject,
-      html,
-      text,
-    });
+    // Verify connection first
+    console.log('[Mailer] Verifying SMTP connection...');
+    await Promise.race([
+      transporter.verify(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP verify timeout (10s)')), 10000))
+    ]);
+    console.log('[Mailer] SMTP connection verified');
+    
+    // Send email with timeout
+    const info = await Promise.race([
+      transporter.sendMail({ from, to, subject, html, text }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Email send timeout (20s)')), 20000))
+    ]);
+    
     console.log('[Mailer] Email sent via Gmail:', info.messageId);
     return { id: info.messageId, provider: 'gmail' };
   } catch (err) {
     console.error('[Mailer] Gmail SMTP error:', err.message);
+    // Reset transporter on error to force reconnection
+    gmailTransporter = null;
     throw err;
   }
 }
