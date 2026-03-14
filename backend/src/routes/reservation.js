@@ -424,70 +424,9 @@ Email automatique - French With Us
   }
 
   // 2. Email de confirmation à l'utilisateur
-  if (reservation.email) {
-    console.log('[Reservation] Sending user confirmation to:', reservation.email);
-    const userTextContent = `
-Bonjour ${reservation.firstName},
-
-Merci pour votre demande de réservation chez French With Us ! 🎓
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 CONFIRMATION DE VOTRE DEMANDE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Référence: ${refId}
-
-📝 Récapitulatif:
-• Nom: ${reservation.firstName} ${reservation.lastName}
-• Email: ${reservation.email}
-• Téléphone: ${phone}
-${countryName ? `• Pays: ${countryName}` : ''}
-${reservation.age ? `• Âge: ${reservation.age} ans` : ''}
-${audienceLabel ? `• Type: ${audienceLabel}` : ''}
-• Pack choisi: ${packName}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 PROCHAINES ÉTAPES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1️⃣ Confirmation par téléphone
-   Un membre de notre équipe vous appellera pour discuter de vos objectifs.
-
-2️⃣ Planification de votre cours
-   Nous définirons ensemble un horaire adapté à votre disponibilité.
-
-3️⃣ Début de votre aventure
-   Commencez vos cours avec nos professeurs qualifiés !
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Des questions ? Contactez-nous:
-📧 frenchwithus.edu@gmail.com
-🌐 https://frenchwithus.up.railway.app
-
-À très bientôt !
-L'équipe French With Us 🇫🇷
-
----
-Cet email a été envoyé suite à votre demande de réservation (${refId}).
-Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
-    `.trim();
-
-    emailPromises.push(
-      sendMail({
-        to: reservation.email,
-        subject: `✅ Confirmation de votre demande (${refId}) - French With Us`,
-        html: buildUserConfirmationEmail(reservation),
-        text: userTextContent,
-      }).then(result => {
-        console.log('[Reservation] ✓ User confirmation email result:', result);
-        return { type: 'user', ...result };
-      }).catch((err) => {
-        console.error('[Reservation] ✗ User confirmation email failed:', err.message);
-        return { type: 'user', error: err.message };
-      })
-    );
-  }
+  // NOTE: Désactivé car Resend sandbox ne peut envoyer qu'à l'email vérifié (admin)
+  // Pour activer: vérifier un domaine sur resend.com
+  console.log('[Reservation] User confirmation email skipped (Resend sandbox mode)');
 
   // Wait for all emails to be sent (don't block the response too long)
   if (emailPromises.length > 0) {
@@ -505,10 +444,10 @@ router.get('/email-config', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     config: {
-      GMAIL_USER: process.env.GMAIL_USER || 'NOT SET',
-      GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ SET (' + process.env.GMAIL_APP_PASS.length + ' chars)' : '✗ NOT SET',
+      RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ SET' : '✗ NOT SET',
       CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'NOT SET',
-    }
+    },
+    note: 'Resend sandbox mode: only admin receives emails. Verify a domain on resend.com to send to users.'
   });
 });
 
@@ -523,13 +462,13 @@ router.get('/test-email', async (req, res) => {
   
   if (!testEmail) {
     return res.json({ 
-      error: 'Add ?email=your@email.com to test',
-      example: '/api/test-email?email=gbibarhamza1@gmail.com',
+      error: 'Add ?email=your@email.com to test (must be your Resend account email in sandbox mode)',
+      example: '/api/test-email?email=YOUR_RESEND_ACCOUNT_EMAIL',
       config: {
-        GMAIL_USER: process.env.GMAIL_USER || 'NOT SET',
-        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ SET' : '✗ NOT SET',
+        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ SET' : '✗ NOT SET',
         CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'NOT SET',
-      }
+      },
+      note: 'Resend sandbox can ONLY send to the email you used to create your Resend account'
     });
   }
 
