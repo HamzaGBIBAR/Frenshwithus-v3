@@ -76,12 +76,13 @@ export const helmetMiddleware = helmet({
     ? {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "https://meet.jit.si"],
+          scriptSrc: ["'self'", "https://meet.jit.si", "https://cdn.jsdelivr.net", "blob:"],
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https://meet.jit.si", "wss://meet.jit.si"],
+          imgSrc: ["'self'", "data:", "https:", "blob:"],
+          connectSrc: ["'self'", "https://meet.jit.si", "wss://meet.jit.si", "https://cdn.jsdelivr.net"],
           frameSrc: ["'self'", "https://meet.jit.si"],
+          workerSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
