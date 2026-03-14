@@ -22,8 +22,81 @@ function buildNotificationEmail(r) {
       <td style="padding:10px 16px;color:#1F1F1F;font-size:14px;font-weight:500;">${value}</td>
     </tr>`;
 
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f5f0f0;font-family:'Nunito Sans',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0f0;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(231,84,128,0.08);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);padding:32px 40px;text-align:center;">
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:0.5px;">French With Us</h1>
+            <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Nouvelle demande de réservation</p>
+          </td>
+        </tr>
+
+        <!-- Audience badge -->
+        <tr>
+          <td style="padding:24px 40px 0;text-align:center;">
+            <span style="display:inline-block;padding:6px 20px;border-radius:20px;background:#FADADD;color:#E75480;font-size:13px;font-weight:600;">${audienceLabel}</span>
+          </td>
+        </tr>
+
+        <!-- Name -->
+        <tr>
+          <td style="padding:20px 40px 4px;text-align:center;">
+            <h2 style="margin:0;color:#1F1F1F;font-size:24px;font-weight:700;">${r.firstName} ${r.lastName}</h2>
+          </td>
+        </tr>
+
+        <!-- Details -->
+        <tr>
+          <td style="padding:16px 40px 8px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+              <tr><td colspan="2" style="padding:0 0 8px;border-bottom:1px solid #f0e8e8;"></td></tr>
+              ${row('📧', 'Email', `<a href="mailto:${r.email}" style="color:#E75480;text-decoration:none;">${r.email}</a>`)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
+              ${row('📱', 'Téléphone', phone)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
+              ${row('🌍', 'Pays', countryName)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
+              ${r.age ? row('🎂', 'Âge', r.age) + '<tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>' : ''}
+              ${row('📦', 'Pack', packName)}
+              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
+              ${row('🕐', 'Reçu le', date)}
+            </table>
+          </td>
+        </tr>
+
+        <!-- CTA -->
+        <tr>
+          <td style="padding:24px 40px;text-align:center;">
+            <a href="https://frenchwithus.up.railway.app/admin/reservations" style="display:inline-block;padding:12px 32px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">Voir dans le dashboard</a>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#faf7f7;padding:20px 40px;text-align:center;border-top:1px solid #f0e8e8;">
+            <p style="margin:0;color:#aaa;font-size:11px;">French With Us — frenchwithus.up.railway.app</p>
+            <p style="margin:4px 0 0;color:#ccc;font-size:10px;">Email envoyé automatiquement. Ne pas répondre.</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 // Email de confirmation pour l'utilisateur
 function buildUserConfirmationEmail(r) {
+  const PACK_NAMES = { individuel: 'Individuel', groups: 'Groupes', preparation: 'Préparation' };
   const packName = PACK_NAMES[r.pack] || r.pack || 'Non spécifié';
   const audienceLabel = r.audience === 'adults' ? 'Adulte' : r.audience === 'children' ? 'Enfant' : '';
   const date = new Date(r.createdAt).toLocaleString('fr-FR', { timeZone: 'Africa/Casablanca', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -156,78 +229,6 @@ function buildUserConfirmationEmail(r) {
               Cet email a été envoyé suite à votre demande de réservation.<br>
               Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
             </p>
-          </td>
-        </tr>
-
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
-
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f5f0f0;font-family:'Nunito Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0f0;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(231,84,128,0.08);">
-
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#E75480 0%,#C2185B 100%);padding:32px 40px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:0.5px;">French With Us</h1>
-            <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Nouvelle demande de réservation</p>
-          </td>
-        </tr>
-
-        <!-- Audience badge -->
-        <tr>
-          <td style="padding:24px 40px 0;text-align:center;">
-            <span style="display:inline-block;padding:6px 20px;border-radius:20px;background:#FADADD;color:#E75480;font-size:13px;font-weight:600;">${audienceLabel}</span>
-          </td>
-        </tr>
-
-        <!-- Name -->
-        <tr>
-          <td style="padding:20px 40px 4px;text-align:center;">
-            <h2 style="margin:0;color:#1F1F1F;font-size:24px;font-weight:700;">${r.firstName} ${r.lastName}</h2>
-          </td>
-        </tr>
-
-        <!-- Details -->
-        <tr>
-          <td style="padding:16px 40px 8px;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-              <tr><td colspan="2" style="padding:0 0 8px;border-bottom:1px solid #f0e8e8;"></td></tr>
-              ${row('📧', 'Email', `<a href="mailto:${r.email}" style="color:#E75480;text-decoration:none;">${r.email}</a>`)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
-              ${row('📱', 'Téléphone', phone)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
-              ${row('🌍', 'Pays', countryName)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
-              ${r.age ? row('🎂', 'Âge', r.age) + '<tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>' : ''}
-              ${row('📦', 'Pack', packName)}
-              <tr><td colspan="2" style="border-bottom:1px solid #f8f4f4;"></td></tr>
-              ${row('🕐', 'Reçu le', date)}
-            </table>
-          </td>
-        </tr>
-
-        <!-- CTA -->
-        <tr>
-          <td style="padding:24px 40px;text-align:center;">
-            <a href="https://frenchwithus.up.railway.app/admin/reservations" style="display:inline-block;padding:12px 32px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">Voir dans le dashboard</a>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style="background:#faf7f7;padding:20px 40px;text-align:center;border-top:1px solid #f0e8e8;">
-            <p style="margin:0;color:#aaa;font-size:11px;">French With Us — frenchwithus.up.railway.app</p>
-            <p style="margin:4px 0 0;color:#ccc;font-size:10px;">Email envoyé automatiquement. Ne pas répondre.</p>
           </td>
         </tr>
 
