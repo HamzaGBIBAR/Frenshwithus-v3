@@ -9,4 +9,16 @@ export default defineConfig({
       '/live-socket': { target: 'http://localhost:3001', ws: true },
     },
   },
+  optimizeDeps: {
+    include: ['react-pdf', 'pdfjs-dist'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          pdfjs: ['pdfjs-dist'],
+        },
+      },
+    },
+  },
 });

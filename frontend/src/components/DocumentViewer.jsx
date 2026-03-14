@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Configure PDF.js worker - use jsDelivr CDN (more reliable than unpkg)
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const FILE_TYPE_INFO = {
   'application/pdf': { name: 'PDF', icon: '📄', canPreview: true },
@@ -46,6 +46,28 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
 
   const fileInfo = getFileTypeInfo(mimeType);
   const canPreview = fileInfo.canPreview && (isImage(mimeType) || isPdf(mimeType));
+
+  // Convert base64 data URI to proper format for react-pdf
+  const pdfFile = useMemo(() => {
+    if (!url || !isPdf(mimeType)) return null;
+    
+    // If it's a base64 data URI, convert to ArrayBuffer which react-pdf handles better
+    if (url.startsWith('data:')) {
+      try {
+        const base64Data = url.split(',')[1];
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return { data: bytes };
+      } catch (err) {
+        console.error('Failed to process PDF data:', err);
+        return url;
+      }
+    }
+    return url;
+  }, [url, mimeType]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -220,9 +242,9 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                     setError(t('documentViewer.loadError'));
                   }}
                 />
-              ) : isPdf(mimeType) ? (
+              ) : isPdf(mimeType) && pdfFile ? (
                 <Document
-                  file={url}
+                  file={pdfFile}
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={
