@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { useTranslation } from 'react-i18next';
 import { getTimezoneByCountry } from '../../utils/countries';
+import { useDocumentViewer } from '../../components/DocumentViewer';
 
 const ONLINE_WINDOW_MS = 2 * 60 * 1000;
 
@@ -23,6 +24,7 @@ export default function StudentMessages() {
   const [errorMsg, setErrorMsg] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
   const fileInputRef = useRef(null);
+  const { openDocument, ViewerComponent } = useDocumentViewer();
   const studentTimezone = useMemo(
     () => getTimezoneByCountry(user?.country),
     [user?.country]
@@ -74,7 +76,7 @@ export default function StudentMessages() {
       setSelectedFile(null);
       refreshMessages();
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || 'Message send failed');
+      setErrorMsg(err.response?.data?.error || t('dashboard.messaging.sendFailed'));
     }
   };
 
@@ -110,7 +112,7 @@ export default function StudentMessages() {
       </h1>
       <div className="flex gap-4 flex-col md:flex-row">
         <div className="w-full md:w-64 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-colors duration-500">
-          <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 font-medium text-text dark:text-[#f5f5f5]">Professors</div>
+          <div className="p-4 border-b border-pink-soft/50 dark:border-white/10 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.messaging.professors')}</div>
           <div className="max-h-80 overflow-y-auto">
             {professors.map((p) => (
               <button
@@ -131,7 +133,7 @@ export default function StudentMessages() {
               </button>
             ))}
             {professors.length === 0 && (
-              <p className="p-4 text-text/50 dark:text-[#f5f5f5]/50 text-sm">No conversations yet</p>
+              <p className="p-4 text-text/50 dark:text-[#f5f5f5]/50 text-sm">{t('dashboard.messaging.noConversations')}</p>
             )}
           </div>
         </div>
@@ -150,7 +152,7 @@ export default function StudentMessages() {
                   );
                 })()}
                 <p className={`text-xs mt-1 ${isUserOnline(selectedProfessorObj?.lastActiveAt) ? 'text-emerald-600 dark:text-emerald-400' : 'text-text/50 dark:text-[#f5f5f5]/50'}`}>
-                  {isUserOnline(selectedProfessorObj?.lastActiveAt) ? 'En ligne' : 'Hors ligne'}
+                  {isUserOnline(selectedProfessorObj?.lastActiveAt) ? t('dashboard.messaging.online') : t('dashboard.messaging.offline')}
                 </p>
               </div>
               <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-pink-soft/10 dark:bg-white/[0.02]">
@@ -185,7 +187,7 @@ export default function StudentMessages() {
                             onClick={() => markAsSeen(m.id)}
                             className="w-full text-left px-3 py-2 text-xs text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/5"
                           >
-                            Marquer vu
+                            {t('dashboard.messaging.markSeen')}
                           </button>
                         )}
                         <button
@@ -193,30 +195,29 @@ export default function StudentMessages() {
                           onClick={() => archiveMessage(m.id)}
                             className="w-full text-left px-3 py-2 text-xs text-text dark:text-[#f5f5f5] hover:bg-pink-soft/30 dark:hover:bg-white/5"
                         >
-                          Archiver
+                          {t('dashboard.messaging.archive')}
                         </button>
                       </div>
                     )}
                     {m.content && <p className="text-sm">{m.content}</p>}
                     {m.attachmentUrl && (
-                      <a
-                        href={m.attachmentUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className={`inline-flex items-center gap-2 mt-2 text-xs underline ${
+                      <button
+                        type="button"
+                        onClick={() => openDocument(m.attachmentUrl, m.attachmentMimeType, m.attachmentName)}
+                        className={`inline-flex items-center gap-2 mt-2 text-xs underline cursor-pointer hover:opacity-80 transition ${
                           m.senderId === user.id ? 'text-white/90' : 'text-pink-primary'
                         }`}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.657-5.657L5.757 10.757a6 6 0 108.486 8.486L20 13" />
                         </svg>
-                        {m.attachmentName || 'Attachment'}
-                      </a>
+                        {m.attachmentName || t('dashboard.messaging.attachment')}
+                      </button>
                     )}
                     <p className="text-xs opacity-70 mt-1">{formatMessageDate(m.createdAt)}</p>
                     {m.senderId === user.id && (
                       <p className="text-[10px] opacity-80 mt-0.5">
-                        {m.isSeen ? 'Vu' : 'Envoye'}
+                        {m.isSeen ? t('dashboard.messaging.seen') : t('dashboard.messaging.sent')}
                       </p>
                     )}
                   </div>
@@ -231,7 +232,7 @@ export default function StudentMessages() {
                 <input
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Type a message..."
+                  placeholder={t('dashboard.messaging.typeMessage')}
                   className="flex-1 px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary dark:focus:ring-pink-400 focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5] placeholder:text-text/50 dark:placeholder:text-[#f5f5f5]/70"
                 />
                 <input
@@ -245,14 +246,14 @@ export default function StudentMessages() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="px-3 py-2.5 border border-pink-soft/50 dark:border-white/20 rounded-xl text-pink-primary dark:text-pink-300 hover:bg-pink-soft/30 dark:hover:bg-white/10 transition"
-                  title="Attach file"
+                  title={t('dashboard.messaging.attachFile')}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.657-5.657L5.757 10.757a6 6 0 108.486 8.486L20 13" />
                   </svg>
                 </button>
                 <button type="submit" className="px-5 py-2.5 bg-pink-primary text-white rounded-xl hover:bg-pink-dark transition btn-glow">
-                  Send
+                  {t('dashboard.messaging.send')}
                 </button>
               </form>
               {selectedFile && (
@@ -263,11 +264,12 @@ export default function StudentMessages() {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-text/50 dark:text-[#f5f5f5]/50">
-              Select a professor to view messages
+              {t('dashboard.messaging.selectProfessor')}
             </div>
           )}
         </div>
       </div>
+      {ViewerComponent}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
+import { useDocumentViewer } from '../../components/DocumentViewer';
 
 const inputBase =
   'px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary dark:focus:ring-pink-400 dark:focus:border-pink-400 bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5] transition-all duration-200';
@@ -17,6 +18,7 @@ export default function AdminMessages() {
   const [dateMonth, setDateMonth] = useState('');
   const [dateYear, setDateYear] = useState('');
   const [dateHour, setDateHour] = useState('');
+  const { openDocument, ViewerComponent } = useDocumentViewer();
 
   useEffect(() => {
     setError(null);
@@ -231,18 +233,17 @@ export default function AdminMessages() {
                       <span className="block truncate" title={m.content}>{m.content.trim()}</span>
                     ) : null}
                     {m?.attachmentUrl ? (
-                      <a
-                        href={m.attachmentUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="inline-flex items-center gap-1 mt-0.5 text-pink-600 dark:text-pink-400 hover:underline truncate max-w-full"
+                      <button
+                        type="button"
+                        onClick={() => openDocument(m.attachmentUrl, m.attachmentMimeType, m.attachmentName)}
+                        className="inline-flex items-center gap-1 mt-0.5 text-pink-600 dark:text-pink-400 hover:underline truncate max-w-full cursor-pointer"
                         title={m.attachmentName || t('dashboard.adminMessages.attachmentLabel')}
                       >
                         <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
                         {m.attachmentName?.trim() || t('dashboard.adminMessages.attachmentLabel')}
-                      </a>
+                      </button>
                     ) : null}
                     {!m?.content?.trim() && !m?.attachmentUrl && '—'}
                   </td>
@@ -261,6 +262,7 @@ export default function AdminMessages() {
         )}
       </div>
       )}
+      {ViewerComponent}
     </div>
   );
 }

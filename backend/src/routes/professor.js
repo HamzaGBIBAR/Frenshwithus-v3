@@ -1,36 +1,30 @@
 import { Router } from 'express';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
-import streamifier from 'streamifier';
 import prisma from '../lib/db.js';
-import { cloudinary } from '../config/cloudinary.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { validate, messageValidation, availabilityValidation, profileUpdateValidation, passwordChangeValidation } from '../middleware/validate.js';
 import { captureException } from '../lib/sentry.js';
 import { localSlotToUtc, utcSlotToZoned, getUserTz } from '../lib/availabilityUtc.js';
+import { convertToBase64, AVATAR_MAX_SIZE, AVATAR_ALLOWED_MIMES } from '../lib/avatarBase64.js';
+import { convertDocumentToBase64, DOCUMENT_MAX_SIZE, DOCUMENT_ALLOWED_TYPES } from '../lib/documentBase64.js';
 
 const router = Router();
 
 router.use(authenticate);
 router.use(requireRole('PROFESSOR'));
 
-const ALLOWED_MIMES = ['image/jpeg', 'image/jpg', 'image/png'];
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const MESSAGE_ALLOWED_MIMES = [
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/pdf',
-];
-const MESSAGE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIMES = AVATAR_ALLOWED_MIMES;
+const MAX_SIZE = AVATAR_MAX_SIZE;
+const MESSAGE_ALLOWED_MIMES = DOCUMENT_ALLOWED_TYPES;
+const MESSAGE_MAX_SIZE = DOCUMENT_MAX_SIZE;
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_SIZE },
   fileFilter: (req, file, cb) => {
     if (!ALLOWED_MIMES.includes(file.mimetype)) {
-      return cb(new Error('Invalid file type. Only jpg, jpeg, png allowed.'));
+      return cb(new Error('Invalid file type. Only JPEG, PNG, WebP, GIF allowed.'));
     }
     cb(null, true);
   },
@@ -41,59 +35,13 @@ const uploadMessageAttachment = multer({
   limits: { fileSize: MESSAGE_MAX_SIZE },
   fileFilter: (req, file, cb) => {
     if (!MESSAGE_ALLOWED_MIMES.includes(file.mimetype)) {
-      return cb(new Error('Invalid file type. Only Word, Excel and PDF files are allowed.'));
+      return cb(new Error('Invalid file type. Only PDF, Word, PowerPoint, Excel, and images allowed.'));
     }
     cb(null, true);
   },
 });
 
-function uploadBufferToCloudinary(buffer, publicId) {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: 'frenchwithus/avatars',
-        public_id: publicId,
-        overwrite: true,
-        resource_type: 'image',
-      },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-    streamifier.createReadStream(buffer).pipe(uploadStream);
-  });
-}
 
-function uploadMessageFileToCloudinary(buffer, originalName = 'file.bin') {
-  const safeName = String(originalName).replace(/[^a-zA-Z0-9._-]/g, '_');
-  const publicId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: 'frenchwithus/messages',
-        public_id: publicId,
-        overwrite: false,
-        resource_type: 'raw',
-      },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-    streamifier.createReadStream(buffer).pipe(uploadStream);
-  });
-}
-
-function extractPublicIdFromUrl(url) {
-  if (!url || typeof url !== 'string') return null;
-  try {
-    const match = url.match(/\/v\d+\/(.+)\.(?:jpg|jpeg|png)/i);
-    return match ? match[1] : null;
-  } catch {
-    return null;
-  }
-}
 
 // My profile
 router.get('/profile', async (req, res) => {
@@ -122,17 +70,24 @@ router.put('/profile/avatar', upload.single('avatar'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      captureException(new Error('Cloudinary env vars not configured'));
-      return res.status(503).json({ error: 'Avatar upload not configured' });
+    
+    // Convert image to Base64 with validation
+    const result = convertToBase64(req.file.buffer, req.file.mimetype);
+    
+    if (!result.success) {
+      return res.status(400).json({ 
+        error: result.error,
+        errorCode: result.errorCode,
+      });
     }
-    const result = await uploadBufferToCloudinary(req.file.buffer, req.user.id);
-    const avatarUrl = result.secure_url;
+    
+    // Store Base64 data URI in database
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: { avatarUrl },
+      data: { avatarUrl: result.data },
       select: { id: true, name: true, email: true, createdAt: true, avatarUrl: true },
     });
+    
     res.json(user);
   } catch (err) {
     captureException(err);
@@ -143,14 +98,6 @@ router.put('/profile/avatar', upload.single('avatar'), async (req, res) => {
 
 router.delete('/profile/avatar', async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: { avatarUrl: true },
-    });
-    const publicId = extractPublicIdFromUrl(user?.avatarUrl);
-    if (publicId && process.env.CLOUDINARY_API_KEY) {
-      await cloudinary.uploader.destroy(publicId);
-    }
     const updated = await prisma.user.update({
       where: { id: req.user.id },
       data: { avatarUrl: null },
@@ -379,15 +326,20 @@ router.post('/messages/attachment', uploadMessageAttachment.single('file'), asyn
     });
     if (!receiver) return res.status(404).json({ error: 'Student not found' });
 
-    const uploadResult = await uploadMessageFileToCloudinary(file.buffer, file.originalname);
+    // Convert file to Base64
+    const conversionResult = convertDocumentToBase64(file.buffer, file.originalname, file.mimetype);
+    if (!conversionResult.success) {
+      return res.status(400).json({ error: conversionResult.error, errorCode: conversionResult.errorCode });
+    }
+
     const msg = await prisma.message.create({
       data: {
         senderId: req.user.id,
         receiverId,
         content,
-        attachmentUrl: uploadResult.secure_url,
+        attachmentUrl: conversionResult.data,
         attachmentName: file.originalname,
-        attachmentMimeType: file.mimetype,
+        attachmentMimeType: conversionResult.mimeType,
         attachmentSize: file.size,
         isSeen: false,
       },
@@ -454,15 +406,21 @@ router.post('/admin-discussion/attachment', uploadMessageAttachment.single('file
     const file = req.file;
     if (!file && !content) return res.status(400).json({ error: 'Message content or file is required' });
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
-    const uploadResult = await uploadMessageFileToCloudinary(file.buffer, file.originalname);
+    
+    // Convert file to Base64
+    const conversionResult = convertDocumentToBase64(file.buffer, file.originalname, file.mimetype);
+    if (!conversionResult.success) {
+      return res.status(400).json({ error: conversionResult.error, errorCode: conversionResult.errorCode });
+    }
+
     const msg = await prisma.message.create({
       data: {
         senderId: req.user.id,
         receiverId: adminId,
         content,
-        attachmentUrl: uploadResult.secure_url,
+        attachmentUrl: conversionResult.data,
         attachmentName: file.originalname,
-        attachmentMimeType: file.mimetype,
+        attachmentMimeType: conversionResult.mimeType,
         attachmentSize: file.size,
         isSeen: false,
       },
@@ -504,14 +462,20 @@ router.post('/global-discussion/attachment', uploadMessageAttachment.single('fil
     const file = req.file;
     if (!file && !content) return res.status(400).json({ error: 'Message content or file is required' });
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
-    const uploadResult = await uploadMessageFileToCloudinary(file.buffer, file.originalname);
+    
+    // Convert file to Base64
+    const conversionResult = convertDocumentToBase64(file.buffer, file.originalname, file.mimetype);
+    if (!conversionResult.success) {
+      return res.status(400).json({ error: conversionResult.error, errorCode: conversionResult.errorCode });
+    }
+
     const msg = await prisma.globalDiscussionMessage.create({
       data: {
         senderId: req.user.id,
         content,
-        attachmentUrl: uploadResult.secure_url,
+        attachmentUrl: conversionResult.data,
         attachmentName: file.originalname,
-        attachmentMimeType: file.mimetype,
+        attachmentMimeType: conversionResult.mimeType,
         attachmentSize: file.size,
       },
       include: { sender: { select: { id: true, name: true, role: true } } },

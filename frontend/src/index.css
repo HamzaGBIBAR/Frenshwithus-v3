@@ -14,6 +14,190 @@
    - Reduced motion respected; overflow-x hidden on html/body.
    ========================================================================== */
 
+/* ==========================================================================
+   MOBILE DEVICE OPTIMIZATIONS
+   Fixes for common mobile issues without changing content
+   ========================================================================== */
+
+/* Prevent iOS text size adjustment and tap highlight */
+@supports (-webkit-touch-callout: none) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Better mobile viewport handling */
+@media screen and (max-width: 480px) {
+  /* Prevent horizontal overflow on very small screens */
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Smaller base padding on mobile */
+  .px-4 { padding-left: 0.875rem; padding-right: 0.875rem; }
+  .px-5 { padding-left: 1rem; padding-right: 1rem; }
+  .px-6 { padding-left: 1.125rem; padding-right: 1.125rem; }
+  
+  /* Ensure text doesn't overflow containers */
+  h1, h2, h3, h4, h5, h6, p, span, a, button {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Smaller headings on very small screens */
+  h1 { font-size: clamp(1.5rem, 7vw, 2rem) !important; }
+  h2 { font-size: clamp(1.25rem, 5vw, 1.5rem) !important; }
+  h3 { font-size: clamp(1.1rem, 4vw, 1.25rem) !important; }
+  
+  /* Better button sizing on mobile */
+  button, a[class*="btn"], [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Ensure modals fit on small screens */
+  [role="dialog"], .modal, [class*="Modal"] {
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100vh - 2rem) !important;
+    margin: 0.5rem !important;
+  }
+  
+  /* Better form inputs on mobile */
+  input, textarea, select {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+    min-height: 44px;
+  }
+  
+  /* Smaller gaps on mobile */
+  .gap-4 { gap: 0.75rem; }
+  .gap-6 { gap: 1rem; }
+  .gap-8 { gap: 1.25rem; }
+}
+
+/* Small phones (< 375px) */
+@media screen and (max-width: 374px) {
+  html {
+    font-size: 14px;
+  }
+  
+  /* Even smaller padding */
+  .px-3, .px-4, .px-5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+  
+  /* Stack flex items vertically if needed */
+  .flex-wrap { flex-wrap: wrap !important; }
+  
+  /* Smaller buttons */
+  button, [role="button"] {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* Medium phones (375px - 480px) */
+@media screen and (min-width: 375px) and (max-width: 480px) {
+  /* Slightly better spacing */
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* Fix for iOS Safari bottom bar */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Fixed bottom elements should respect safe area */
+  .fixed.bottom-0,
+  [class*="fixed"][class*="bottom-"] {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Improve scrolling on mobile */
+@media (pointer: coarse) {
+  /* Smooth scrolling for touch devices */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Larger touch targets for interactive elements */
+  button, a, input, select, textarea, [role="button"], [tabindex] {
+    min-height: 44px;
+  }
+  
+  /* Better hover states for touch (none) */
+  @media (hover: none) {
+    .hover\:bg-pink-soft\/50:hover { background-color: transparent; }
+    .card-hover:hover { transform: none; box-shadow: none; }
+    .btn-hover:hover { transform: none; }
+  }
+}
+
+/* Landscape mobile optimization */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  /* Reduce vertical spacing in landscape */
+  .py-10, .py-12, .py-16 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .mb-8, .mb-10, .mb-12 { margin-bottom: 1rem; }
+  .mt-8, .mt-10, .mt-12 { margin-top: 1rem; }
+  
+  /* Smaller hero section in landscape */
+  section[class*="hero"], [class*="Hero"] {
+    min-height: auto;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
+
+/* Fix table overflow on mobile */
+@media screen and (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  
+  /* Allow table cells to wrap on mobile */
+  td, th {
+    white-space: normal;
+    min-width: 100px;
+  }
+}
+
+/* Mobile-friendly grid adjustments */
+@media screen and (max-width: 640px) {
+  /* Force single column on mobile for grids */
+  .grid-cols-2, .grid-cols-3, .grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Exception: keep 2 columns for small items */
+  .grid-cols-2.keep-cols {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Better modal/overlay handling on mobile */
+@media screen and (max-width: 640px) {
+  /* Full-width modals on small screens */
+  [class*="max-w-md"], [class*="max-w-lg"], [class*="max-w-xl"] {
+    max-width: calc(100vw - 1rem) !important;
+  }
+  
+  /* Better backdrop blur on mobile (lighter for performance) */
+  .backdrop-blur-sm { backdrop-filter: blur(4px); }
+  .backdrop-blur-md { backdrop-filter: blur(8px); }
+  .backdrop-blur-lg { backdrop-filter: blur(12px); }
+}
+
+/* END MOBILE OPTIMIZATIONS */
+/* ========================================================================== */
+
 :root {
   --pink-primary: #E75480;
   --pink-soft: #FADADD;
@@ -1215,5 +1399,218 @@ textarea::placeholder {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* ==========================================================================
+   ADDITIONAL MOBILE FIXES - Component-specific
+   ========================================================================== */
+
+/* Header/Navbar mobile fixes */
+@media screen and (max-width: 480px) {
+  header, nav, [class*="header"], [class*="Header"] {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Ensure logo text doesn't overflow */
+  .logo-sequence, [class*="logo"] {
+    max-width: 45vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Smaller nav buttons on mobile */
+  header button, nav button, header a, nav a {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Cards and boxes mobile fixes */
+@media screen and (max-width: 480px) {
+  /* Rounded corners slightly smaller on mobile */
+  .rounded-2xl { border-radius: 1rem; }
+  .rounded-3xl { border-radius: 1.25rem; }
+  
+  /* Card padding adjustments */
+  [class*="card"], [class*="Card"] {
+    padding: 1rem !important;
+  }
+  
+  /* Better shadow for mobile (lighter) */
+  .shadow-pink-soft {
+    box-shadow: 0 2px 8px 0 rgba(231, 84, 128, 0.1);
+  }
+}
+
+/* Hero section mobile fixes */
+@media screen and (max-width: 480px) {
+  /* Hero character smaller on mobile */
+  [class*="HeroCharacter"], [class*="hero-character"] {
+    max-width: 200px !important;
+    max-height: 200px !important;
+  }
+  
+  /* Hero stats wrap better */
+  [class*="hero"] .flex-wrap {
+    gap: 0.5rem !important;
+  }
+  
+  /* Hero stats badges smaller */
+  [class*="hero"] .rounded-xl {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* Pricing section mobile fixes */
+@media screen and (max-width: 480px) {
+  .pricing-card {
+    padding: 1.25rem !important;
+  }
+  
+  .pricing-card h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  .pricing-card [class*="price"], .pricing-card .text-3xl, .pricing-card .text-4xl {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Testimonials mobile fixes */
+@media screen and (max-width: 480px) {
+  .testimonial-glass-card {
+    padding: 1rem !important;
+    margin: 0 0.25rem;
+  }
+  
+  /* Smaller avatar in testimonials */
+  .testimonial-glass-card img[class*="avatar"],
+  .testimonial-glass-card .rounded-full {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* Contact section mobile fixes */
+@media screen and (max-width: 480px) {
+  .contact-card__blob {
+    opacity: 0.3;
+  }
+  
+  /* Contact links stack vertically */
+  [class*="contact"] .flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Footer mobile fixes */
+@media screen and (max-width: 480px) {
+  footer, [class*="footer"], [class*="Footer"] {
+    padding: 1.5rem 1rem !important;
+    text-align: center;
+  }
+  
+  footer .flex, [class*="footer"] .flex {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+/* Calendar mobile fixes */
+@media screen and (max-width: 480px) {
+  /* Smaller calendar cells */
+  [class*="calendar"] td, [class*="Calendar"] td {
+    padding: 0.25rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  /* Calendar event indicators smaller */
+  .calendar-event-tooltip {
+    font-size: 0.6875rem !important;
+    padding: 0.375rem !important;
+  }
+}
+
+/* Chat/Messaging mobile fixes */
+@media screen and (max-width: 480px) {
+  /* Chat messages full width */
+  [class*="chat"] .max-w-\[85\%\], [class*="message"] .max-w-\[85\%\] {
+    max-width: 90% !important;
+  }
+  
+  /* Chat input smaller */
+  [class*="chat"] input, [class*="message"] input {
+    padding: 0.625rem !important;
+  }
+}
+
+/* Dashboard mobile fixes */
+@media screen and (max-width: 480px) {
+  /* Sidebar hidden by default on mobile (handled by component) */
+  aside, [class*="sidebar"], [class*="Sidebar"] {
+    position: fixed !important;
+    z-index: 50 !important;
+  }
+  
+  /* Main content full width */
+  main, [class*="main-content"] {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* Form mobile fixes */
+@media screen and (max-width: 480px) {
+  /* Form labels */
+  label {
+    font-size: 0.8125rem !important;
+    margin-bottom: 0.375rem !important;
+  }
+  
+  /* Form groups spacing */
+  .space-y-4 > * + *, .space-y-6 > * + * {
+    margin-top: 0.875rem !important;
+  }
+  
+  /* Select dropdowns */
+  select {
+    padding-right: 2rem !important;
+    background-position: right 0.5rem center !important;
+  }
+}
+
+/* Profile modal mobile fixes */
+@media screen and (max-width: 480px) {
+  [class*="ProfileModal"], [class*="profile-modal"] {
+    padding: 1rem !important;
+  }
+  
+  /* Avatar preview smaller */
+  [class*="avatar-preview"], [class*="AvatarPreview"] {
+    width: 120px !important;
+    height: 120px !important;
+  }
+}
+
+/* Notification mobile fixes */
+@media screen and (max-width: 480px) {
+  [class*="notification"], [class*="Notification"] {
+    max-width: calc(100vw - 1rem) !important;
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* Toast messages mobile fixes */
+@media screen and (max-width: 480px) {
+  [class*="toast"], [class*="Toast"] {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    max-width: none !important;
+    font-size: 0.8125rem !important;
   }
 }

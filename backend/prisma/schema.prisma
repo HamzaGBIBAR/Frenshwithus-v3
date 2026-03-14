@@ -100,8 +100,8 @@ model Message {
   id        String   @id @default(cuid())
   senderId  String
   receiverId String
-  content   String
-  attachmentUrl String?
+  content   String   @db.Text
+  attachmentUrl String?  @db.Text // Base64 data URI for document storage
   attachmentName String?
   attachmentMimeType String?
   attachmentSize Int?

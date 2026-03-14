@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { useDocumentViewer } from '../../components/DocumentViewer';
 
 export default function DiscussionAdmin() {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ export default function DiscussionAdmin() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
+  const { openDocument, ViewerComponent } = useDocumentViewer();
 
   const loadMessages = () =>
     api.get('/professor/global-discussion').then((r) => setMessages(Array.isArray(r.data) ? r.data : [])).catch(() => setMessages([]));
@@ -39,9 +41,9 @@ export default function DiscussionAdmin() {
         const formData = new FormData();
         formData.append('content', content);
         formData.append('file', selectedFile);
-        await api.post('/professor/admin-discussion/attachment', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.post('/professor/global-discussion/attachment', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       } else {
-        await api.post('/professor/admin-discussion', { content: content.trim() });
+        await api.post('/professor/global-discussion', { content: content.trim() });
       }
       setContent('');
       setSelectedFile(null);
@@ -112,17 +114,16 @@ export default function DiscussionAdmin() {
                     <p className="text-[10px] font-medium opacity-80 mb-1">{senderLabel}</p>
                     {m.content?.trim() && <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>}
                     {m.attachmentUrl && (
-                      <a
-                        href={m.attachmentUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className={`inline-flex items-center gap-2 mt-2 text-xs font-medium underline ${isMe ? 'text-white/90' : 'text-pink-primary dark:text-pink-300'}`}
+                      <button
+                        type="button"
+                        onClick={() => openDocument(m.attachmentUrl, m.attachmentMimeType, m.attachmentName)}
+                        className={`inline-flex items-center gap-2 mt-2 text-xs font-medium underline cursor-pointer hover:opacity-80 transition ${isMe ? 'text-white/90' : 'text-pink-primary dark:text-pink-300'}`}
                       >
                         <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.657-5.657L5.757 10.757a6 6 0 108.486 8.486L20 13" />
                         </svg>
                         {m.attachmentName || t('discussionAdmin.attachment')}
-                      </a>
+                      </button>
                     )}
                     <p className={`text-[10px] mt-1.5 ${isMe ? 'text-white/60' : 'text-text/40 dark:text-[#f5f5f5]/40'}`}>
                       {new Date(m.createdAt).toLocaleString()}
@@ -181,6 +182,7 @@ export default function DiscussionAdmin() {
           )}
         </form>
       </div>
+      {ViewerComponent}
     </div>
   );
 }

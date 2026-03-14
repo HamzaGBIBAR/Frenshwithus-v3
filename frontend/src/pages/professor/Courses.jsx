@@ -5,17 +5,21 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import { useAuth } from '../../context/AuthContext';
-import { formatTimeAMPM, formatTimeRange, getCourseStartMorocco, getEndTime } from '../../utils/format';
+import { formatTimeRange, getCourseStartMorocco, getEndTime } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
 import COUNTRIES, { getLocalDateTime, getTimezoneByCountry, convertTimeBetweenTimezones, formatUtcInTimezone } from '../../utils/countries';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
 const COURSE_DURATION_MINUTES = 15;
 
+const EARLY_ACCESS_MINUTES = 5; // Allow teacher to start 5 minutes before scheduled time
+
 function canStartCourse(course, now) {
   const start = getCourseStartMorocco(course);
   if (!start || isNaN(start.getTime())) return false;
-  return now.getTime() >= start.getTime();
+  // Allow starting 5 minutes before the scheduled time
+  const earlyAccessTime = new Date(start.getTime() - EARLY_ACCESS_MINUTES * 60 * 1000);
+  return now.getTime() >= earlyAccessTime.getTime();
 }
 
 function getRemainingCountdown(sessionStartedAt, now) {
