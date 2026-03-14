@@ -1,15 +1,65 @@
 /**
- * Mailer – sends notifications via Resend HTTP API + optional Telegram bot.
- * Uses native fetch (no SMTP, no DNS issues on Railway).
+ * Mailer – sends emails via Gmail SMTP (primary) or Resend API (fallback).
+ * Also supports optional Telegram notifications.
  *
- * Email (Resend):
+ * Gmail SMTP (Recommended - works with any Gmail account):
+ *   GMAIL_USER      – your Gmail address (e.g., frenchwithus.edu@gmail.com)
+ *   GMAIL_APP_PASS  – 16-character App Password from Google Account
+ *
+ * Resend (Alternative):
  *   RESEND_API_KEY  – from resend.com dashboard
- *   CONTACT_EMAIL   – destination email for notifications
+ *   RESEND_FROM     – verified sender email
  *
- * Telegram (optional, instant phone notifications):
+ * General:
+ *   CONTACT_EMAIL   – destination email for admin notifications
+ *
+ * Telegram (optional):
  *   TELEGRAM_BOT_TOKEN – from @BotFather on Telegram
  *   TELEGRAM_CHAT_ID   – your chat ID (from @userinfobot)
  */
+
+import nodemailer from 'nodemailer';
+
+let gmailTransporter = null;
+
+function getGmailTransporter() {
+  if (gmailTransporter) return gmailTransporter;
+  
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASS;
+  
+  if (!user || !pass) return null;
+  
+  gmailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
+  });
+  
+  return gmailTransporter;
+}
+
+async function sendGmail({ to, subject, html, text }) {
+  const transporter = getGmailTransporter();
+  if (!transporter) return null;
+  
+  const from = `French With Us <${process.env.GMAIL_USER}>`;
+  console.log('[Mailer] Sending email via Gmail SMTP to:', to);
+  
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      text,
+    });
+    console.log('[Mailer] Email sent via Gmail:', info.messageId);
+    return { id: info.messageId, provider: 'gmail' };
+  } catch (err) {
+    console.error('[Mailer] Gmail SMTP error:', err.message);
+    throw err;
+  }
+}
 
 async function sendResend({ to, subject, html, text }) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -52,15 +102,33 @@ async function sendTelegram(message) {
 export async function sendMail({ to, subject, html, text }) {
   const results = [];
 
-  if (process.env.RESEND_API_KEY) {
+  // Priority 1: Gmail SMTP (most reliable for sending to any email)
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASS) {
+    try {
+      const r = await sendGmail({ to, subject, html, text });
+      if (r) {
+        results.push('gmail');
+        console.log('[Mailer] ✓ Email delivered via Gmail SMTP');
+      }
+    } catch (err) {
+      console.error('[Mailer] Gmail failed:', err.message);
+    }
+  }
+
+  // Priority 2: Resend API (fallback if Gmail not configured)
+  if (results.length === 0 && process.env.RESEND_API_KEY) {
     try {
       const r = await sendResend({ to, subject, html, text });
-      if (r) results.push('resend');
+      if (r) {
+        results.push('resend');
+        console.log('[Mailer] ✓ Email delivered via Resend');
+      }
     } catch (err) {
       console.error('[Mailer] Resend failed:', err.message);
     }
   }
 
+  // Optional: Telegram notification (in addition to email)
   if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
     try {
       const telegramText = `📩 <b>${subject}</b>\n\n${text}`;
@@ -72,8 +140,9 @@ export async function sendMail({ to, subject, html, text }) {
   }
 
   if (results.length === 0) {
-    console.warn('[Mailer] No notification channel configured (RESEND_API_KEY or TELEGRAM_BOT_TOKEN+TELEGRAM_CHAT_ID).');
+    console.warn('[Mailer] ⚠ No email sent! Configure GMAIL_USER + GMAIL_APP_PASS or RESEND_API_KEY');
   }
+  
   return results;
 }
 
