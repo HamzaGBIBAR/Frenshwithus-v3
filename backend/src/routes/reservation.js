@@ -19,41 +19,47 @@ function buildNotificationEmail(r) {
   const audienceLabel = r.audience === 'adults' ? '👨‍💼 Adulte' : r.audience === 'children' ? '👶 Enfant' : '—';
   const countryName = COUNTRY_NAMES[r.country] || r.country || '—';
   const packName = PACK_NAMES[r.pack] || r.pack || '—';
+  const hasPack = r.pack && PACK_NAMES[r.pack];
   const date = new Date(r.createdAt).toLocaleString('fr-FR', { timeZone: 'Africa/Casablanca', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const refId = `FWU-${String(r.id).padStart(5, '0')}`;
 
+  // Liste des formules (si le client n'a pas précisé le pack)
+  const allPacksList = Object.entries(PACK_NAMES)
+    .map(([key, name]) => `• ${name} : ${PACK_DESCRIPTIONS[key] || ''}`)
+    .join('\n');
+
+  const packParagraph = hasPack
+    ? `Nous avons bien enregistré votre demande (référence : ${refId}) concernant la formule « ${packName} ».`
+    : `Nous avons bien enregistré votre demande (référence : ${refId}). Vous n’avez pas précisé de formule ; voici celles que nous proposons :
+
+${allPacksList}
+
+Lors de notre échange, nous pourrons vous aider à choisir la formule la plus adaptée à vos objectifs.`;
+
   // Pre-filled professional response email
   const responseSubject = encodeURIComponent(`Votre demande French With Us - ${refId}`);
-  const responseBody = encodeURIComponent(`Bonjour ${r.firstName},
+  const responseBody = encodeURIComponent(`Madame, Monsieur${r.firstName ? ` ${r.firstName}` : ''},
 
-Merci d'avoir choisi French With Us pour votre apprentissage du français ! 🎓
+Nous vous remercions pour l'intérêt que vous portez à French With Us et pour votre demande de réservation.
 
-Nous avons bien reçu votre demande de réservation (Réf: ${refId}) pour le pack "${packName}".
+${packParagraph}
 
-Je suis ravi(e) de vous accompagner dans cette aventure linguistique. Voici les prochaines étapes :
+Afin de personnaliser votre parcours et de répondre au mieux à vos attentes, nous vous proposons un échange téléphonique ou visio de quinze minutes, sans engagement. Cet entretien nous permettra de :
+— préciser vos objectifs et votre niveau actuel ;
+— vous présenter le déroulement des cours et les modalités pratiques ;
+— convenir ensemble d’un planning adapté à votre disponibilité.
 
-📞 Appel de découverte
-Je vous propose un appel téléphonique de 10-15 minutes pour :
-• Discuter de vos objectifs d'apprentissage
-• Évaluer votre niveau actuel
-• Définir un planning adapté à vos disponibilités
+Merci de bien vouloir nous indiquer deux ou trois créneaux qui vous conviendraient pour cet échange. Nous vous recontacterons dans les plus brefs délais pour confirmer le rendez-vous.
 
-📅 Créneaux disponibles
-Merci de me confirmer vos disponibilités pour cet appel :
-• [Proposez 2-3 créneaux]
-
-💰 Informations tarifaires
-[Détails du pack choisi si nécessaire]
-
-N'hésitez pas à me poser toutes vos questions !
+Restant à votre disposition pour toute question.
 
 Cordialement,
-L'équipe French With Us
-📧 frenchwithus.edu@gmail.com
-🌐 https://frenchwithus.up.railway.app
 
----
-Référence: ${refId}
+L’équipe French With Us
+frenchwithus.edu@gmail.com
+https://frenchwithus.up.railway.app
+
+Réf. : ${refId}
 `);
 
   const row = (icon, label, value) => `
