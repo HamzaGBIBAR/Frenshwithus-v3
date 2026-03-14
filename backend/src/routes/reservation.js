@@ -22,6 +22,40 @@ function buildNotificationEmail(r) {
   const date = new Date(r.createdAt).toLocaleString('fr-FR', { timeZone: 'Africa/Casablanca', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const refId = `FWU-${String(r.id).padStart(5, '0')}`;
 
+  // Pre-filled professional response email
+  const responseSubject = encodeURIComponent(`Votre demande French With Us - ${refId}`);
+  const responseBody = encodeURIComponent(`Bonjour ${r.firstName},
+
+Merci d'avoir choisi French With Us pour votre apprentissage du français ! 🎓
+
+Nous avons bien reçu votre demande de réservation (Réf: ${refId}) pour le pack "${packName}".
+
+Je suis ravi(e) de vous accompagner dans cette aventure linguistique. Voici les prochaines étapes :
+
+📞 Appel de découverte
+Je vous propose un appel téléphonique de 10-15 minutes pour :
+• Discuter de vos objectifs d'apprentissage
+• Évaluer votre niveau actuel
+• Définir un planning adapté à vos disponibilités
+
+📅 Créneaux disponibles
+Merci de me confirmer vos disponibilités pour cet appel :
+• [Proposez 2-3 créneaux]
+
+💰 Informations tarifaires
+[Détails du pack choisi si nécessaire]
+
+N'hésitez pas à me poser toutes vos questions !
+
+Cordialement,
+L'équipe French With Us
+📧 frenchwithus.edu@gmail.com
+🌐 https://frenchwithus.up.railway.app
+
+---
+Référence: ${refId}
+`);
+
   const row = (icon, label, value) => `
     <tr>
       <td style="padding:12px 16px;color:#888;font-size:13px;white-space:nowrap;vertical-align:top;width:120px;">${icon} ${label}</td>
@@ -119,7 +153,7 @@ function buildNotificationEmail(r) {
             <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
               <tr>
                 <td style="padding:0 8px;">
-                  <a href="mailto:${r.email}?subject=Votre%20demande%20French%20With%20Us%20-%20${refId}" style="display:inline-block;padding:14px 28px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">📧 Répondre par email</a>
+                  <a href="mailto:${r.email}?subject=${responseSubject}&body=${responseBody}" style="display:inline-block;padding:14px 28px;border-radius:10px;background:#E75480;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">📧 Répondre par email</a>
                 </td>
               </tr>
             </table>
