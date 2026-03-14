@@ -351,6 +351,7 @@
     "placeholderFirst": "اسمك الأول",
     "placeholderLast": "اسم عائلتك",
     "placeholderEmail": "بريدك@مثال.com",
+    "emailHint": "سنرسل تأكيد الحجز إلى هذا البريد. يرجى استخدام بريد إلكتروني صالح تتحقق منه بانتظام.",
     "placeholderPhone": "الرقم",
     "country": "بلد الإقامة",
     "placeholderCountry": "اختر بلدك",

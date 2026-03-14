@@ -351,6 +351,7 @@
     "placeholderFirst": "Votre prénom",
     "placeholderLast": "Votre nom",
     "placeholderEmail": "votre.email@exemple.com",
+    "emailHint": "Votre confirmation de réservation sera envoyée à cette adresse. Merci d'indiquer une adresse email valide que vous consultez régulièrement.",
     "placeholderPhone": "Numéro",
     "country": "Pays de résidence",
     "placeholderCountry": "Sélectionnez votre pays",

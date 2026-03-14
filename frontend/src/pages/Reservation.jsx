@@ -218,6 +218,9 @@ export default function Reservation() {
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     className={inputClass}
                   />
+                  <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                    {t('reservation.emailHint')}
+                  </p>
                 </div>
                 <CountryPhoneInput
                   countryCode={form.phoneCountry}

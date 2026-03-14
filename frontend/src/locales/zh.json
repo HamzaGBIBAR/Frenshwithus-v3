@@ -351,6 +351,7 @@
     "placeholderFirst": "您的名",
     "placeholderLast": "您的姓",
     "placeholderEmail": "your.email@example.com",
+    "emailHint": "我们将把预订确认发送到此邮箱，请填写您常用且有效的邮箱地址。",
     "placeholderPhone": "号码",
     "country": "居住国家",
     "placeholderCountry": "选择您的国家",

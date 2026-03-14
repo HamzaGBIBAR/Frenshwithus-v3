@@ -351,6 +351,7 @@
     "placeholderFirst": "Your first name",
     "placeholderLast": "Your last name",
     "placeholderEmail": "your.email@example.com",
+    "emailHint": "We will send your booking confirmation to this address. Please use a valid email you check regularly.",
     "placeholderPhone": "Number",
     "country": "Country of residence",
     "placeholderCountry": "Select your country",
