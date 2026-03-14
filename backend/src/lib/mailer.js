@@ -32,14 +32,18 @@ function getGmailTransporter() {
   
   console.log('[Mailer] Creating Gmail transporter for:', user);
   
+  // Try port 465 with SSL (more reliable on cloud platforms)
   gmailTransporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: { user, pass },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
+    tls: {
+      rejectUnauthorized: false
+    }
   });
   
   return gmailTransporter;
@@ -58,14 +62,14 @@ async function sendGmail({ to, subject, html, text }) {
     console.log('[Mailer] Verifying SMTP connection...');
     await Promise.race([
       transporter.verify(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP verify timeout (10s)')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP verify timeout (30s)')), 30000))
     ]);
     console.log('[Mailer] SMTP connection verified');
     
     // Send email with timeout
     const info = await Promise.race([
       transporter.sendMail({ from, to, subject, html, text }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Email send timeout (20s)')), 20000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Email send timeout (30s)')), 30000))
     ]);
     
     console.log('[Mailer] Email sent via Gmail:', info.messageId);
