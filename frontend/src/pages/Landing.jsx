@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -37,46 +37,7 @@ export default function Landing() {
     logout();
   };
   const [selectedDate, setSelectedDate] = useState(null);
-  const [logoState, setLogoState] = useState('french');
-  const hasReachedAll = useRef(false);
   const heroRef = useRef(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setLogoState('all');
-      return;
-    }
-
-    let ticking = false;
-    const handleScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-        const heroRect = heroRef.current?.getBoundingClientRect();
-        const heroBottom = heroRect ? scrollY + heroRect.bottom : 500;
-
-        if (hasReachedAll.current) {
-          setLogoState('all');
-        } else if (scrollY >= heroBottom - 50) {
-          hasReachedAll.current = true;
-          setLogoState('all');
-        } else if (scrollY < 120) {
-          setLogoState('french');
-        } else if (scrollY < 240) {
-          setLogoState('with');
-        } else {
-          setLogoState('me');
-        }
-        ticking = false;
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const getDashboardLink = () => {
     if (!user) return '/login';
@@ -84,10 +45,6 @@ export default function Landing() {
     if (user.role === 'PROFESSOR') return '/professor';
     return '/student';
   };
-
-  const showFrench = logoState === 'french' || logoState === 'with' || logoState === 'me' || logoState === 'all';
-  const showWith = logoState === 'with' || logoState === 'me' || logoState === 'all';
-  const showMe = logoState === 'me' || logoState === 'all';
 
   return (
     <div className="min-h-screen bg-transparent transition-colors duration-500 relative overflow-x-hidden">
@@ -98,10 +55,10 @@ export default function Landing() {
           {/* Logo: can shrink on very small screens so nav has room */}
           <div className="flex flex-col gap-0.5 min-w-0 flex-shrink" dir="ltr">
             <span className="logo-sequence text-lg xs:text-xl sm:text-2xl font-semibold text-text dark:text-[#f5f5f5] flex items-baseline gap-1 min-w-0">
-              <span className={`logo-part font-bold text-text dark:text-[#f5f5f5] transition-opacity duration-300 truncate ${showFrench ? 'opacity-100' : 'opacity-0'}`}>French</span>
-              <span className={`logo-part text-sm xs:text-base font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase transition-opacity duration-300 shrink-0 ${showWith ? 'opacity-100' : 'opacity-0'}`}>with</span>
-              <span className={`logo-part shrink-0 transition-opacity duration-300 ${showMe ? 'opacity-100' : 'opacity-0'}`}>
-                <AnimatedEye variant="hero" show={showMe} />
+              <span className="logo-part font-bold text-text dark:text-[#f5f5f5] truncate opacity-100">French</span>
+              <span className="logo-part text-sm xs:text-base font-light text-text/50 dark:text-[#f5f5f5]/60 lowercase shrink-0 opacity-100">with</span>
+              <span className="logo-part shrink-0 opacity-100">
+                <AnimatedEye variant="hero" show={true} />
               </span>
             </span>
             <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 font-normal hidden xs:block truncate">{t('nav.tagline')}</span>
