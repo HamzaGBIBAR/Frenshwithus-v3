@@ -101,30 +101,45 @@ async function sendTelegram(message) {
 
 export async function sendMail({ to, subject, html, text }) {
   const results = [];
+  const errors = [];
+
+  console.log('[Mailer] === SENDING EMAIL ===');
+  console.log('[Mailer] To:', to);
+  console.log('[Mailer] Subject:', subject);
+  console.log('[Mailer] GMAIL_USER configured:', !!process.env.GMAIL_USER);
+  console.log('[Mailer] GMAIL_APP_PASS configured:', !!process.env.GMAIL_APP_PASS);
+  console.log('[Mailer] RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY);
 
   // Priority 1: Gmail SMTP (most reliable for sending to any email)
   if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASS) {
     try {
+      console.log('[Mailer] Attempting Gmail SMTP...');
       const r = await sendGmail({ to, subject, html, text });
       if (r) {
         results.push('gmail');
         console.log('[Mailer] ✓ Email delivered via Gmail SMTP');
       }
     } catch (err) {
-      console.error('[Mailer] Gmail failed:', err.message);
+      console.error('[Mailer] ✗ Gmail failed:', err.message);
+      console.error('[Mailer] Gmail full error:', err);
+      errors.push({ provider: 'gmail', error: err.message });
     }
+  } else {
+    console.log('[Mailer] Gmail not configured (missing GMAIL_USER or GMAIL_APP_PASS)');
   }
 
-  // Priority 2: Resend API (fallback if Gmail not configured)
+  // Priority 2: Resend API (fallback if Gmail not configured or failed)
   if (results.length === 0 && process.env.RESEND_API_KEY) {
     try {
+      console.log('[Mailer] Attempting Resend API...');
       const r = await sendResend({ to, subject, html, text });
       if (r) {
         results.push('resend');
         console.log('[Mailer] ✓ Email delivered via Resend');
       }
     } catch (err) {
-      console.error('[Mailer] Resend failed:', err.message);
+      console.error('[Mailer] ✗ Resend failed:', err.message);
+      errors.push({ provider: 'resend', error: err.message });
     }
   }
 
@@ -136,14 +151,20 @@ export async function sendMail({ to, subject, html, text }) {
       results.push('telegram');
     } catch (err) {
       console.error('[Mailer] Telegram failed:', err.message);
+      errors.push({ provider: 'telegram', error: err.message });
     }
   }
 
   if (results.length === 0) {
-    console.warn('[Mailer] ⚠ No email sent! Configure GMAIL_USER + GMAIL_APP_PASS or RESEND_API_KEY');
+    console.error('[Mailer] ⚠ NO EMAIL SENT!');
+    console.error('[Mailer] Errors:', JSON.stringify(errors));
+    console.error('[Mailer] Please configure GMAIL_USER + GMAIL_APP_PASS on Railway');
   }
+
+  console.log('[Mailer] === EMAIL RESULT ===');
+  console.log('[Mailer] Sent via:', results.join(', ') || 'NONE');
   
-  return results;
+  return { results, errors };
 }
 
 export function getContactEmail() {

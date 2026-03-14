@@ -471,4 +471,69 @@ Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
   res.status(201).json(reservation);
 });
 
+// Test email endpoint (admin only - for debugging)
+router.get('/test-email', async (req, res) => {
+  const testEmail = req.query.email;
+  
+  if (!testEmail) {
+    return res.status(400).json({ 
+      error: 'Email required',
+      usage: '/api/test-email?email=your@email.com',
+      config: {
+        GMAIL_USER: process.env.GMAIL_USER ? '✓ Set' : '✗ Missing',
+        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ Set' : '✗ Missing',
+        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ Set' : '✗ Missing',
+        CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'Not set',
+      }
+    });
+  }
+
+  console.log('[Test Email] Sending test to:', testEmail);
+
+  try {
+    const result = await sendMail({
+      to: testEmail,
+      subject: '✅ Test Email - French With Us',
+      html: `
+        <div style="font-family:Arial,sans-serif;padding:20px;background:#f5f0f0;">
+          <div style="max-width:500px;margin:0 auto;background:#fff;padding:30px;border-radius:12px;">
+            <h1 style="color:#E75480;margin:0 0 20px;">🎉 Email Working!</h1>
+            <p style="color:#333;font-size:16px;">This is a test email from French With Us.</p>
+            <p style="color:#666;font-size:14px;">If you received this, your email system is configured correctly!</p>
+            <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+            <p style="color:#999;font-size:12px;">Sent at: ${new Date().toISOString()}</p>
+          </div>
+        </div>
+      `,
+      text: 'Test email from French With Us. If you received this, email is working!',
+    });
+
+    res.json({
+      success: result.results && result.results.length > 0,
+      message: result.results && result.results.length > 0 
+        ? `Email sent via: ${result.results.join(', ')}` 
+        : 'No email sent - check configuration',
+      sentTo: testEmail,
+      providers: result.results || [],
+      errors: result.errors || [],
+      config: {
+        GMAIL_USER: process.env.GMAIL_USER ? '✓ Set' : '✗ Missing',
+        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ Set' : '✗ Missing',
+        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ Set' : '✗ Missing',
+      }
+    });
+  } catch (err) {
+    console.error('[Test Email] Error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      config: {
+        GMAIL_USER: process.env.GMAIL_USER ? '✓ Set' : '✗ Missing',
+        GMAIL_APP_PASS: process.env.GMAIL_APP_PASS ? '✓ Set' : '✗ Missing',
+        RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ Set' : '✗ Missing',
+      }
+    });
+  }
+});
+
 export default router;
