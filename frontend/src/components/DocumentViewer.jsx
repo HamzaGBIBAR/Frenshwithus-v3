@@ -45,10 +45,62 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
   const [zoom, setZoom] = useState(100);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [blobUrl, setBlobUrl] = useState(null);
   const containerRef = useRef(null);
 
   const fileInfo = getFileTypeInfo(mimeType);
   const canPreview = fileInfo.canPreview && (isImage(mimeType) || isPdf(mimeType));
+
+  // Convert base64 data URI to Blob URL for better browser compatibility (especially PDFs)
+  useEffect(() => {
+    if (!url) return;
+    
+    let objectUrl = null;
+    
+    // If it's a base64 data URI, convert to blob URL
+    if (url.startsWith('data:')) {
+      try {
+        const [header, base64Data] = url.split(',');
+        const mimeMatch = header.match(/data:([^;]+)/);
+        const mime = mimeMatch ? mimeMatch[1] : mimeType || 'application/octet-stream';
+        
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mime });
+        objectUrl = URL.createObjectURL(blob);
+        setBlobUrl(objectUrl);
+      } catch (err) {
+        console.error('Failed to convert base64 to blob:', err);
+        setError(t('documentViewer.loadError'));
+        setLoading(false);
+      }
+    } else {
+      // Regular URL, use as-is
+      setBlobUrl(url);
+    }
+
+    // For PDFs, set a timeout to hide loading spinner (onLoad doesn't always fire)
+    let loadingTimeout;
+    if (isPdf(mimeType)) {
+      loadingTimeout = setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    }
+
+    // Cleanup blob URL on unmount
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
+    };
+  }, [url, mimeType, t]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -194,7 +246,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
 
         {/* Content */}
         <div className="flex-1 overflow-auto bg-gray-100 dark:bg-[#0a0a0a]">
-          {canPreview ? (
+          {canPreview && blobUrl ? (
             <div 
               className="min-h-full flex items-center justify-center p-2 sm:p-4"
               style={{ 
@@ -203,7 +255,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
             >
               {isImage(mimeType) ? (
                 <img
-                  src={url}
+                  src={blobUrl}
                   alt={fileName}
                   className="max-w-full transition-transform duration-200"
                   style={{ 
@@ -217,10 +269,10 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                   }}
                 />
               ) : isPdf(mimeType) ? (
-                <iframe
-                  src={url}
-                  title={fileName}
-                  className="w-full h-full border-0 bg-white"
+                <object
+                  data={blobUrl}
+                  type="application/pdf"
+                  className="w-full h-full bg-white"
                   style={{ 
                     minHeight: 'calc(95vh - 80px)',
                     transform: `scale(${zoom / 100})`,
@@ -228,11 +280,21 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                     width: `${10000 / zoom}%`,
                   }}
                   onLoad={() => setLoading(false)}
-                  onError={() => {
-                    setLoading(false);
-                    setError(t('documentViewer.loadError'));
-                  }}
-                />
+                >
+                  <iframe
+                    src={blobUrl}
+                    title={fileName}
+                    className="w-full h-full border-0 bg-white"
+                    style={{ 
+                      minHeight: 'calc(95vh - 80px)',
+                    }}
+                    onLoad={() => setLoading(false)}
+                    onError={() => {
+                      setLoading(false);
+                      setError(t('documentViewer.loadError'));
+                    }}
+                  />
+                </object>
               ) : null}
             </div>
           ) : (
@@ -260,7 +322,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
           )}
 
           {/* Loading state */}
-          {loading && canPreview && (
+          {(loading && canPreview) || (canPreview && !blobUrl) ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-[#0a0a0a]">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-3 border-pink-primary dark:border-pink-400 border-t-transparent rounded-full animate-spin" />
@@ -269,7 +331,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Error state */}
           {error && (
