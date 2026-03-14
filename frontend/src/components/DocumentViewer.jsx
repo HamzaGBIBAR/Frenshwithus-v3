@@ -1,17 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-/**
- * DocumentViewer - Modal popup to view documents (PDF, images, Word, Excel, PowerPoint)
- * 
- * Features:
- * - PDF: Native browser rendering with zoom and scroll
- * - Images: Full-screen preview with zoom controls
- * - Office docs: Download fallback (browser can't render directly)
- * - Responsive design for mobile and desktop
- * - Keyboard navigation (Escape to close, +/- for zoom)
- */
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const FILE_TYPE_INFO = {
   'application/pdf': { name: 'PDF', icon: '📄', canPreview: true },
@@ -42,65 +37,15 @@ function isPdf(mimeType) {
 
 export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
   const { t } = useTranslation();
-  const [zoom, setZoom] = useState(100);
+  const [scale, setScale] = useState(1.0);
+  const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [blobUrl, setBlobUrl] = useState(null);
   const containerRef = useRef(null);
+  const contentRef = useRef(null);
 
   const fileInfo = getFileTypeInfo(mimeType);
   const canPreview = fileInfo.canPreview && (isImage(mimeType) || isPdf(mimeType));
-
-  // Convert base64 data URI to Blob URL for better browser compatibility (especially PDFs)
-  useEffect(() => {
-    if (!url) return;
-    
-    let objectUrl = null;
-    
-    // If it's a base64 data URI, convert to blob URL
-    if (url.startsWith('data:')) {
-      try {
-        const [header, base64Data] = url.split(',');
-        const mimeMatch = header.match(/data:([^;]+)/);
-        const mime = mimeMatch ? mimeMatch[1] : mimeType || 'application/octet-stream';
-        
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: mime });
-        objectUrl = URL.createObjectURL(blob);
-        setBlobUrl(objectUrl);
-      } catch (err) {
-        console.error('Failed to convert base64 to blob:', err);
-        setError(t('documentViewer.loadError'));
-        setLoading(false);
-      }
-    } else {
-      // Regular URL, use as-is
-      setBlobUrl(url);
-    }
-
-    // For PDFs, set a timeout to hide loading spinner (onLoad doesn't always fire)
-    let loadingTimeout;
-    if (isPdf(mimeType)) {
-      loadingTimeout = setTimeout(() => {
-        setLoading(false);
-      }, 2000);
-    }
-
-    // Cleanup blob URL on unmount
-    return () => {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-      }
-    };
-  }, [url, mimeType, t]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -108,11 +53,11 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
       if (e.key === 'Escape') {
         onClose?.();
       } else if (e.key === '+' || e.key === '=') {
-        setZoom((z) => Math.min(z + 25, 300));
+        setScale((s) => Math.min(s + 0.25, 3.0));
       } else if (e.key === '-') {
-        setZoom((z) => Math.max(z - 25, 25));
+        setScale((s) => Math.max(s - 0.25, 0.5));
       } else if (e.key === '0') {
-        setZoom(100);
+        setScale(1.0);
       }
     };
 
@@ -129,10 +74,21 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
     };
   }, []);
 
+  const onDocumentLoadSuccess = useCallback(({ numPages }) => {
+    setNumPages(numPages);
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  const onDocumentLoadError = useCallback((err) => {
+    console.error('PDF load error:', err);
+    setLoading(false);
+    setError(t('documentViewer.loadError'));
+  }, [t]);
+
   const handleDownload = () => {
     if (!url) return;
     
-    // For Base64 data URIs, create a blob and download
     if (url.startsWith('data:')) {
       try {
         const [header, base64Data] = url.split(',');
@@ -159,10 +115,11 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
         console.error('Download error:', err);
       }
     } else {
-      // Regular URL
       window.open(url, '_blank');
     }
   };
+
+  const zoomPercent = Math.round(scale * 100);
 
   const content = (
     <div
@@ -183,7 +140,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                 {fileName || t('documentViewer.document')}
               </h3>
               <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60">
-                {fileInfo.name}
+                {fileInfo.name}{numPages ? ` • ${numPages} page${numPages > 1 ? 's' : ''}` : ''}
               </p>
             </div>
           </div>
@@ -193,7 +150,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
             {canPreview && (
               <>
                 <button
-                  onClick={() => setZoom((z) => Math.max(z - 25, 25))}
+                  onClick={() => setScale((s) => Math.max(s - 0.25, 0.5))}
                   className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-text dark:text-[#f5f5f5] transition"
                   title={t('documentViewer.zoomOut')}
                 >
@@ -202,10 +159,10 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                   </svg>
                 </button>
                 <span className="text-xs sm:text-sm font-medium text-text dark:text-[#f5f5f5] min-w-[3rem] text-center">
-                  {zoom}%
+                  {zoomPercent}%
                 </span>
                 <button
-                  onClick={() => setZoom((z) => Math.min(z + 25, 300))}
+                  onClick={() => setScale((s) => Math.min(s + 0.25, 3.0))}
                   className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-text dark:text-[#f5f5f5] transition"
                   title={t('documentViewer.zoomIn')}
                 >
@@ -214,7 +171,7 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                   </svg>
                 </button>
                 <button
-                  onClick={() => setZoom(100)}
+                  onClick={() => setScale(1.0)}
                   className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-text dark:text-[#f5f5f5] transition text-xs font-medium"
                   title={t('documentViewer.resetZoom')}
                 >
@@ -245,21 +202,16 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-[#0a0a0a]">
-          {canPreview && blobUrl ? (
-            <div 
-              className="min-h-full flex items-center justify-center p-2 sm:p-4"
-              style={{ 
-                minHeight: '100%',
-              }}
-            >
+        <div ref={contentRef} className="flex-1 overflow-auto bg-gray-100 dark:bg-[#0a0a0a]">
+          {canPreview ? (
+            <div className="min-h-full flex flex-col items-center p-2 sm:p-4">
               {isImage(mimeType) ? (
                 <img
-                  src={blobUrl}
+                  src={url}
                   alt={fileName}
                   className="max-w-full transition-transform duration-200"
                   style={{ 
-                    transform: `scale(${zoom / 100})`,
+                    transform: `scale(${scale})`,
                     transformOrigin: 'center center',
                   }}
                   onLoad={() => setLoading(false)}
@@ -269,36 +221,50 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                   }}
                 />
               ) : isPdf(mimeType) ? (
-                <object
-                  data={blobUrl}
-                  type="application/pdf"
-                  className="w-full h-full bg-white"
-                  style={{ 
-                    minHeight: 'calc(95vh - 80px)',
-                    transform: `scale(${zoom / 100})`,
-                    transformOrigin: 'top center',
-                    width: `${10000 / zoom}%`,
-                  }}
-                  onLoad={() => setLoading(false)}
+                <Document
+                  file={url}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={onDocumentLoadError}
+                  loading={
+                    <div className="flex flex-col items-center gap-3 py-20">
+                      <div className="w-10 h-10 border-3 border-pink-primary dark:border-pink-400 border-t-transparent rounded-full animate-spin" />
+                      <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">
+                        {t('documentViewer.loading')}
+                      </p>
+                    </div>
+                  }
+                  error={
+                    <div className="flex flex-col items-center gap-3 text-center p-4 py-20">
+                      <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-red-600 dark:text-red-400">{t('documentViewer.loadError')}</p>
+                      <button
+                        onClick={handleDownload}
+                        className="px-4 py-2 text-sm text-pink-primary dark:text-pink-400 hover:underline"
+                      >
+                        {t('documentViewer.tryDownload')}
+                      </button>
+                    </div>
+                  }
+                  className="pdf-document"
                 >
-                  <iframe
-                    src={blobUrl}
-                    title={fileName}
-                    className="w-full h-full border-0 bg-white"
-                    style={{ 
-                      minHeight: 'calc(95vh - 80px)',
-                    }}
-                    onLoad={() => setLoading(false)}
-                    onError={() => {
-                      setLoading(false);
-                      setError(t('documentViewer.loadError'));
-                    }}
-                  />
-                </object>
+                  {Array.from(new Array(numPages || 0), (_, index) => (
+                    <Page
+                      key={`page_${index + 1}`}
+                      pageNumber={index + 1}
+                      scale={scale}
+                      className="mb-4 shadow-lg rounded-lg overflow-hidden"
+                      renderTextLayer={true}
+                      renderAnnotationLayer={true}
+                    />
+                  ))}
+                </Document>
               ) : null}
             </div>
           ) : (
-            // Non-previewable files (Word, Excel, PowerPoint)
             <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-6 text-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-pink-soft/30 dark:bg-pink-400/20 flex items-center justify-center mb-4 sm:mb-6">
                 <span className="text-4xl sm:text-5xl">{fileInfo.icon}</span>
@@ -321,8 +287,8 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
             </div>
           )}
 
-          {/* Loading state */}
-          {(loading && canPreview) || (canPreview && !blobUrl) ? (
+          {/* Loading state for images */}
+          {loading && isImage(mimeType) && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-[#0a0a0a]">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-3 border-pink-primary dark:border-pink-400 border-t-transparent rounded-full animate-spin" />
@@ -331,10 +297,10 @@ export default function DocumentViewer({ url, mimeType, fileName, onClose }) {
                 </p>
               </div>
             </div>
-          ) : null}
+          )}
 
           {/* Error state */}
-          {error && (
+          {error && !isPdf(mimeType) && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-[#0a0a0a]">
               <div className="flex flex-col items-center gap-3 text-center p-4">
                 <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
