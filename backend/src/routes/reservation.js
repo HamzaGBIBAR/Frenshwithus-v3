@@ -7,10 +7,16 @@ const router = Router();
 const DIAL_CODES = { MA: '+212', FR: '+33', DZ: '+213', US: '+1', GB: '+44', DE: '+49', BE: '+32', CA: '+1', ES: '+34', IT: '+39', CH: '+41', AE: '+971', SA: '+966', EG: '+20', TN: '+216', LB: '+961', JO: '+962', TR: '+90', CN: '+86', JP: '+81', BR: '+55', IN: '+91', QA: '+974', KW: '+965' };
 const COUNTRY_NAMES = { MA: 'Maroc', FR: 'France', US: 'États-Unis', GB: 'Royaume-Uni', CA: 'Canada', DE: 'Allemagne', ES: 'Espagne', IT: 'Italie', BE: 'Belgique', CH: 'Suisse', DZ: 'Algérie', TN: 'Tunisie', EG: 'Égypte', SA: 'Arabie Saoudite', AE: 'Émirats arabes unis', QA: 'Qatar', KW: 'Koweït', LB: 'Liban', JO: 'Jordanie', TR: 'Turquie', CN: 'Chine', JP: 'Japon', KR: 'Corée du Sud', IN: 'Inde', BR: 'Brésil', MX: 'Mexique', AU: 'Australie', NZ: 'Nouvelle-Zélande', SN: 'Sénégal', CI: "Côte d'Ivoire", CM: 'Cameroun', CD: 'RD Congo', NG: 'Nigeria', GH: 'Ghana' };
 const PACK_NAMES = { individuel: 'Cours Individuel', groups: 'Cours en Groupe', preparation: 'Préparation aux Examens' };
+const PACK_NAMES_EN = { individuel: 'One-to-One', groups: 'Group Lessons', preparation: 'Exam Preparation' };
 const PACK_DESCRIPTIONS = {
   individuel: 'Cours particuliers personnalisés avec un professeur dédié',
   groups: 'Apprenez en petit groupe pour une expérience interactive',
   preparation: 'Préparation intensive aux examens DELF/DALF/TCF'
+};
+const PACK_DESCRIPTIONS_EN = {
+  individuel: 'Personalised one-to-one lessons with a dedicated teacher',
+  groups: 'Learn in a small group for an interactive experience',
+  preparation: 'Intensive preparation for DELF/DALF/TCF exams'
 };
 
 function buildNotificationEmail(r) {
@@ -24,42 +30,43 @@ function buildNotificationEmail(r) {
   const refId = `FWU-${String(r.id).padStart(5, '0')}`;
 
   // Liste des formules (si le client n'a pas précisé le pack)
-  const allPacksList = Object.entries(PACK_NAMES)
-    .map(([key, name]) => `• ${name} : ${PACK_DESCRIPTIONS[key] || ''}`)
-    .join('\n');
+  const packNameEn = PACK_NAMES_EN[r.pack] || packName;
+  const allPacksListEn = Object.entries(PACK_NAMES_EN)
+    .map(([key, name]) => `  ▪ ${name}\n    ${PACK_DESCRIPTIONS_EN[key] || ''}`)
+    .join('\n\n');
 
-  const packParagraph = hasPack
-    ? `Nous avons bien enregistré votre demande (référence : ${refId}) concernant la formule « ${packName} ».`
-    : `Nous avons bien enregistré votre demande (référence : ${refId}). Vous n’avez pas précisé de formule ; voici celles que nous proposons :
+  const packParagraphEn = hasPack
+    ? `We have received your booking request (reference: ${refId}) for the **${packNameEn}** programme.`
+    : `We have received your booking request (reference: ${refId}). You did not specify a programme; here are the options we offer:
 
-${allPacksList}
+${allPacksListEn}
 
-Lors de notre échange, nous pourrons vous aider à choisir la formule la plus adaptée à vos objectifs.`;
+During our call, we will be happy to help you choose the programme that best fits your goals.`;
 
-  // Pre-filled professional response email
-  const responseSubject = encodeURIComponent(`Votre demande French With Us - ${refId}`);
-  const responseBody = encodeURIComponent(`Madame, Monsieur${r.firstName ? ` ${r.firstName}` : ''},
+  // Pre-filled professional response email (English, with icons)
+  const responseSubject = encodeURIComponent(`Your French With Us request - ${refId}`);
+  const responseBody = encodeURIComponent(`Dear ${r.firstName ? r.firstName : 'Sir or Madam'},
 
-Nous vous remercions pour l'intérêt que vous portez à French With Us et pour votre demande de réservation.
+Thank you for your interest in French With Us and for submitting your booking request.
 
-${packParagraph}
+${packParagraphEn}
 
-Afin de personnaliser votre parcours et de répondre au mieux à vos attentes, nous vous proposons un échange téléphonique ou visio de quinze minutes, sans engagement. Cet entretien nous permettra de :
-— préciser vos objectifs et votre niveau actuel ;
-— vous présenter le déroulement des cours et les modalités pratiques ;
-— convenir ensemble d’un planning adapté à votre disponibilité.
+To personalise your learning path and answer your questions, we would like to offer you a 15-minute phone or video call at no obligation. This call will allow us to:
+  ► Clarify your goals and current level
+  ► Explain how the lessons work and practical details
+  ► Agree on a schedule that suits your availability
 
-Merci de bien vouloir nous indiquer deux ou trois créneaux qui vous conviendraient pour cet échange. Nous vous recontacterons dans les plus brefs délais pour confirmer le rendez-vous.
+Please reply with two or three time slots that work for you. We will get back to you as soon as possible to confirm the appointment.
 
-Restant à votre disposition pour toute question.
+We remain at your disposal for any questions.
 
-Cordialement,
+Kind regards,
 
-L’équipe French With Us
-frenchwithus.edu@gmail.com
-https://frenchwithus.up.railway.app
+The French With Us Team
+✉ frenchwithus.edu@gmail.com
+🌐 https://frenchwithus.up.railway.app
 
-Réf. : ${refId}
+Ref: ${refId}
 `);
 
   const row = (icon, label, value) => `
