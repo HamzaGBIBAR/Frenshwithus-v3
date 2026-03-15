@@ -144,8 +144,12 @@ export default function AdminAvailability() {
     return `${dayRange} ${formatSlotTime(local.localStart.time)} - ${formatSlotTime(local.localEnd.time)}`;
   };
 
-  // Weekly calendar: 24h in Référence Maroc (UTC) — use ref* when present so grid matches "Référence Maroc"
-  const hourSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+  // Weekly calendar: 24h in Référence Maroc — order 1, 2, …, 23, 00 (display as plain hour numbers)
+  const hourSlots = [
+    ...Array.from({ length: 23 }, (_, i) => `${String(i + 1).padStart(2, '0')}:00`),
+    '00:00'
+  ];
+  const hourLabel = (timeStr) => (timeStr === '00:00' ? '00' : String(parseInt(timeStr, 10)));
   const slotContains = (start, end, timeStr) => {
     if (!start || !end || !timeStr) return false;
     if (start <= end) return timeStr >= start && timeStr < end;
@@ -285,7 +289,7 @@ export default function AdminAvailability() {
                     key={timeStr}
                     className={`border-b border-pink-soft/20 dark:border-white/5 hover:bg-pink-soft/10 dark:hover:bg-white/5 ${isNight ? 'bg-pink-soft/5 dark:bg-white/[0.02]' : ''}`}
                   >
-                    <td className="py-2 px-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs w-20 shrink-0 align-middle" title={timeStr}>{formatTimeAMPM(timeStr)}</td>
+                    <td className="py-2 px-2 text-text/70 dark:text-[#f5f5f5]/70 font-mono text-xs w-20 shrink-0 align-middle" title={timeStr}>{hourLabel(timeStr)}</td>
                     {[1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => {
                       const { profs, studs } = getWeeklyCell(dayOfWeek, timeStr);
                       const hasBoth = profs.length > 0 && studs.length > 0;
