@@ -36,10 +36,10 @@ export const getAllowedOrigins = () => {
   return ['http://localhost:5173', 'http://127.0.0.1:5173'];
 };
 
-// General rate limit: 100 per minute per IP; exceeding adds IP to block list
+// General rate limit: 180 per minute per IP (allows heavy availability editing); exceeding adds IP to block list
 export const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 min
-  max: 100,
+  max: 180,
   message: { error: 'Too many requests' },
   standardHeaders: true,
   legacyHeaders: false,

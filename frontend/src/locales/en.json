@@ -664,7 +664,7 @@
       "to": "To",
       "add": "Add",
       "remove": "Remove",
-      "availabilityGridHint": "Click and drag on a day column to add a time slot. Click a slot to remove it.",
+      "availabilityGridHint": "Click and drag on a day to add a slot. To remove a slot, click the trash icon on it.",
       "addManually": "Add a slot manually",
       "coursesThisWeek": "{{count}} courses this week",
       "slotsAvailable": "{{count}} available slots",
@@ -764,7 +764,7 @@
       "availabilityDesc": "Set your weekly availability (local time). Admin will create courses accordingly.",
       "addSlot": "Add",
       "removeSlot": "Remove",
-      "availabilityGridHint": "Click and drag on a day column to add a time slot. Click a slot to remove it.",
+      "availabilityGridHint": "Click and drag on a day to add a slot. To remove a slot, click the trash icon on it.",
       "addManually": "Add a slot manually",
       "availabilityNeedTimezone": "Your country or timezone must be set (by admin) to manage your slots in local time."
     }
