@@ -290,8 +290,8 @@ export default function AdminAvailability() {
             {t('dashboard.adminAvailability.weeklyCalendarHint')}
           </p>
         </div>
-        <div className="p-4 overflow-x-auto overflow-y-auto max-h-[480px] max-w-full">
-          <table className="w-full text-sm border-collapse min-w-[720px]">
+        <div className="p-4 overflow-x-auto overflow-y-auto max-h-[480px] max-w-[920px]">
+          <table className="text-sm border-collapse min-w-[1000px] w-max">
             <thead className="sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] border-b border-pink-soft/50 dark:border-white/10 shadow-sm">
               <tr>
                 <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-20 shrink-0">
