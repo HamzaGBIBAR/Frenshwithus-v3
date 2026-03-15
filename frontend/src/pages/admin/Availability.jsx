@@ -8,14 +8,14 @@ import { formatTimeAMPM, getEndTime } from '../../utils/format';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
 
-/** Small avatar for planning grid: profile picture or initial, name, and age. Age always shown next to name (value or "—"). */
-function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwaysShowAgeSlot = false, className = '' }) {
+/** Small avatar for planning grid: profile picture or initial, name, and age. Age always shown with label (e.g. "Age: 12"). */
+function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwaysShowAgeSlot = false, ageLabel = 'Age', className = '' }) {
   const [imgError, setImgError] = useState(false);
   const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : '?';
   const hasAge = showAge && user?.age != null && Number.isFinite(Number(user.age));
   const showAgeSlot = showAge && (alwaysShowAgeSlot || hasAge);
   const ageValue = hasAge ? String(user.age) : '—';
-  const title = showAge ? `${user?.name || ''} (${ageValue})` : user?.name;
+  const title = showAge ? `${user?.name || ''}, ${ageLabel}: ${ageValue}` : user?.name;
   return (
     <span className={`inline-flex items-center gap-1.5 min-w-0 ${className}`} title={title}>
       <span
@@ -32,8 +32,8 @@ function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwa
         <>
           <span className="truncate text-[11px] min-w-0">{user?.name || '—'}</span>
           {showAgeSlot && (
-            <span className="shrink-0 text-[11px] text-text/80 dark:text-[#f5f5f5]/90 font-medium" aria-label="Age">
-              ({ageValue})
+            <span className="shrink-0 text-[11px] text-text/80 dark:text-[#f5f5f5]/90 font-medium" aria-label={ageLabel}>
+              {ageLabel}: {ageValue}
             </span>
           )}
         </>
@@ -340,7 +340,7 @@ export default function AdminAvailability() {
                               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30 flex-wrap">
                                 <span className="shrink-0 font-semibold">P:</span>
                                 {profs.slice(0, 3).map((p) => (
-                                  <PlanningAvatar key={p.id} user={p} size={18} showName={true} showAge={true} className="max-w-[100px]" />
+                                  <PlanningAvatar key={p.id} user={p} size={18} showName={true} showAge={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[100px]" />
                                 ))}
                                 {profs.length > 3 && <span className="text-[10px] opacity-80">+{profs.length - 3}</span>}
                               </span>
@@ -349,7 +349,7 @@ export default function AdminAvailability() {
                               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30 flex-wrap">
                                 <span className="shrink-0 font-semibold">E:</span>
                                 {studs.slice(0, 3).map((s) => (
-                                  <PlanningAvatar key={s.id} user={s} size={18} showName={true} showAge={true} alwaysShowAgeSlot={true} className="max-w-[100px]" />
+                                  <PlanningAvatar key={s.id} user={s} size={18} showName={true} showAge={true} alwaysShowAgeSlot={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[100px]" />
                                 ))}
                                 {studs.length > 3 && <span className="text-[10px] opacity-80">+{studs.length - 3}</span>}
                               </span>
