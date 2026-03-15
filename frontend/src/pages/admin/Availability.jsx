@@ -8,7 +8,7 @@ import { formatTimeAMPM, getEndTime } from '../../utils/format';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
 
-/** Small avatar for planning grid: profile picture or initial, name, and optional age. */
+/** Small avatar for planning grid: profile picture or initial, name, and optional age. Age is outside truncate so it stays visible. */
 function PlanningAvatar({ user, size = 20, showName = true, showAge = true, className = '' }) {
   const [imgError, setImgError] = useState(false);
   const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : '?';
@@ -27,10 +27,10 @@ function PlanningAvatar({ user, size = 20, showName = true, showAge = true, clas
         )}
       </span>
       {showName && (
-        <span className="truncate text-[11px]">
-          {user?.name || '—'}
-          {hasAge && <span className="text-text/70 dark:text-[#f5f5f5]/70 ml-0.5">({user.age})</span>}
-        </span>
+        <>
+          <span className="truncate text-[11px] min-w-0">{user?.name || '—'}</span>
+          {hasAge && <span className="shrink-0 text-[11px] text-text/80 dark:text-[#f5f5f5]/90 font-medium">({user.age})</span>}
+        </>
       )}
     </span>
   );
