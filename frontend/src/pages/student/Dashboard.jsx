@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
@@ -388,9 +388,37 @@ export default function StudentDashboard() {
     return courseDateStr >= weekStartStr && courseDateStr <= weekEndStr;
   }).length;
 
-  const calendarEvents = courses.map((c) => {
+  const toDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const toJsDay = (dow) => (dow === 7 ? 0 : dow);
+
+  const availabilityEvents = useMemo(() => {
+    const rangeStart = new Date();
+    rangeStart.setMonth(rangeStart.getMonth() - 2);
+    const rangeEnd = new Date();
+    rangeEnd.setMonth(rangeEnd.getMonth() + 12);
+    const evts = [];
+    for (const slot of availability || []) {
+      const d = new Date(rangeStart.getTime());
+      const end = new Date(rangeEnd.getTime());
+      const timeLabel = slot.endTime ? `${slot.startTime?.slice(0, 5) || ''} – ${slot.endTime.slice(0, 5)}` : slot.startTime?.slice(0, 5) || '';
+      while (d <= end) {
+        if (d.getDay() === toJsDay(slot.dayOfWeek)) {
+          evts.push({
+            id: `av-my-${slot.id}-${toDateStr(d)}`,
+            date: toDateStr(d),
+            time: timeLabel,
+            title: t('dashboard.student.myAvailabilityShort') || t('dashboard.professor.myAvailabilityShort') || 'Dispo.',
+            type: 'my-availability',
+          });
+        }
+        d.setDate(d.getDate() + 1);
+      }
+    }
+    return evts;
+  }, [availability, t]);
+
+  const courseEvents = courses.map((c) => {
     if (!c?.date || !c?.time) return null;
-    const d = new Date(`${c.date}T${c.time}`);
     const sessionEnded = c.isStarted && c.sessionEnded;
     const localInfo = getLocalInfo(c);
     return {
@@ -403,6 +431,8 @@ export default function StudentDashboard() {
       isPast: sessionEnded || !!c.endReason,
     };
   }).filter(Boolean);
+
+  const calendarEvents = [...courseEvents, ...availabilityEvents];
 
   const handleSelectEvent = useCallback((evt) => {
     if (!evt?.id) return;

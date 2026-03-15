@@ -311,12 +311,13 @@ export default function ProfessorCourses() {
     for (const slot of availability || []) {
       const d = new Date(rangeStart.getTime());
       const end = new Date(rangeEnd.getTime());
+      const timeLabel = slot.endTime ? `${slot.startTime.slice(0, 5)} – ${slot.endTime.slice(0, 5)}` : slot.startTime?.slice(0, 5) || '';
       while (d <= end) {
         if (d.getDay() === toJsDay(slot.dayOfWeek)) {
           evts.push({
             id: `av-my-${slot.id}-${toDateStrLocal(d)}`,
             date: toDateStrLocal(d),
-            time: slot.startTime,
+            time: timeLabel,
             title: t('dashboard.professor.myAvailabilityShort'),
             type: 'my-availability',
           });
@@ -325,7 +326,7 @@ export default function ProfessorCourses() {
       }
     }
     return evts;
-  }, [availability, user?.id]);
+  }, [availability, t]);
 
   const courseEvents = courses.map((c) => {
     const status = getCourseStatus(c);
