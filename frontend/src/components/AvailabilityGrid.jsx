@@ -1,14 +1,13 @@
 /**
  * Visual week grid for selecting availability.
- * - Rows = hours (default 8–20), columns = Mon–Sun
+ * - Rows = hours (6–23), columns = Mon–Sun. No weekly hour limit; users can add as many slots as they need.
  * - Click and drag on a day column to select a time range → creates one slot
- * - Existing slots shown as colored bars; click slot to remove (or use delete button)
- * - Animated, responsive, works for professor and student
+ * - Existing slots shown as colored bars; click trash icon to remove
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-const HOUR_START = 8;
-const HOUR_END = 21; // 8h to 21h (21 = end of 20h slot)
+const HOUR_START = 6;   // 6:00 AM
+const HOUR_END = 24;    // 6h–23h shown (24 = end of 23h slot)
 const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
 
 function timeFromHour(h) {
