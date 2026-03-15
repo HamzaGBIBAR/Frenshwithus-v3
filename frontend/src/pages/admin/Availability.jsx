@@ -291,7 +291,13 @@ export default function AdminAvailability() {
           </p>
         </div>
         <div className="p-4 overflow-x-auto overflow-y-auto max-h-[480px]">
-          <table className="w-full text-sm border-collapse min-w-[640px]">
+          <table className="w-full text-sm border-collapse min-w-[640px] table-fixed">
+            <colgroup>
+              <col className="w-20" />
+              {[1, 2, 3, 4, 5, 6, 7].map((_, i) => (
+                <col key={i} style={{ width: 'calc((100% - 5rem) / 7)' }} />
+              ))}
+            </colgroup>
             <thead className="sticky top-0 z-10 bg-white dark:bg-[#1a1a1a] border-b border-pink-soft/50 dark:border-white/10 shadow-sm">
               <tr>
                 <th className="text-left py-2.5 px-2 font-semibold text-text/80 dark:text-[#f5f5f5]/90 w-20 shrink-0">
@@ -331,7 +337,7 @@ export default function AdminAvailability() {
                       return (
                         <td
                           key={dayOfWeek}
-                          className={`py-1.5 px-2 align-middle min-w-[72px] ${isTodayCol ? 'bg-pink-500/10 dark:bg-pink-500/10' : ''} ${hasBoth ? 'cursor-pointer hover:bg-pink-soft/20 dark:hover:bg-pink-400/10' : ''}`}
+                          className={`py-1.5 px-2 align-middle overflow-hidden ${isTodayCol ? 'bg-pink-500/10 dark:bg-pink-500/10' : ''} ${hasBoth ? 'cursor-pointer hover:bg-pink-soft/20 dark:hover:bg-pink-400/10' : ''}`}
                           onClick={() => hasBoth && openCreateCourseModal(dayOfWeek, timeStr, profs, studs)}
                           title={hasBoth ? t('dashboard.adminAvailability.clickToCreateCourse') : undefined}
                         >
