@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
 import StudentWeekView from '../../components/StudentWeekView';
+import AvailabilityGrid from '../../components/AvailabilityGrid';
 import TeacherProfileTooltip from '../../components/TeacherProfileTooltip';
 import { formatTimeAMPM, formatProfessorName, formatTimeRange, getEndTime, shouldShowProfessorAbsent } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
@@ -540,96 +541,103 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Availability - student sets weekly slots (in local time); stored as Morocco time */}
+      {/* Availability - visual week grid + optional manual add */}
       <section id="availability" className="scroll-mt-6 p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg">
         <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-2">{t('dashboard.student.myAvailability')}</h2>
         <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mb-4">{t('dashboard.student.availabilityDesc')}</p>
         {(studentTz || (typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone)) ? (
           <>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
+            <AvailabilityGrid
+              slots={availability}
+              dayLabels={typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']}
+              onAdd={async ({ dayOfWeek, startTime, endTime }) => {
                 try {
                   const browserTz = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
                     ? Intl.DateTimeFormat().resolvedOptions().timeZone
                     : undefined;
                   await api.post('/student/availability', {
-                    dayOfWeek: availForm.dayOfWeek,
-                    startTime: availForm.startTime,
-                    endTime: availForm.endTime,
+                    dayOfWeek,
+                    startTime,
+                    endTime,
                     ...(browserTz && { timezone: browserTz }),
                   });
-                  setAvailForm((f) => ({ ...f, startTime: '09:00', endTime: '10:00' }));
                   fetchAvailability();
                 } catch {
                   // ignore
                 }
               }}
-              className="flex flex-wrap gap-4 items-end"
-            >
-              <div>
-                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.day')}</label>
-                <select
-                  value={availForm.dayOfWeek}
-                  onChange={(e) => setAvailForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
-                  className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
-                >
-                  {(typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']).map((dayName, i) => (
-                    <option key={i} value={i + 1}>{dayName}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.from')}</label>
-                <input
-                  type="time"
-                  value={availForm.startTime}
-                  onChange={(e) => setAvailForm((f) => ({ ...f, startTime: e.target.value }))}
-                  className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.to')}</label>
-                <input
-                  type="time"
-                  value={availForm.endTime}
-                  onChange={(e) => setAvailForm((f) => ({ ...f, endTime: e.target.value }))}
-                  className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
+              onRemove={async (id) => {
+                try {
+                  await api.delete(`/student/availability/${id}`);
+                  fetchAvailability();
+                } catch {
+                  // ignore
+                }
+              }}
+              removeLabel={t('dashboard.student.removeSlot')}
+              emptyMessage={t('dashboard.student.availabilityGridHint') || 'Click and drag on a day column to add a time slot. Click a slot to remove it.'}
+            />
+            <details className="mt-4 group">
+              <summary className="text-sm text-pink-primary dark:text-pink-400 cursor-pointer hover:underline list-none inline-flex items-center gap-1">
+                <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+                {t('dashboard.student.addManually') || 'Add a slot manually'}
+              </summary>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  try {
+                    const browserTz = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
+                      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                      : undefined;
+                    await api.post('/student/availability', {
+                      dayOfWeek: availForm.dayOfWeek,
+                      startTime: availForm.startTime,
+                      endTime: availForm.endTime,
+                      ...(browserTz && { timezone: browserTz }),
+                    });
+                    setAvailForm((f) => ({ ...f, startTime: '09:00', endTime: '10:00' }));
+                    fetchAvailability();
+                  } catch {
+                    // ignore
+                  }
+                }}
+                className="flex flex-wrap gap-4 items-end mt-3 pl-4"
               >
-                {t('dashboard.student.addSlot')}
-              </button>
-            </form>
-            {availability.length > 0 && (
-              <ul className="mt-4 space-y-2">
-                {availability.map((slot) => {
-                  const dayNames = typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-                  const display = `${dayNames[slot.dayOfWeek - 1]} ${slot.startTime} – ${slot.endTime}`;
-                  return (
-                    <li
-                      key={slot.id}
-                      className="flex items-center justify-between py-2 px-3 rounded-xl bg-pink-soft/30 dark:bg-white/5 border border-pink-soft/50 dark:border-white/10"
-                    >
-                      <span className="text-sm text-text dark:text-[#f5f5f5]">{display}</span>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          await api.delete(`/student/availability/${slot.id}`);
-                          fetchAvailability();
-                        }}
-                        className="text-pink-primary dark:text-pink-300 hover:underline text-sm"
-                      >
-                        {t('dashboard.student.removeSlot')}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.day')}</label>
+                  <select
+                    value={availForm.dayOfWeek}
+                    onChange={(e) => setAvailForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
+                    className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                  >
+                    {(typeof t('dashboard.professor.days', { returnObjects: true }) === 'object' ? t('dashboard.professor.days', { returnObjects: true }) : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']).map((dayName, i) => (
+                      <option key={i} value={i + 1}>{dayName}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.from')}</label>
+                  <input
+                    type="time"
+                    value={availForm.startTime}
+                    onChange={(e) => setAvailForm((f) => ({ ...f, startTime: e.target.value }))}
+                    className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.to')}</label>
+                  <input
+                    type="time"
+                    value={availForm.endTime}
+                    onChange={(e) => setAvailForm((f) => ({ ...f, endTime: e.target.value }))}
+                    className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+                  />
+                </div>
+                <button type="submit" className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow">
+                  {t('dashboard.student.addSlot')}
+                </button>
+              </form>
+            </details>
           </>
         ) : (
           <p className="text-sm text-text/50 dark:text-[#f5f5f5]/50">

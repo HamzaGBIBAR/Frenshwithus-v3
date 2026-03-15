@@ -664,6 +664,8 @@
       "to": "À",
       "add": "Ajouter",
       "remove": "Supprimer",
+      "availabilityGridHint": "Cliquez et glissez sur un jour pour ajouter un créneau. Cliquez sur un créneau pour le supprimer.",
+      "addManually": "Ajouter un créneau à la main",
       "coursesThisWeek": "{{count}} cours cette semaine",
       "slotsAvailable": "{{count}} créneaux de dispo.",
       "viewCurrentWeek": "Voir la semaine actuelle",
@@ -762,6 +764,8 @@
       "availabilityDesc": "Indiquez vos créneaux disponibles (heure locale). L'admin créera les cours en fonction.",
       "addSlot": "Ajouter",
       "removeSlot": "Supprimer",
+      "availabilityGridHint": "Cliquez et glissez sur un jour pour ajouter un créneau. Cliquez sur un créneau pour le supprimer.",
+      "addManually": "Ajouter un créneau à la main",
       "availabilityNeedTimezone": "Votre pays ou fuseau horaire doit être renseigné (par l'admin) pour gérer vos créneaux en heure locale."
     }
   }

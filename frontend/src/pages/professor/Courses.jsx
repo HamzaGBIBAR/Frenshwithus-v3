@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import Calendar from '../../components/Calendar';
+import AvailabilityGrid from '../../components/AvailabilityGrid';
 import { useAuth } from '../../context/AuthContext';
 import { formatTimeRange, getCourseStartMorocco, getEndTime } from '../../utils/format';
 import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
@@ -245,6 +246,14 @@ export default function ProfessorCourses() {
       : undefined;
     await api.post('/professor/availability', { ...form, ...(timezone && { timezone }) });
     setForm({ dayOfWeek: 1, startTime: '09:00', endTime: '12:00' });
+    load();
+  };
+
+  const handleAddFromGrid = async ({ dayOfWeek, startTime, endTime }) => {
+    const timezone = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+    await api.post('/professor/availability', { dayOfWeek, startTime, endTime, ...(timezone && { timezone }) });
     load();
   };
 
@@ -581,70 +590,62 @@ export default function ProfessorCourses() {
         </div>
       </div>
 
-      {/* Availability - Professors set their weekly availability */}
+      {/* Availability - Visual week grid + optional manual add */}
       <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg mb-6 transition-colors duration-500">
         <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-4">{t('dashboard.professor.myAvailability')}</h2>
         <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mb-4">
           {t('dashboard.professor.availabilityDesc')}
         </p>
-        <form onSubmit={handleAddAvailability} className="flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.day')}</label>
-            <select
-              value={form.dayOfWeek}
-              onChange={(e) => setForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
-              className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
-            >
-              {DAY_NUMBERS.map((n) => (
-                <option key={n} value={n}>{DAYS[n - 1]}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.from')}</label>
-            <input
-              type="time"
-              value={form.startTime}
-              onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
-              className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.to')}</label>
-            <input
-              type="time"
-              value={form.endTime}
-              onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
-              className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow"
-          >
-            {t('dashboard.professor.add')}
-          </button>
-        </form>
-        {availability.length > 0 && (
-          <ul className="mt-4 space-y-2">
-            {availability.map((slot) => (
-              <li
-                key={slot.id}
-                className="flex items-center justify-between py-2 px-3 rounded-xl bg-pink-soft/30 dark:bg-white/5 border border-pink-soft/50 dark:border-white/10"
+        <AvailabilityGrid
+          slots={availability}
+          dayLabels={Array.isArray(DAYS) ? DAYS : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']}
+          onAdd={handleAddFromGrid}
+          onRemove={handleRemoveAvailability}
+          addLabel={t('dashboard.professor.add')}
+          removeLabel={t('dashboard.professor.remove')}
+          emptyMessage={t('dashboard.professor.availabilityGridHint') || 'Click and drag on a day column to add a time slot. Click a slot to remove it.'}
+        />
+        <details className="mt-4 group">
+          <summary className="text-sm text-pink-primary dark:text-pink-400 cursor-pointer hover:underline list-none inline-flex items-center gap-1">
+            <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+            {t('dashboard.professor.addManually') || 'Add a slot manually'}
+          </summary>
+          <form onSubmit={handleAddAvailability} className="flex flex-wrap gap-4 items-end mt-3 pl-4">
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.day')}</label>
+              <select
+                value={form.dayOfWeek}
+                onChange={(e) => setForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
+                className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
               >
-                <span className="text-sm text-text dark:text-[#f5f5f5]">
-                  {DAYS[slot.dayOfWeek - 1]} {slot.startTime} – {slot.endTime}
-                </span>
-                <button
-                  onClick={() => handleRemoveAvailability(slot.id)}
-                  className="text-pink-primary dark:text-pink-300 hover:underline text-sm"
-                >
-                  {t('dashboard.professor.remove')}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                {DAY_NUMBERS.map((n) => (
+                  <option key={n} value={n}>{DAYS[n - 1]}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.from')}</label>
+              <input
+                type="time"
+                value={form.startTime}
+                onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+                className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.to')}</label>
+              <input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+                className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              />
+            </div>
+            <button type="submit" className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow">
+              {t('dashboard.professor.add')}
+            </button>
+          </form>
+        </details>
       </div>
 
       {/* Résumé rapide */}
