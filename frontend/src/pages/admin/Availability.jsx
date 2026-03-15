@@ -8,6 +8,27 @@ import { formatTimeAMPM, getEndTime } from '../../utils/format';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
 
+/** Small avatar for planning grid: profile picture or initial, with optional name. */
+function PlanningAvatar({ user, size = 20, showName = true, className = '' }) {
+  const [imgError, setImgError] = useState(false);
+  const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : '?';
+  return (
+    <span className={`inline-flex items-center gap-1.5 min-w-0 ${className}`} title={user?.name}>
+      <span
+        className="shrink-0 rounded-full overflow-hidden bg-pink-soft/40 dark:bg-white/20 flex items-center justify-center text-[10px] font-semibold text-pink-800 dark:text-pink-200"
+        style={{ width: size, height: size }}
+      >
+        {user?.avatarUrl && !imgError ? (
+          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+        ) : (
+          initial
+        )}
+      </span>
+      {showName && <span className="truncate text-[11px]">{user?.name || '—'}</span>}
+    </span>
+  );
+}
+
 function dateStrFromDayOfWeek(dayOfWeek) {
   const targetJsDay = dayOfWeek === 7 ? 0 : dayOfWeek; // 1..7 (Mon..Sun) -> JS day
   const d = new Date();
@@ -303,15 +324,21 @@ export default function AdminAvailability() {
                         >
                           <div className="flex flex-col gap-1 justify-center">
                             {profs.length > 0 && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30">
-                                <span className="shrink-0 mr-1 font-semibold">P:</span>
-                                <span className="truncate" title={profs.map((p) => p.name).join(', ')}>{formatNames(profs)}</span>
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30 flex-wrap">
+                                <span className="shrink-0 font-semibold">P:</span>
+                                {profs.slice(0, 3).map((p) => (
+                                  <PlanningAvatar key={p.id} user={p} size={18} showName={true} className="max-w-[72px]" />
+                                ))}
+                                {profs.length > 3 && <span className="text-[10px] opacity-80">+{profs.length - 3}</span>}
                               </span>
                             )}
                             {studs.length > 0 && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30">
-                                <span className="shrink-0 mr-1 font-semibold">E:</span>
-                                <span className="truncate" title={studs.map((s) => s.name).join(', ')}>{formatNames(studs)}</span>
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30 flex-wrap">
+                                <span className="shrink-0 font-semibold">E:</span>
+                                {studs.slice(0, 3).map((s) => (
+                                  <PlanningAvatar key={s.id} user={s} size={18} showName={true} className="max-w-[72px]" />
+                                ))}
+                                {studs.length > 3 && <span className="text-[10px] opacity-80">+{studs.length - 3}</span>}
                               </span>
                             )}
                             {profs.length === 0 && studs.length === 0 && (

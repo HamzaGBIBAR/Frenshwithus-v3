@@ -44,6 +44,7 @@ router.get('/professors/availability', async (req, res) => {
     select: {
       id: true,
       name: true,
+      avatarUrl: true,
       country: true,
       timezone: true,
       availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
@@ -439,6 +440,7 @@ router.get('/students/availability', async (req, res) => {
       id: true,
       name: true,
       email: true,
+      avatarUrl: true,
       country: true,
       timezone: true,
       professorId: true,
