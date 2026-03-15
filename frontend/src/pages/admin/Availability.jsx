@@ -335,9 +335,9 @@ export default function AdminAvailability() {
                           onClick={() => hasBoth && openCreateCourseModal(dayOfWeek, timeStr, profs, studs)}
                           title={hasBoth ? t('dashboard.adminAvailability.clickToCreateCourse') : undefined}
                         >
-                          <div className="flex flex-col gap-1 justify-center">
+                          <div className="flex flex-col gap-1 justify-center items-start">
                             {profs.length > 0 && (
-                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30 flex-wrap">
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30 flex-wrap w-fit max-w-full">
                                 <span className="shrink-0 font-semibold">P:</span>
                                 {profs.slice(0, 3).map((p) => (
                                   <PlanningAvatar key={p.id} user={p} size={18} showName={true} showAge={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[100px]" />
@@ -346,7 +346,7 @@ export default function AdminAvailability() {
                               </span>
                             )}
                             {studs.length > 0 && (
-                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30 flex-wrap">
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30 flex-wrap w-fit max-w-full">
                                 <span className="shrink-0 font-semibold">E:</span>
                                 {studs.slice(0, 3).map((s) => (
                                   <PlanningAvatar key={s.id} user={s} size={18} showName={true} showAge={true} alwaysShowAgeSlot={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[100px]" />
