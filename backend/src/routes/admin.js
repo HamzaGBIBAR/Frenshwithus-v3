@@ -31,7 +31,7 @@ const hashPassword = (p) => bcrypt.hashSync(p, 10);
 router.get('/professors', async (req, res) => {
   const users = await prisma.user.findMany({
     where: { role: 'PROFESSOR' },
-    select: { id: true, name: true, email: true, country: true, timezone: true },
+    select: { id: true, name: true, email: true, age: true, country: true, timezone: true },
   });
   res.json(users);
 });
@@ -45,6 +45,7 @@ router.get('/professors/availability', async (req, res) => {
       id: true,
       name: true,
       avatarUrl: true,
+      age: true,
       country: true,
       timezone: true,
       availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
@@ -78,31 +79,33 @@ router.get('/professors/availability', async (req, res) => {
 });
 
 router.post('/professors', userCreateValidation, validate, async (req, res) => {
-  const { name, email, password, country, timezone } = req.body;
+  const { name, email, password, age, country, timezone } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
   const data = { name, email, password: hashPassword(password), role: 'PROFESSOR' };
+  if (age != null) data.age = age;
   if (country) data.country = country;
   if (timezone) data.timezone = timezone;
   else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.create({
     data,
-    select: { id: true, name: true, email: true, country: true, timezone: true },
+    select: { id: true, name: true, email: true, age: true, country: true, timezone: true },
   });
   res.json(user);
 });
 
 router.put('/professors/:id', userUpdateValidation, validate, async (req, res) => {
-  const { name, email, password, country, timezone } = req.body;
+  const { name, email, password, age, country, timezone } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);
+  if (age !== undefined) data.age = age === '' || age == null ? null : age;
   if (country !== undefined) data.country = country || null;
   if (timezone !== undefined) data.timezone = timezone || null;
   else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'PROFESSOR' },
     data,
-    select: { id: true, name: true, email: true, country: true, timezone: true },
+    select: { id: true, name: true, email: true, age: true, country: true, timezone: true },
   });
   res.json(user);
 });
@@ -129,6 +132,7 @@ router.get('/students', async (req, res) => {
       id: true,
       name: true,
       email: true,
+      age: true,
       professorId: true,
       country: true,
       timezone: true,
@@ -139,24 +143,26 @@ router.get('/students', async (req, res) => {
 });
 
 router.post('/students', userCreateValidation, validate, async (req, res) => {
-  const { name, email, password, country, timezone } = req.body;
+  const { name, email, password, age, country, timezone } = req.body;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(400).json({ error: 'Email already exists' });
   const data = { name, email, password: hashPassword(password), role: 'STUDENT' };
+  if (age != null) data.age = age;
   if (country) data.country = country;
   if (timezone) data.timezone = timezone;
   else if (country) data.timezone = getTimezoneFromCountry(country);
   const user = await prisma.user.create({
     data,
-    select: { id: true, name: true, email: true, country: true, timezone: true },
+    select: { id: true, name: true, email: true, age: true, country: true, timezone: true },
   });
   res.json(user);
 });
 
 router.put('/students/:id', userUpdateValidation, validate, async (req, res) => {
-  const { name, email, password, professorId, country, timezone } = req.body;
+  const { name, email, password, age, professorId, country, timezone } = req.body;
   const data = { name, email };
   if (password) data.password = hashPassword(password);
+  if (age !== undefined) data.age = age === '' || age == null ? null : age;
   if (professorId !== undefined) data.professorId = professorId || null;
   if (country !== undefined) data.country = country || null;
   if (timezone !== undefined) data.timezone = timezone || null;
@@ -164,7 +170,7 @@ router.put('/students/:id', userUpdateValidation, validate, async (req, res) => 
   const user = await prisma.user.update({
     where: { id: req.params.id, role: 'STUDENT' },
     data,
-    select: { id: true, name: true, email: true, professorId: true, country: true, timezone: true },
+    select: { id: true, name: true, email: true, age: true, professorId: true, country: true, timezone: true },
   });
   res.json(user);
 });
@@ -441,6 +447,7 @@ router.get('/students/availability', async (req, res) => {
       name: true,
       email: true,
       avatarUrl: true,
+      age: true,
       country: true,
       timezone: true,
       professorId: true,

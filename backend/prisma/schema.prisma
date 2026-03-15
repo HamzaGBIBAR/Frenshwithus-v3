@@ -16,6 +16,7 @@ model User {
   password  String
   role      String   // ADMIN, PROFESSOR, STUDENT
   avatarUrl String?  @db.Text
+  age       Int?     // optional age (for display in admin planning, etc.)
   country   String?  // ISO country code (e.g. "MA", "FR", "US")
   timezone  String?  // IANA timezone (e.g. "Africa/Casablanca") for display
   createdAt DateTime @default(now())

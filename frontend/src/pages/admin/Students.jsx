@@ -19,7 +19,7 @@ export default function Students() {
   const [stats, setStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', age: '', professorId: '', country: '', timezone: '' });
   const [error, setError] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -71,10 +71,11 @@ export default function Students() {
         name: form.name,
         email: form.email,
         password: form.password,
+        age: form.age ? parseInt(form.age, 10) : undefined,
         country: form.country || undefined,
         timezone: form.timezone || undefined,
       });
-      setForm({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' });
+      setForm({ name: '', email: '', password: '', age: '', professorId: '', country: '', timezone: '' });
       load();
       loadStats();
     } catch (err) {
@@ -86,9 +87,9 @@ export default function Students() {
     e.preventDefault();
     setError('');
     try {
-      await api.put(`/admin/students/${editing.id}`, form);
+      await api.put(`/admin/students/${editing.id}`, { ...form, age: form.age ? parseInt(form.age, 10) : null });
       setEditing(null);
-      setForm({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' });
+      setForm({ name: '', email: '', password: '', age: '', professorId: '', country: '', timezone: '' });
       load();
       loadStats();
     } catch (err) {
@@ -115,6 +116,7 @@ export default function Students() {
       name: s.name,
       email: s.email,
       password: '',
+      age: s.age != null ? String(s.age) : '',
       professorId: s.professorId || '',
       country: s.country || '',
       timezone: s.timezone || (s.country ? getTimezoneByCountry(s.country) : '') || '',
@@ -224,6 +226,15 @@ export default function Students() {
             className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required={!editing}
           />
+          <input
+            type="number"
+            min={1}
+            max={120}
+            placeholder={t('dashboard.adminReservations.age')}
+            value={form.age}
+            onChange={(e) => setForm((f) => ({ ...f, age: e.target.value }))}
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
+          />
           <select
             value={form.country}
             onChange={(e) => {
@@ -277,7 +288,7 @@ export default function Students() {
           {editing && (
             <button
               type="button"
-              onClick={() => { setEditing(null); setForm({ name: '', email: '', password: '', professorId: '', country: '', timezone: '' }); }}
+              onClick={() => { setEditing(null); setForm({ name: '', email: '', password: '', age: '', professorId: '', country: '', timezone: '' }); }}
               className="px-5 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl hover:bg-pink-soft/40 dark:hover:bg-white/10 transition text-text dark:text-[#f5f5f5]"
             >
               {t('dashboard.adminStudents.cancel')}
@@ -292,6 +303,7 @@ export default function Students() {
             <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.name')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.email')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.age')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.country')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.timezone')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.admin.professor')}</th>
@@ -303,6 +315,7 @@ export default function Students() {
               <tr key={s.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{s.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{s.email}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5]">{s.age != null ? s.age : '—'}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">
                   {COUNTRIES.find((c) => c.code === s.country)?.name || <span className="text-text/40 dark:text-[#f5f5f5]/40">—</span>}
                 </td>

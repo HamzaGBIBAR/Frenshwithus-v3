@@ -8,7 +8,7 @@ export default function Professors() {
   const { t } = useTranslation();
   const [list, setList] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', country: '', timezone: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', age: '', country: '', timezone: '' });
   const [error, setError] = useState('');
   const [viewingProfile, setViewingProfile] = useState(null);
 
@@ -26,10 +26,11 @@ export default function Professors() {
         name: form.name,
         email: form.email,
         password: form.password,
+        age: form.age ? parseInt(form.age, 10) : undefined,
         country: form.country || undefined,
         timezone: form.timezone || undefined,
       });
-      setForm({ name: '', email: '', password: '', country: '', timezone: '' });
+      setForm({ name: '', email: '', password: '', age: '', country: '', timezone: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminStudents.errorDefault'));
@@ -40,9 +41,9 @@ export default function Professors() {
     e.preventDefault();
     setError('');
     try {
-      await api.put(`/admin/professors/${editing.id}`, form);
+      await api.put(`/admin/professors/${editing.id}`, { ...form, age: form.age ? parseInt(form.age, 10) : null });
       setEditing(null);
-      setForm({ name: '', email: '', password: '', country: '', timezone: '' });
+      setForm({ name: '', email: '', password: '', age: '', country: '', timezone: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || t('dashboard.adminStudents.errorDefault'));
@@ -61,6 +62,7 @@ export default function Professors() {
       name: p.name,
       email: p.email,
       password: '',
+      age: p.age != null ? String(p.age) : '',
       country: p.country || '',
       timezone: p.timezone || '',
     });
@@ -78,7 +80,7 @@ export default function Professors() {
           {editing ? t('dashboard.adminProfessors.editProfessor') : t('dashboard.adminProfessors.createProfessor')}
         </h2>
         {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100">{error}</div>}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-4">
           <input
             placeholder={t('dashboard.adminStudents.name')}
             value={form.name}
@@ -101,6 +103,15 @@ export default function Professors() {
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
             className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
             required={!editing}
+          />
+          <input
+            type="number"
+            min={1}
+            max={120}
+            placeholder={t('dashboard.adminReservations.age')}
+            value={form.age}
+            onChange={(e) => setForm((f) => ({ ...f, age: e.target.value }))}
+            className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary focus:border-pink-primary bg-white dark:bg-[#1a1a1a] text-text dark:text-[#f5f5f5]"
           />
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -153,6 +164,7 @@ export default function Professors() {
             <tr className="bg-pink-soft/30 dark:bg-white/5 text-left">
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.name')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.email')}</th>
+              <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminReservations.age')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.adminStudents.timezone')}</th>
               <th className="p-3 font-medium text-text dark:text-[#f5f5f5] w-24">{t('dashboard.adminStudents.actions')}</th>
             </tr>
@@ -162,6 +174,7 @@ export default function Professors() {
               <tr key={p.id} className="border-t border-pink-soft/30 dark:border-white/10 hover:bg-pink-soft/20 dark:hover:bg-white/5 transition">
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.name}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5]">{p.email}</td>
+                <td className="p-3 text-text dark:text-[#f5f5f5]">{p.age != null ? p.age : '—'}</td>
                 <td className="p-3 text-text dark:text-[#f5f5f5] text-xs">{p.timezone || (p.country ? COUNTRIES.find((c) => c.code === p.country)?.tz : '—') || '—'}</td>
                 <td className="p-3 flex gap-2">
                   <button onClick={() => startEdit(p)} className="text-pink-primary dark:text-pink-300 hover:underline font-medium">{t('dashboard.adminStudents.edit')}</button>
