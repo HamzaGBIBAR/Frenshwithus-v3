@@ -510,7 +510,9 @@
       "errorDefault": "خطأ",
       "selectCountry": "البلد",
       "country": "البلد",
-      "timezone": "المنطقة الزمنية"
+      "timezone": "المنطقة الزمنية",
+      "pack": "الباقة",
+      "packPlaceholder": "اختر الباقة"
     },
     "adminProfessors": {
       "title": "الأساتذة",

@@ -485,7 +485,9 @@
       "errorDefault": "错误",
       "selectCountry": "国家",
       "country": "国家",
-      "timezone": "时区"
+      "timezone": "时区",
+      "pack": "套餐",
+      "packPlaceholder": "选择套餐"
     },
     "adminProfessors": {
       "title": "教师",

@@ -19,6 +19,7 @@ export const userCreateValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6, max: 128 }),
   body('age').optional({ checkFalsy: true }).isInt({ min: 1, max: 120 }).withMessage('Age must be 1–120'),
+  body('pack').optional({ checkFalsy: true }).isIn(['individuel', 'groups', 'preparation']).withMessage('Pack must be individuel, groups, or preparation'),
   body('country').optional({ checkFalsy: true }).trim().isLength({ max: 10 }),
   body('timezone').optional({ checkFalsy: true }).trim().isLength({ max: 64 }),
 ];
@@ -28,6 +29,7 @@ export const userUpdateValidation = [
   body('email').optional().isEmail().normalizeEmail(),
   body('password').optional().isLength({ min: 6, max: 128 }),
   body('age').optional({ checkFalsy: true }).isInt({ min: 1, max: 120 }).withMessage('Age must be 1–120'),
+  body('pack').optional({ checkFalsy: true }).isIn(['individuel', 'groups', 'preparation']).withMessage('Pack must be individuel, groups, or preparation'),
   body('professorId').optional({ values: 'null' }).isString().trim().isLength({ max: 30 }),
   body('country').optional({ checkFalsy: true }).trim().isLength({ max: 10 }),
   body('timezone').optional({ checkFalsy: true }).trim().isLength({ max: 64 }),

@@ -8,8 +8,8 @@ import { formatTimeAMPM, getEndTime } from '../../utils/format';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
 
-/** Small avatar for planning grid: profile picture or initial, name, and age. Age always shown with label (e.g. "Age: 12"). */
-function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwaysShowAgeSlot = false, ageLabel = 'Age', className = '' }) {
+/** Small avatar for planning grid: optional pack label, profile picture or initial, name, and age. Age always shown with label (e.g. "Age: 12"). */
+function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwaysShowAgeSlot = false, ageLabel = 'Age', packLabel = null, className = '' }) {
   const [imgError, setImgError] = useState(false);
   const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : '?';
   const hasAge = showAge && user?.age != null && Number.isFinite(Number(user.age));
@@ -18,6 +18,7 @@ function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwa
   const title = showAge ? `${user?.name || ''}, ${ageLabel}: ${ageValue}` : user?.name;
   return (
     <span className={`inline-flex items-center gap-1.5 min-w-0 ${className}`} title={title}>
+      {packLabel && <span className="shrink-0 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">{packLabel}</span>}
       <span
         className="shrink-0 rounded-full overflow-hidden bg-pink-soft/40 dark:bg-white/20 flex items-center justify-center text-[10px] font-semibold text-pink-800 dark:text-pink-200"
         style={{ width: size, height: size }}
@@ -355,7 +356,7 @@ export default function AdminAvailability() {
                               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30 flex-wrap w-fit max-w-full">
                                 <span className="shrink-0 font-semibold">E:</span>
                                 {studs.slice(0, 3).map((s) => (
-                                  <PlanningAvatar key={s.id} user={s} size={18} showName={true} showAge={true} alwaysShowAgeSlot={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[100px]" />
+                                  <PlanningAvatar key={s.id} user={s} size={18} showName={true} showAge={true} alwaysShowAgeSlot={true} ageLabel={t('dashboard.adminReservations.age')} packLabel={s.pack ? t(`pricing.plans.${s.pack}.title`) : null} className="max-w-[100px]" />
                                 ))}
                                 {studs.length > 3 && <span className="text-[10px] opacity-80">+{studs.length - 3}</span>}
                               </span>

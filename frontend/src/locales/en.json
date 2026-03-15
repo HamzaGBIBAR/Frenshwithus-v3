@@ -510,7 +510,9 @@
       "errorDefault": "Error",
       "selectCountry": "Country",
       "country": "Country",
-      "timezone": "Timezone"
+      "timezone": "Timezone",
+      "pack": "Pack",
+      "packPlaceholder": "Select pack"
     },
     "adminProfessors": {
       "title": "Professors",

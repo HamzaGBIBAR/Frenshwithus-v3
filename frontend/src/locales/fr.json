@@ -510,7 +510,9 @@
       "errorDefault": "Erreur",
       "selectCountry": "Pays",
       "country": "Pays",
-      "timezone": "Fuseau horaire"
+      "timezone": "Fuseau horaire",
+      "pack": "Formule",
+      "packPlaceholder": "Choisir la formule"
     },
     "adminProfessors": {
       "title": "Professeurs",
