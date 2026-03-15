@@ -183,6 +183,7 @@
     "annual": "Annuel",
     "toggleHint": "Payez 10 mois, profitez de 2 offerts",
     "popular": "Populaire !",
+    "priceOnRequest": "Tarif sur demande",
     "freeSession": "Séance gratuite",
     "plans": {
       "individuel": {

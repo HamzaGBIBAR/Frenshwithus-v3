@@ -21,8 +21,9 @@ export default function Pricing() {
     unit: t(`pricing.plans.${id}.unit`),
     unitAnnual: t(`pricing.plans.${id}.unitAnnual`),
     features: t(`pricing.plans.${id}.features`, { returnObjects: true }),
-    highlight: id === 'groups',
+    highlight: id === 'individuel',
     oldPriceAnnual: id === 'groups' ? '708€' : null,
+    showPrice: id === 'individuel',
   }));
 
   useEffect(() => {
@@ -138,19 +139,27 @@ export default function Pricing() {
               </p>
 
               <div className="mb-4">
-                {plan.highlight && plan.oldPriceAnnual && isAnnual && (
-                  <span className={`text-sm line-through ${plan.highlight ? 'text-white/60' : 'text-text/50'}`}>
-                    {plan.oldPriceAnnual} {plan.unitAnnual}
-                  </span>
+                {plan.showPrice ? (
+                  <>
+                    {plan.highlight && plan.oldPriceAnnual && isAnnual && (
+                      <span className={`text-sm line-through ${plan.highlight ? 'text-white/60' : 'text-text/50'}`}>
+                        {plan.oldPriceAnnual} {plan.unitAnnual}
+                      </span>
+                    )}
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-2xl lg:text-3xl font-bold ${plan.highlight ? 'text-white dark:text-pink-400' : 'text-pink-primary dark:text-pink-400'}`}>
+                        {isAnnual ? plan.priceAnnual : plan.priceMonthly}
+                      </span>
+                      <span className={`text-sm ${plan.highlight ? 'text-white/80 dark:text-[#f5f5f5]/80' : 'text-text/60 dark:text-[#f5f5f5]/60'}`}>
+                        {isAnnual ? (plan.unitAnnual || t('pricing.plans.groups.unitAnnual')) : plan.unit}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <p className={`text-sm ${plan.highlight ? 'text-white/80 dark:text-[#f5f5f5]/80' : 'text-text/60 dark:text-[#f5f5f5]/60'}`}>
+                    {t('pricing.priceOnRequest')}
+                  </p>
                 )}
-                <div className="flex items-baseline gap-1">
-                  <span className={`text-2xl lg:text-3xl font-bold ${plan.highlight ? 'text-white dark:text-pink-400' : 'text-pink-primary dark:text-pink-400'}`}>
-                    {isAnnual ? plan.priceAnnual : plan.priceMonthly}
-                  </span>
-                  <span className={`text-sm ${plan.highlight ? 'text-white/80 dark:text-[#f5f5f5]/80' : 'text-text/60 dark:text-[#f5f5f5]/60'}`}>
-                    {isAnnual ? (plan.unitAnnual || t('pricing.plans.groups.unitAnnual')) : plan.unit}
-                  </span>
-                </div>
               </div>
 
               <ul className="space-y-2 mb-6">
