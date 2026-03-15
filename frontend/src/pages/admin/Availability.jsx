@@ -15,8 +15,8 @@ function formatDisplayName(name) {
   return t ? t.charAt(0).toUpperCase() + t.slice(1).toLowerCase() : '—';
 }
 
-/** Small avatar for planning grid: optional pack label, profile picture or initial, name, and age. Age always shown with label (e.g. "Age: 12"). */
-function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwaysShowAgeSlot = false, ageLabel = 'Age', packLabel = null, className = '' }) {
+/** Avatar for planning grid: profile photo prominent, then optional pack, name, and age. */
+function PlanningAvatar({ user, size = 28, showName = true, showAge = true, alwaysShowAgeSlot = false, ageLabel = 'Age', packLabel = null, className = '' }) {
   const [imgError, setImgError] = useState(false);
   const rawName = user?.name?.trim() || '';
   const initial = rawName ? rawName.charAt(0).toUpperCase() : '?';
@@ -25,16 +25,12 @@ function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwa
   const showAgeSlot = showAge && (alwaysShowAgeSlot || hasAge);
   const ageValue = hasAge ? String(user.age) : '—';
   const title = showAge ? `${displayName}, ${ageLabel}: ${ageValue}` : displayName;
+  const textSize = size <= 20 ? 'text-[10px]' : size <= 24 ? 'text-xs' : 'text-[11px]';
   return (
-    <span className={`inline-flex items-center gap-1.5 min-w-0 ${className}`} title={title}>
-      {packLabel && (
-        <span className="shrink-0 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 tracking-wide">
-          {packLabel}
-        </span>
-      )}
+    <span className={`inline-flex items-center gap-2 min-w-0 ${className}`} title={title}>
       <span
-        className="shrink-0 rounded-full overflow-hidden bg-pink-soft/40 dark:bg-white/20 flex items-center justify-center text-[10px] font-semibold text-pink-800 dark:text-pink-200"
-        style={{ width: size, height: size }}
+        className="shrink-0 rounded-full overflow-hidden bg-pink-soft/40 dark:bg-white/20 flex items-center justify-center font-semibold text-pink-800 dark:text-pink-200 ring-2 ring-white/50 dark:ring-white/20"
+        style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
       >
         {user?.avatarUrl && !imgError ? (
           <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" onError={() => setImgError(true)} />
@@ -42,19 +38,26 @@ function PlanningAvatar({ user, size = 20, showName = true, showAge = true, alwa
           initial
         )}
       </span>
-      {showName && (
-        <span className="inline-flex items-center gap-1 min-w-0 flex-wrap">
-          <span className="truncate text-[11px] font-medium text-text dark:text-[#f5f5f5] max-w-[72px] sm:max-w-none">{displayName}</span>
-          {showAgeSlot && (
-            <>
-              <span className="shrink-0 text-[10px] text-text/50 dark:text-[#f5f5f5]/50" aria-hidden>·</span>
-              <span className="shrink-0 text-[11px] text-text/80 dark:text-[#f5f5f5]/90 tabular-nums" aria-label={`${ageLabel}: ${ageValue}`}>
-                {ageLabel}: {ageValue}
-              </span>
-            </>
-          )}
-        </span>
-      )}
+      <span className="inline-flex flex-col min-w-0 gap-0">
+        {packLabel && (
+          <span className="shrink-0 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 tracking-wide">
+            {packLabel}
+          </span>
+        )}
+        {showName && (
+          <span className="inline-flex items-center gap-1 min-w-0 flex-wrap">
+            <span className={`truncate font-medium text-text dark:text-[#f5f5f5] ${textSize} max-w-[80px] sm:max-w-none`}>{displayName}</span>
+            {showAgeSlot && (
+              <>
+                <span className="shrink-0 text-[10px] text-text/50 dark:text-[#f5f5f5]/50" aria-hidden>·</span>
+                <span className={`shrink-0 text-text/80 dark:text-[#f5f5f5]/90 tabular-nums ${textSize}`} aria-label={`${ageLabel}: ${ageValue}`}>
+                  {ageLabel}: {ageValue}
+                </span>
+              </>
+            )}
+          </span>
+        )}
+      </span>
     </span>
   );
 }
@@ -363,7 +366,7 @@ export default function AdminAvailability() {
                               <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-[11px] font-medium bg-pink-100 dark:bg-pink-500/30 text-pink-800 dark:text-pink-200 border border-pink-200/50 dark:border-pink-400/30 flex-wrap w-fit max-w-full">
                                 <span className="shrink-0 font-semibold text-pink-700 dark:text-pink-300">P:</span>
                                 {profs.slice(0, 3).map((p) => (
-                                  <PlanningAvatar key={p.id} user={p} size={18} showName={true} showAge={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[120px]" />
+                                  <PlanningAvatar key={p.id} user={p} size={28} showName={true} showAge={true} ageLabel={t('dashboard.adminReservations.age')} className="max-w-[140px]" />
                                 ))}
                                 {profs.length > 3 && <span className="shrink-0 text-[10px] opacity-80">+{profs.length - 3}</span>}
                               </span>
@@ -372,7 +375,7 @@ export default function AdminAvailability() {
                               <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-[11px] font-medium bg-emerald-100 dark:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/50 dark:border-emerald-400/30 flex-wrap w-fit max-w-full">
                                 <span className="shrink-0 font-semibold text-emerald-700 dark:text-emerald-300">E:</span>
                                 {studs.slice(0, 3).map((s) => (
-                                  <PlanningAvatar key={s.id} user={s} size={18} showName={true} showAge={true} alwaysShowAgeSlot={true} ageLabel={t('dashboard.adminReservations.age')} packLabel={s.pack ? t(`pricing.plans.${s.pack}.title`) : null} className="max-w-[140px]" />
+                                  <PlanningAvatar key={s.id} user={s} size={28} showName={true} showAge={true} alwaysShowAgeSlot={true} ageLabel={t('dashboard.adminReservations.age')} packLabel={s.pack ? t(`pricing.plans.${s.pack}.title`) : null} className="max-w-[160px]" />
                                 ))}
                                 {studs.length > 3 && <span className="shrink-0 text-[10px] opacity-80">+{studs.length - 3}</span>}
                               </span>
