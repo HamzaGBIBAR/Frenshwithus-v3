@@ -1,0 +1,230 @@
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import prisma from '../lib/db.js';
+import { authenticate } from '../middleware/auth.js';
+
+const router = Router();
+
+/**
+ * GET /live-access?courseId=xxx
+ * Accès au live par cours (style Teams). Vérifie que l'utilisateur est prof ou élève du cours.
+ */
+router.get('/live-access', authenticate, async (req, res) => {
+  const { role } = req.user;
+  const courseId = req.query.courseId;
+  if (!courseId) {
+    return res.status(400).json({ error: 'courseId requis' });
+  }
+  if (role !== 'STUDENT' && role !== 'PROFESSOR') {
+    return res.status(403).json({ error: 'Accès réservé aux étudiants et professeurs' });
+  }
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, professorId: true, studentId: true, isStarted: true },
+  });
+  if (!course) {
+    return res.status(404).json({ error: 'Cours introuvable' });
+  }
+  if (role === 'PROFESSOR' && course.professorId !== req.user.id) {
+    return res.status(403).json({ error: 'Ce cours ne vous appartient pas' });
+  }
+  if (role === 'STUDENT' && course.studentId !== req.user.id) {
+    return res.status(403).json({ error: 'Ce cours ne vous est pas assigné' });
+  }
+
+  const endedSession = await prisma.liveSession.findFirst({
+    where: {
+      roomName: `frenchwithus-course-${courseId}`,
+      endedAt: { not: null },
+    },
+  });
+  const sessionEnded = !!endedSession && course.isStarted;
+
+  const courseProfessorOnline = req.app.locals?.courseProfessorOnline ?? {};
+  const professorOnline = !!courseProfessorOnline[courseId];
+  const roomName = `frenchwithus-course-${courseId}`;
+
+  res.json({
+    canAccess: true,
+    professorOnline,
+    roomName,
+    role,
+    courseId,
+    sessionEnded,
+  });
+});
+
+/**
+ * GET /api/live/jaas-token?courseId=xxx
+ * Génère un JWT signé pour Jitsi as a Service (8x8 JaaS).
+ * Requiert JAAS_APP_ID, JAAS_API_KEY_ID, JAAS_PRIVATE_KEY dans les variables d'environnement.
+ */
+router.get('/live/jaas-token', authenticate, async (req, res) => {
+  const { role, id: userId, name, email } = req.user;
+  const { courseId } = req.query;
+
+  if (!courseId) return res.status(400).json({ error: 'courseId requis' });
+  if (role !== 'STUDENT' && role !== 'PROFESSOR') {
+    return res.status(403).json({ error: 'Accès réservé aux étudiants et professeurs' });
+  }
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, professorId: true, studentId: true },
+  });
+  if (!course) return res.status(404).json({ error: 'Cours introuvable' });
+  if (role === 'PROFESSOR' && course.professorId !== userId) {
+    return res.status(403).json({ error: 'Ce cours ne vous appartient pas' });
+  }
+  if (role === 'STUDENT' && course.studentId !== userId) {
+    return res.status(403).json({ error: 'Ce cours ne vous est pas assigné' });
+  }
+
+  const appId = process.env.JAAS_APP_ID;
+  const keyId = process.env.JAAS_API_KEY_ID;
+  const privateKey = process.env.JAAS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (!appId || !keyId || !privateKey) {
+    return res.status(503).json({ error: 'JaaS non configuré sur le serveur' });
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    iss: 'chat',
+    iat: now,
+    exp: now + 7200,
+    nbf: now - 10,
+    aud: 'jitsi',
+    sub: appId,
+    context: {
+      user: {
+        id: userId,
+        name: name || 'Utilisateur',
+        email: email || '',
+        moderator: role === 'PROFESSOR',
+      },
+      features: {
+        livestreaming: 'false',
+        recording: 'false',
+        transcription: 'false',
+        'outbound-call': 'false',
+      },
+    },
+    room: '*',
+  };
+
+  const token = jwt.sign(payload, privateKey, {
+    algorithm: 'RS256',
+    header: { alg: 'RS256', kid: `${appId}/${keyId}`, typ: 'JWT' },
+  });
+
+  res.json({ token, appId });
+});
+
+/**
+ * POST /live/session/start
+ * Professeur démarre une session pour un cours (isStarted + session DB)
+ * Refuse si le cours a déjà été terminé.
+ */
+router.post('/live/session/start', authenticate, async (req, res) => {
+  if (req.user.role !== 'PROFESSOR') {
+    return res.status(403).json({ error: 'Réservé aux professeurs' });
+  }
+  const { courseId } = req.body || {};
+  if (!courseId) {
+    return res.status(400).json({ error: 'courseId requis' });
+  }
+
+  const course = await prisma.course.findFirst({
+    where: { id: courseId, professorId: req.user.id },
+  });
+  if (!course) {
+    return res.status(404).json({ error: 'Cours introuvable' });
+  }
+
+  const endedSession = await prisma.liveSession.findFirst({
+    where: {
+      roomName: `frenchwithus-course-${courseId}`,
+      endedAt: { not: null },
+    },
+  });
+  if (endedSession) {
+    return res.status(403).json({ error: 'Ce cours est déjà terminé. Vous ne pouvez pas le redémarrer.' });
+  }
+
+  // Mark course as started and clear any absence reason
+  // (professor may have been marked absent by the cron job before arriving)
+  await prisma.course.update({
+    where: { id: courseId },
+    data: { isStarted: true, absenceReason: null },
+  });
+
+  const session = await prisma.liveSession.create({
+    data: {
+      roomName: `frenchwithus-course-${courseId}`,
+      professorId: req.user.id,
+      courseId,
+    },
+  });
+
+  res.json({ sessionId: session.id });
+});
+
+/**
+ * POST /live/session/end
+ * Professeur termine une session (enregistrement du lien si disponible)
+ */
+router.post('/live/session/end', authenticate, async (req, res) => {
+  if (req.user.role !== 'PROFESSOR') {
+    return res.status(403).json({ error: 'Réservé aux professeurs' });
+  }
+
+  const { sessionId, recordingUrl, endReason } = req.body || {};
+
+  if (sessionId) {
+    const data = {
+      endedAt: new Date(),
+      recordingUrl: recordingUrl || null,
+    };
+    if (endReason && ['student_absent', 'completed', 'meeting_issue'].includes(endReason)) {
+      data.endReason = endReason;
+    }
+    await prisma.liveSession.update({
+      where: { id: sessionId },
+      data,
+    });
+  }
+
+  res.json({ ok: true });
+});
+
+/**
+ * GET /live/sessions
+ * Historique des sessions (professeur ou admin)
+ */
+router.get('/live/sessions', authenticate, async (req, res) => {
+  const { role } = req.user;
+  if (role !== 'PROFESSOR' && role !== 'ADMIN') {
+    return res.status(403).json({ error: 'Non autorisé' });
+  }
+
+  const where = role === 'PROFESSOR' ? { professorId: req.user.id } : {};
+  const sessions = await prisma.liveSession.findMany({
+    where,
+    orderBy: { startedAt: 'desc' },
+    take: 50,
+    select: {
+      id: true,
+      roomName: true,
+      startedAt: true,
+      endedAt: true,
+      recordingUrl: true,
+      professor: { select: { name: true } },
+    },
+  });
+
+  res.json({ sessions });
+});
+
+export default router;

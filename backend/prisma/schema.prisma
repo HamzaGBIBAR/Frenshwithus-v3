@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Railway Postgres: use process.env.DATABASE_URL (set in Railway dashboard).
+// For SSL, ensure URL includes ?sslmode=require (Railway often adds this automatically).
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   // ADMIN, PROFESSOR, STUDENT
+  avatarUrl String?  @db.Text
+  age       Int?     // optional age (for display in admin planning, etc.)
+  pack      String?  // student pack purchased: individuel, groups, preparation
+  country   String?  // ISO country code (e.g. "MA", "FR", "US")
+  timezone  String?  // IANA timezone (e.g. "Africa/Casablanca") for display
+  createdAt DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+
+  // Professor: courses they teach
+  coursesAsProfessor Course[] @relation("ProfessorCourses")
+  // Professor: weekly availability slots
+  availability ProfessorAvailability[]
+  // Student: courses they attend
+  coursesAsStudent   Course[] @relation("StudentCourses")
+  // Student: weekly availability slots (admin-managed)
+  studentAvailability StudentAvailability[]
+  // Professor: students assigned to them
+  assignedStudents  User[]   @relation("ProfessorAssignments")
+  professor         User?    @relation("ProfessorAssignments", fields: [professorId], references: [id])
+  professorId       String?
+
+  payments          Payment[]
+  messagesSent      Message[] @relation("SentMessages")
+  messagesReceived  Message[] @relation("ReceivedMessages")
+  globalDiscussionMessages GlobalDiscussionMessage[]
+  liveSessions      LiveSession[]
+  notifications     Notification[]
+}
+
+model ProfessorAvailability {
+  id        String @id @default(cuid())
+  professorId String
+  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun (UTC)
+  startTime String // HH:mm (UTC)
+  endTime   String // HH:mm (UTC)
+  enteredTimezone String? // IANA timezone when slot was created (e.g. "Europe/Paris")
+
+  professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
+}
+
+model StudentAvailability {
+  id        String @id @default(cuid())
+  studentId String
+  dayOfWeek Int    // 1=Mon, 2=Tue, ..., 7=Sun (UTC)
+  startTime String // HH:mm (UTC)
+  endTime   String // HH:mm (UTC)
+  enteredTimezone String? // IANA timezone when slot was created
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id             String   @id @default(cuid())
+  professorId    String
+  studentId      String
+  date           String   // YYYY-MM-DD (Morocco, kept for admin display)
+  time           String   // HH:mm (Morocco, kept for admin display)
+  startUtc       DateTime? // canonical: lesson start in UTC (display = user timezone)
+  durationMin    Int      @default(60) // lesson duration in minutes
+  meetingLink    String?
+  isStarted      Boolean  @default(false)
+  recordingLink  String?
+  absenceReason  String?  // professor_absent = prof n'a pas démarré après 15 min
+  createdAt      DateTime @default(now())
+
+  professor User @relation("ProfessorCourses", fields: [professorId], references: [id], onDelete: Cascade)
+  student  User @relation("StudentCourses", fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id              String    @id @default(cuid())
+  reference       String    @unique // e.g. FWU-2026-001 (for WhatsApp transfer)
+  studentId       String
+  amount          Float
+  status          String    // paid, unpaid
+  date            DateTime  @default(now())
+  nextPaymentDue  DateTime? // set when paid: date + 1 month
+  proofUrl        String?   @db.Text // URL of uploaded payment proof (screenshot, receipt)
+  proofUploadedAt DateTime? // when student uploaded proof
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  content   String   @db.Text
+  attachmentUrl String?  @db.Text // Base64 data URI for document storage
+  attachmentName String?
+  attachmentMimeType String?
+  attachmentSize Int?
+  isSeen Boolean @default(false)
+  seenAt DateTime?
+  archivedBySender Boolean @default(false)
+  archivedByReceiver Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+// Discussion globale : admin + tous les professeurs (un seul fil)
+model GlobalDiscussionMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  content   String   @db.Text
+  attachmentUrl String?   @db.Text
+  attachmentName String?
+  attachmentMimeType String?
+  attachmentSize Int?
+  createdAt DateTime @default(now())
+
+  sender    User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model LiveSession {
+  id            String    @id @default(cuid())
+  roomName      String
+  professorId   String
+  courseId       String?   // links session to a course for attendance tracking
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  recordingUrl  String?
+  endReason     String?   // student_absent | completed | meeting_issue
+  createdAt     DateTime  @default(now())
+
+  professor User @relation(fields: [professorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  dedupeKey String
+  title     String
+  body      String
+  type      String   // info, warning, success
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  archivedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+}
+
+// Réservations séance gratuite (sauvegardées pour admin / création de compte)
+model Reservation {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String
+  phoneCountry String   // e.g. MA, FR
+  phoneNumber  String   // rest of number without dial code
+  age          String?  // âge enfant ou adulte
+  pack         String?  // individuel, groups, preparation
+  audience     String?  // adults | children
+  country      String?  // country of residence (ISO code)
+  createdAt    DateTime @default(now())
+}
+
+// IPs blocked after exceeding rate limit; admin can unblock
+model BlockedIp {
+  id        String   @id @default(cuid())
+  ip        String   @unique
+  blockedAt DateTime @default(now())
+}

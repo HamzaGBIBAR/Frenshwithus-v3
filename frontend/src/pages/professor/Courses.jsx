@@ -1,0 +1,959 @@
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import api from '../../api/axios';
+import Calendar from '../../components/Calendar';
+import AvailabilityGrid from '../../components/AvailabilityGrid';
+import { useAuth } from '../../context/AuthContext';
+import { formatTimeRange, getCourseStartMorocco, getEndTime } from '../../utils/format';
+import { getCalendarStyle, getWeekCourseCardClass } from '../../utils/calendarStyles';
+import COUNTRIES, { getLocalDateTime, getTimezoneByCountry, convertTimeBetweenTimezones, formatUtcInTimezone } from '../../utils/countries';
+
+const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1, Sun=7
+const COURSE_DURATION_MINUTES = 15;
+
+const EARLY_ACCESS_MINUTES = 5; // Allow teacher to start 5 minutes before scheduled time
+
+function canStartCourse(course, now) {
+  const start = getCourseStartMorocco(course);
+  if (!start || isNaN(start.getTime())) return false;
+  // Allow starting 5 minutes before the scheduled time
+  const earlyAccessTime = new Date(start.getTime() - EARLY_ACCESS_MINUTES * 60 * 1000);
+  return now.getTime() >= earlyAccessTime.getTime();
+}
+
+function getRemainingCountdown(sessionStartedAt, now) {
+  if (!sessionStartedAt) return null;
+  const started = new Date(sessionStartedAt).getTime();
+  const elapsed = Math.floor((now - started) / 1000);
+  const remaining = COURSE_DURATION_MINUTES * 60 - elapsed;
+  if (remaining <= 0) return '0:00';
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function StudentNameTooltip({ student, children, className, locale }) {
+  const [show, setShow] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const ref = useRef(null);
+
+  const handleEnter = useCallback(() => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ x: rect.left, y: rect.bottom + 6 });
+    }
+    setShow(true);
+  }, []);
+
+  if (!student?.country) return <span className={className}>{children}</span>;
+  const country = COUNTRIES.find((c) => c.code === student.country);
+  const local = show ? getLocalDateTime(student.country, locale || 'fr') : null;
+  return (
+    <span
+      ref={ref}
+      className={className}
+      onMouseEnter={handleEnter}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && local && createPortal(
+        <span
+          className="fixed z-[9999] w-52 p-3 rounded-xl bg-[#1a1a1a] text-white text-xs shadow-2xl border border-white/10 animate-fade-in pointer-events-none"
+          style={{ left: pos.x, top: pos.y }}
+        >
+          <span className="flex items-center gap-2 mb-1.5">
+            <svg className="w-3.5 h-3.5 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <span className="font-medium">{country?.name || student.country}</span>
+          </span>
+          <span className="flex items-center gap-2">
+            <svg className="w-3.5 h-3.5 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2" /><path strokeLinecap="round" strokeWidth="2" d="M12 6v6l4 2" /></svg>
+            <span className="font-mono font-bold">{local.time}</span>
+            <span className="text-white/50 text-[10px] ml-auto">{local.tz}</span>
+          </span>
+        </span>,
+        document.body
+      )}
+    </span>
+  );
+}
+
+function getCourseStatus(course) {
+  const now = new Date();
+  const d = getCourseStartMorocco(course);
+  if (!d || isNaN(d.getTime())) return 'upcoming';
+  const twoHours = 2 * 60 * 60 * 1000;
+
+  // IMPORTANT: If professor started the course, NEVER show professor_absent
+  // This handles the case where the cron job marked absence before the professor arrived
+  if (course.isStarted) {
+    if (course.sessionEnded) return 'completed';
+    if (now.getTime() - d.getTime() < twoHours) return 'live';
+    return 'completed'; // Course started but window passed
+  }
+
+  // Use Africa/Casablanca string comparison as the PRIMARY guard (handles Ramadan correctly)
+  if (course.date && course.time) {
+    try {
+      const moroccoNow = now.toLocaleString('sv-SE', { timeZone: 'Africa/Casablanca' });
+      const moroccoDateStr = moroccoNow.slice(0, 10);
+      const moroccoTimeStr = moroccoNow.slice(11, 16);
+      const courseTimeShort = course.time.slice(0, 5);
+      
+      // Course is still in the future in Morocco time → upcoming
+      if (course.date > moroccoDateStr || (course.date === moroccoDateStr && courseTimeShort > moroccoTimeStr)) {
+        return 'upcoming';
+      }
+      
+      // Professor did not start yet (isStarted = false at this point)
+      // Calculate minutes elapsed since course start in Morocco timezone
+      const [ch, cm] = courseTimeShort.split(':').map(Number);
+      const [nh, nm] = moroccoTimeStr.split(':').map(Number);
+      const courseMinutes = ch * 60 + cm;
+      const nowMinutes = nh * 60 + nm;
+      
+      // Same day: check if 15 minutes have passed
+      if (course.date === moroccoDateStr) {
+        if (nowMinutes < courseMinutes + 15) return 'upcoming';
+        // Only show professor_absent if endReason specifically says so
+        // (absenceReason in DB may be stale if professor eventually started)
+        if (course.endReason === 'professor_absent') {
+          return 'professor_absent';
+        }
+        return 'upcoming';
+      }
+      // Course date is in the past (different day) - professor_absent if not started
+      if (course.endReason === 'professor_absent') {
+        return 'professor_absent';
+      }
+      return 'completed';
+    } catch (_) { /* Intl not available, fall through to UTC-based logic */ }
+  }
+
+  // Fallback: UTC-based logic (less reliable during Ramadan)
+  if (now.getTime() < d.getTime()) return 'upcoming';
+  if (course.sessionEnded) return 'completed';
+  if (now.getTime() < d.getTime() + 15 * 60 * 1000) return 'upcoming';
+  if (course.endReason === 'professor_absent') {
+    return 'professor_absent';
+  }
+  return 'upcoming';
+}
+
+const LOCALE_MAP = { fr: 'fr-FR', en: 'en-US', zh: 'zh-CN' };
+
+export default function ProfessorCourses() {
+  const { t, i18n } = useTranslation();
+  const locale = LOCALE_MAP[i18n.language] || 'fr-FR';
+  const DAYS = t('dashboard.professor.days', { returnObjects: true });
+  const [courses, setCourses] = useState([]);
+  const [availability, setAvailability] = useState([]);
+  const [form, setForm] = useState({ dayOfWeek: 1, startTime: '09:00', endTime: '12:00' });
+  const [editingLink, setEditingLink] = useState(null);
+  const [linkValue, setLinkValue] = useState('');
+  const [recordingFor, setRecordingFor] = useState(null);
+  const [recordingValue, setRecordingValue] = useState('');
+  const [viewMode, setViewMode] = useState('mois');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [weekStart, setWeekStart] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1));
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [dayViewDate, setDayViewDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
+  const [calendarStyle, setCalendarStyle] = useState(getCalendarStyle);
+  const [now, setNow] = useState(() => new Date());
+  const [selectedClockCountry, setSelectedClockCountry] = useState('MA');
+  const [clockAnimKey, setClockAnimKey] = useState(0);
+  const weekViewRef = useRef(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const profTz = useMemo(
+    () => user?.timezone || (user?.country ? getTimezoneByCountry(user.country) : null),
+    [user?.timezone, user?.country]
+  );
+  const getCourseLocalInfo = useCallback(
+    (c) => {
+      if (!profTz) return null;
+      if (c?.startUtc) {
+        const start = formatUtcInTimezone(c.startUtc, profTz, i18n.language);
+        if (!start) return null;
+        const endUtc = c.durationMin ? new Date(new Date(c.startUtc).getTime() + c.durationMin * 60 * 1000) : null;
+        const end = endUtc ? formatUtcInTimezone(endUtc.toISOString(), profTz, i18n.language) : null;
+        return { date: start.date, time: start.time, displayTime: start.displayTime, displayEndTime: end?.displayTime };
+      }
+      if (!c?.date || !c?.time) return null;
+      const start = convertTimeBetweenTimezones(c.date, c.time, 'Africa/Casablanca', profTz, i18n.language);
+      if (!start) return null;
+      const endTimeStr = getEndTime(c.time, c.durationMin || 60);
+      const end = endTimeStr ? convertTimeBetweenTimezones(c.date, endTimeStr, 'Africa/Casablanca', profTz, i18n.language) : null;
+      return {
+        date: start.date,
+        time: start.time,
+        displayTime: start.displayTime,
+        displayEndTime: end?.displayTime,
+      };
+    },
+    [profTz, i18n.language]
+  );
+
+  useEffect(() => {
+    if (!user?.country) return;
+    setSelectedClockCountry((prev) => prev || user.country);
+  }, [user?.country]);
+
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setCalendarStyle(getCalendarStyle());
+    window.addEventListener('storage', handler);
+    window.addEventListener('calendarStyleChanged', handler);
+    return () => {
+      window.removeEventListener('storage', handler);
+      window.removeEventListener('calendarStyleChanged', handler);
+    };
+  }, []);
+
+  const load = () => {
+    api.get('/professor/courses').then((r) => setCourses(r.data));
+    api.get('/professor/availability').then((r) => setAvailability(r.data));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  useEffect(() => {
+    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  const handleAddAvailability = async (e) => {
+    e.preventDefault();
+    const timezone = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+    await api.post('/professor/availability', { ...form, ...(timezone && { timezone }) });
+    setForm({ dayOfWeek: 1, startTime: '09:00', endTime: '12:00' });
+    load();
+  };
+
+  const handleAddFromGrid = async ({ dayOfWeek, startTime, endTime }) => {
+    const timezone = typeof Intl !== 'undefined' && Intl.DateTimeFormat?.().resolvedOptions?.()?.timeZone
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+    await api.post('/professor/availability', { dayOfWeek, startTime, endTime, ...(timezone && { timezone }) });
+    load();
+  };
+
+  const handleRemoveAvailability = async (id) => {
+    await api.delete(`/professor/availability/${id}`);
+    load();
+  };
+
+  const saveMeetingLink = async (id) => {
+    try {
+      await api.put(`/professor/courses/${id}/meeting-link`, { meetingLink: linkValue });
+      setEditingLink(null);
+      setLinkValue('');
+      load();
+    } catch (err) {
+      console.error('saveMeetingLink error:', err);
+      alert(t('dashboard.professor.linkSaveError') || 'Erreur lors de la sauvegarde du lien');
+    }
+  };
+
+  const saveRecording = async (id) => {
+    try {
+      await api.put(`/professor/courses/${id}/recording`, { recordingLink: recordingValue });
+      setRecordingFor(null);
+      setRecordingValue('');
+      load();
+    } catch (err) {
+      console.error('saveRecording error:', err);
+      alert(t('dashboard.professor.recordingSaveError') || "Erreur lors de la sauvegarde de l'enregistrement");
+    }
+  };
+
+  const openEditLink = (c) => {
+    setEditingLink(c.id);
+    setLinkValue(c.meetingLink || '');
+  };
+
+  const openRecording = (c) => {
+    setRecordingFor(c.id);
+    setRecordingValue(c.recordingLink || '');
+  };
+
+  const toDateStrLocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const today = toDateStrLocal(new Date());
+
+  // Convert dayOfWeek (1=Mon..7=Sun) to JS getDay() (0=Sun, 1=Mon..6=Sat)
+  const toJsDay = (dow) => (dow === 7 ? 0 : dow);
+
+  const availabilityEvents = useMemo(() => {
+    const rangeStart = new Date();
+    rangeStart.setMonth(rangeStart.getMonth() - 2);
+    const rangeEnd = new Date();
+    rangeEnd.setMonth(rangeEnd.getMonth() + 12);
+    const evts = [];
+    for (const slot of availability || []) {
+      const d = new Date(rangeStart.getTime());
+      const end = new Date(rangeEnd.getTime());
+      const timeLabel = slot.endTime ? `${slot.startTime.slice(0, 5)} – ${slot.endTime.slice(0, 5)}` : slot.startTime?.slice(0, 5) || '';
+      while (d <= end) {
+        if (d.getDay() === toJsDay(slot.dayOfWeek)) {
+          evts.push({
+            id: `av-my-${slot.id}-${toDateStrLocal(d)}`,
+            date: toDateStrLocal(d),
+            time: timeLabel,
+            title: t('dashboard.professor.myAvailabilityShort'),
+            type: 'my-availability',
+          });
+        }
+        d.setDate(d.getDate() + 1);
+      }
+    }
+    return evts;
+  }, [availability, t]);
+
+  const courseEvents = courses.map((c) => {
+    const status = getCourseStatus(c);
+    const isPast = status === 'completed' || status === 'professor_absent';
+    const local = getCourseLocalInfo(c);
+    return {
+      id: c.id,
+      date: local?.date ?? c.date,
+      title: c.student?.name ? `${t('dashboard.admin.student')} ${c.student.name}` : t('dashboard.professor.course'),
+      time: local ? (local.displayEndTime ? `${local.displayTime} – ${local.displayEndTime}` : local.displayTime) : formatTimeRange(c.time, c.durationMin || 60),
+      rawTime: c.time,
+      type: 'course',
+      isPast,
+      isStarted: c.isStarted,
+    };
+  });
+
+  const calendarEvents = [...courseEvents, ...availabilityEvents];
+
+  const weekStartDate = new Date(weekStart + 'T12:00:00');
+  const weekEndDate = new Date(weekStartDate);
+  weekEndDate.setDate(weekEndDate.getDate() + 6);
+
+  const prevWeek = () => {
+    const d = new Date(weekStart + 'T12:00:00');
+    d.setDate(d.getDate() - 7);
+    setWeekStart(toDateStrLocal(d));
+  };
+
+  const nextWeek = () => {
+    const d = new Date(weekStart + 'T12:00:00');
+    d.setDate(d.getDate() + 7);
+    setWeekStart(toDateStrLocal(d));
+  };
+
+  const weekEndStr = toDateStrLocal(weekEndDate);
+  const coursesInWeek = courses.filter((c) => {
+    const localDate = getCourseLocalInfo(c)?.date ?? c.date;
+    return localDate >= weekStart && localDate <= weekEndStr;
+  });
+
+  const coursesThisWeek = coursesInWeek.length;
+  const myAvailabilitySlots = availability.length;
+
+  const coursesByDay = DAY_NUMBERS.map((_, i) => {
+    const d = new Date(weekStartDate);
+    d.setDate(d.getDate() + i);
+    const dateStr = toDateStrLocal(d);
+    const dayOfWeek = i + 1;
+    const dayAvailability = (availability || [])
+      .filter((s) => s.dayOfWeek === dayOfWeek)
+      .map((s) => ({ ...s, professorId: user?.id, professorName: user?.name }))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    const dayCourses = coursesInWeek
+      .filter((c) => (getCourseLocalInfo(c)?.date ?? c.date) === dateStr)
+      .sort((a, b) => (getCourseLocalInfo(a)?.time ?? a.time).localeCompare(getCourseLocalInfo(b)?.time ?? b.time));
+    return {
+      day: DAYS[i],
+      dateStr,
+      isToday: dateStr === today,
+      dayOfWeek,
+      courses: dayCourses,
+      availability: dayAvailability,
+    };
+  });
+
+  const selectedCountryName = useMemo(
+    () => COUNTRIES.find((c) => c.code === selectedClockCountry)?.name || selectedClockCountry,
+    [selectedClockCountry]
+  );
+  const localClock = useMemo(
+    () => getLocalDateTime(selectedClockCountry, locale),
+    [selectedClockCountry, locale, now]
+  );
+
+  // Day view: selected date data (courses shown in professor's local time)
+  const dayViewDateObj = new Date(dayViewDate + 'T12:00:00');
+  const dayViewDayOfWeek = dayViewDateObj.getDay() === 0 ? 7 : dayViewDateObj.getDay();
+  const coursesForDay = courses
+    .filter((c) => (getCourseLocalInfo(c)?.date ?? c.date) === dayViewDate)
+    .sort((a, b) => (getCourseLocalInfo(a)?.time ?? a.time).localeCompare(getCourseLocalInfo(b)?.time ?? b.time));
+  const availabilityForDay = (availability || [])
+    .filter((s) => s.dayOfWeek === dayViewDayOfWeek)
+    .map((s) => ({ ...s, professorId: user?.id, professorName: user?.name }))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  const dayTimelineItems = [
+    ...availabilityForDay.map((s) => ({ type: 'availability', sortTime: s.startTime, data: s })),
+    ...coursesForDay.map((c) => ({ type: 'course', sortTime: getCourseLocalInfo(c)?.time ?? c.time, data: c })),
+  ].sort((a, b) => a.sortTime.localeCompare(b.sortTime));
+
+  const getCourseTimeDisplay = (c) => {
+    const local = getCourseLocalInfo(c);
+    if (local) return local.displayEndTime ? `${local.displayTime} – ${local.displayEndTime}` : local.displayTime;
+    return formatTimeRange(c.time, c.durationMin || 60);
+  };
+
+  const renderCourseDayCard = (c, i) => {
+    const status = getCourseStatus(c);
+    const hasDarkBg = ['gradient', 'status'].includes(calendarStyle) || status === 'completed';
+    const nameTextClass = hasDarkBg ? 'text-white' : 'text-text dark:text-[#f5f5f5]';
+    return (
+      <div
+        key={c.id}
+        className={`p-4 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5 animate-fade-in ${getWeekCourseCardClass(calendarStyle, status)}`}
+        style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className={`flex items-center justify-center min-w-[4.5rem] h-12 px-2 rounded-xl shrink-0 font-mono font-bold text-sm shadow-sm whitespace-nowrap ${hasDarkBg ? 'bg-black/35 text-white' : 'bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5]'}`}>
+              {getCourseTimeDisplay(c)}
+            </span>
+            <div className="min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
+              <StudentNameTooltip student={c.student} className={`font-semibold break-words cursor-default ${nameTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium shrink-0 w-fit ${
+                status === 'live' ? (hasDarkBg ? 'bg-white/25 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400') :
+                status === 'professor_absent' ? (hasDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
+                status === 'upcoming' ? (hasDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
+                hasDarkBg ? 'bg-slate-500/50 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              }`}>
+                {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 items-center justify-end">
+            {editingLink === c.id ? (
+              <div className="flex gap-2 flex-1 min-w-[200px]">
+                <input
+                  type="url"
+                  value={linkValue}
+                  onChange={(e) => setLinkValue(e.target.value)}
+                  className="flex-1 px-2 py-1.5 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
+                  autoFocus
+                />
+                <button onClick={() => saveMeetingLink(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
+                <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => openEditLink(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${hasDarkBg ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`}>
+                {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
+              </button>
+            )}
+            {recordingFor === c.id ? (
+              <div className="flex gap-2 flex-1 min-w-[200px]">
+                <input
+                  type="url"
+                  placeholder={t('dashboard.professor.recordingUrl')}
+                  value={recordingValue}
+                  onChange={(e) => setRecordingValue(e.target.value)}
+                  className="flex-1 px-2 py-1.5 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
+                  autoFocus
+                />
+                <button onClick={() => saveRecording(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
+                <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => openRecording(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${hasDarkBg ? 'text-white' : 'text-pink-primary dark:text-pink-400'}`}>
+                {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
+              </button>
+            )}
+            {status === 'live' && (() => {
+              const countdown = getRemainingCountdown(c.sessionStartedAt, now);
+              return countdown ? (
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${hasDarkBg ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'}`} title={t('dashboard.professor.countdownTooltip')}>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {countdown}
+                </span>
+              ) : null;
+            })()}
+            {(status === 'upcoming' || status === 'live') && (
+              (status === 'live' || canStartCourse(c, now)) ? (
+                <Link
+                  to={`/live?courseId=${c.id}`}
+                  className={`inline-block px-2 py-1 rounded-lg text-xs font-medium transition ${hasDarkBg ? 'bg-black/40 text-white hover:bg-black/50' : 'bg-pink-primary dark:bg-pink-400 text-white hover:bg-pink-dark dark:hover:bg-pink-500'}`}
+                >
+                  {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
+                </Link>
+              ) : (
+                <span
+                  className={`inline-block px-2 py-1 rounded-lg text-xs font-medium cursor-not-allowed opacity-60 ${hasDarkBg ? 'bg-black/20 text-white/80' : 'bg-pink-soft/60 dark:bg-white/10 text-text/70 dark:text-[#f5f5f5]/70'}`}
+                  title={t('dashboard.professor.startDisabledTooltip')}
+                >
+                  {t('dashboard.professor.startCourse')}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const prevDay = () => {
+    const d = new Date(dayViewDate + 'T12:00:00');
+    d.setDate(d.getDate() - 1);
+    setDayViewDate(toDateStrLocal(d));
+  };
+  const nextDay = () => {
+    const d = new Date(dayViewDate + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    setDayViewDate(toDateStrLocal(d));
+  };
+  const goToTodayDayView = () => setDayViewDate(today);
+
+  return (
+    <div className="animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5]">{t('dashboard.professor.title')}</h1>
+      </div>
+
+      {/* Today's date & time - live clock for teachers */}
+      <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-pink-soft/50 to-pink-soft/20 dark:from-pink-500/15 dark:to-pink-500/5 border border-pink-soft/50 dark:border-pink-400/20 shadow-pink-soft dark:shadow-lg overflow-hidden animate-fade-in transition-all duration-500 hover:shadow-md hover:border-pink-soft/70 dark:hover:border-pink-400/30">
+        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-pink-primary/15 dark:bg-pink-400/15 shrink-0">
+          <svg className="w-7 h-7 text-pink-primary dark:text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div key={clockAnimKey} className="flex-1 min-w-0 animate-fade-in">
+          <p className="text-xs font-medium uppercase tracking-wider text-pink-primary dark:text-pink-400 mb-0.5">
+            {t('calendar.today')}
+          </p>
+          <p className="text-lg font-semibold text-text dark:text-[#f5f5f5] capitalize">
+            {localClock.date}
+          </p>
+          <p className="text-lg font-mono font-bold text-pink-primary dark:text-pink-400 tabular-nums transition-all duration-300">
+            {localClock.time}
+          </p>
+        </div>
+        <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[340px] md:ml-auto">
+          <label className="block text-xs font-medium text-text/70 dark:text-[#f5f5f5]/70 mb-1.5">
+            {t('dashboard.professor.clockCountry')}
+          </label>
+          <div className="relative">
+            <select
+              value={selectedClockCountry}
+              onChange={(e) => {
+                setSelectedClockCountry(e.target.value);
+                setClockAnimKey((k) => k + 1);
+              }}
+              className="w-full appearance-none px-3.5 py-2.5 pr-10 rounded-xl border border-pink-soft/70 dark:border-white/20 bg-white/70 dark:bg-[#151515]/80 text-sm text-text dark:text-[#f5f5f5] focus:outline-none focus:ring-2 focus:ring-pink-primary/40 dark:focus:ring-pink-400/50 transition-all duration-300"
+            >
+              {COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+            <svg
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-primary dark:text-pink-400"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M6 8l4 4 4-4" />
+            </svg>
+          </div>
+          <p className="mt-1.5 text-[11px] text-text/50 dark:text-[#f5f5f5]/50">
+            {selectedCountryName} · {localClock.tz}
+          </p>
+        </div>
+      </div>
+
+      {/* Availability - Visual week grid + optional manual add */}
+      <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg mb-6 transition-colors duration-500">
+        <h2 className="font-medium text-text dark:text-[#f5f5f5] mb-4">{t('dashboard.professor.myAvailability')}</h2>
+        <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60 mb-4">
+          {t('dashboard.professor.availabilityDesc')}
+        </p>
+        <AvailabilityGrid
+          slots={availability}
+          dayLabels={Array.isArray(DAYS) ? DAYS : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']}
+          onAdd={handleAddFromGrid}
+          onRemove={handleRemoveAvailability}
+          addLabel={t('dashboard.professor.add')}
+          removeLabel={t('dashboard.professor.remove')}
+          emptyMessage={t('dashboard.professor.availabilityGridHint') || 'Click and drag on a day column to add a time slot. Click a slot to remove it.'}
+        />
+        <details className="mt-4 group">
+          <summary className="text-sm text-pink-primary dark:text-pink-400 cursor-pointer hover:underline list-none inline-flex items-center gap-1">
+            <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+            {t('dashboard.professor.addManually') || 'Add a slot manually'}
+          </summary>
+          <form onSubmit={handleAddAvailability} className="flex flex-wrap gap-4 items-end mt-3 pl-4">
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.day')}</label>
+              <select
+                value={form.dayOfWeek}
+                onChange={(e) => setForm((f) => ({ ...f, dayOfWeek: +e.target.value }))}
+                className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              >
+                {DAY_NUMBERS.map((n) => (
+                  <option key={n} value={n}>{DAYS[n - 1]}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.from')}</label>
+              <input
+                type="time"
+                value={form.startTime}
+                onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+                className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-text/60 dark:text-[#f5f5f5]/60 mb-1">{t('dashboard.professor.to')}</label>
+              <input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+                className="px-4 py-2.5 border border-pink-soft dark:border-white/20 rounded-xl focus:ring-2 focus:ring-pink-primary bg-transparent text-text dark:text-[#f5f5f5]"
+              />
+            </div>
+            <button type="submit" className="px-5 py-2.5 bg-pink-primary dark:bg-pink-400 text-white rounded-xl hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow">
+              {t('dashboard.professor.add')}
+            </button>
+          </form>
+        </details>
+      </div>
+
+      {/* Résumé rapide */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-pink-soft/40 dark:bg-white/5 border border-pink-soft/50 dark:border-white/10">
+          <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-pink-primary/15 dark:bg-pink-400/15">
+            <svg className="w-6 h-6 text-pink-primary dark:text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-sm font-medium text-text dark:text-[#f5f5f5]">{t('dashboard.professor.coursesThisWeek', { count: coursesThisWeek })}</p>
+            <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60">{t('dashboard.professor.slotsAvailable', { count: myAvailabilitySlots })}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            const d = new Date();
+            d.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1));
+            setWeekStart(toDateStrLocal(d));
+            setViewMode('semaine');
+            setTimeout(() => {
+              weekViewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }}
+          className="px-4 py-3 rounded-xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 hover:bg-pink-soft/30 dark:hover:bg-white/10 transition text-sm font-medium text-text dark:text-[#f5f5f5]"
+        >
+          {t('dashboard.professor.viewCurrentWeek')}
+        </button>
+      </div>
+
+      {viewMode === 'mois' ? (
+        <>
+          <div className="flex flex-wrap items-center gap-4 mb-4 p-4 rounded-xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10">
+            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-primary/15 dark:bg-pink-400/15 text-pink-primary dark:text-pink-400 text-sm font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-primary dark:bg-pink-400" />
+              {t('dashboard.professor.myCourses')}
+            </span>
+            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              {t('dashboard.professor.myAvailabilityShort')}
+            </span>
+          </div>
+          <Calendar
+          events={calendarEvents}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          onSelectEvent={(evt) => {
+            if (evt.type !== 'course') return;
+            if (evt.isPast) return;
+            const courseStart = new Date(`${evt.date}T${evt.rawTime}`).getTime();
+            if (!evt.isStarted && Date.now() < courseStart) return;
+            navigate(`/live?courseId=${evt.id}`);
+          }}
+          viewMode="mois"
+          onViewModeChange={setViewMode}
+          calendarStyle={calendarStyle}
+        />
+        </>
+      ) : viewMode === 'semaine' ? (
+        <div ref={weekViewRef} className="space-y-4 scroll-mt-6">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg p-4 flex gap-2 transition-colors duration-500">
+            <button onClick={() => setViewMode('mois')} className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition">
+              {t('dashboard.professor.month')}
+            </button>
+            <button className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-primary dark:bg-pink-400 text-white">
+              {t('dashboard.professor.week')}
+            </button>
+            <button onClick={() => setViewMode('jour')} className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition">
+              {t('dashboard.professor.dayView')}
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 mb-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-primary/15 dark:bg-pink-400/15 text-pink-primary dark:text-pink-400 text-sm font-medium">
+                <span className="w-2.5 h-2.5 rounded-full bg-pink-primary dark:bg-pink-400" />
+                {t('dashboard.professor.myCourses')}
+              </span>
+              <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                {t('dashboard.professor.myAvailabilityShort')}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={prevWeek} className="px-4 py-2 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 rounded-xl transition font-medium">
+                ← {t('dashboard.professor.previous')}
+              </button>
+              <span className="font-medium text-text dark:text-[#f5f5f5]">
+                {weekStartDate.toLocaleDateString(locale, { month: 'short' })} {weekStartDate.getDate()} – {weekEndDate.toLocaleDateString(locale, { month: 'short' })} {weekEndDate.getDate()}, {weekStartDate.getFullYear()}
+              </span>
+              <button onClick={nextWeek} className="px-4 py-2 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 rounded-xl transition font-medium">
+                {t('dashboard.professor.next')} →
+              </button>
+            </div>
+          </div>
+
+          {/* Grille horizontale : 7 colonnes (jours) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+            {coursesByDay.map(({ day, dateStr, isToday, courses: dayCourses, availability: dayAvail }) => (
+                <div
+                  key={day}
+                  className={`min-h-[140px] rounded-2xl p-4 transition-all duration-300 ${isToday ? 'calendar-today-cell bg-pink-primary/20 dark:bg-pink-400/25 border-2 border-pink-primary/50 dark:border-pink-400/50' : 'bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 hover:border-pink-soft/70 dark:hover:border-white/20'}`}
+                >
+                  <div className="font-semibold text-text dark:text-[#f5f5f5] mb-0.5 tracking-tight">{day}</div>
+                  <div className="text-xs text-text/50 dark:text-[#f5f5f5]/50 mb-3 font-medium">{dateStr}</div>
+                  <div className="space-y-2">
+                    {dayAvail.map((slot) => {
+                      const isMySlot = slot.professorId === user?.id;
+                      return (
+                        <div
+                          key={`${slot.professorId}-${slot.startTime}`}
+                          className={`text-xs rounded-lg px-2 py-1.5 ${
+                            isMySlot
+                              ? 'bg-emerald-500/80 dark:bg-emerald-500/80 text-white'
+                              : 'bg-slate-300/80 dark:bg-slate-600/80 text-slate-800 dark:text-slate-200'
+                          }`}
+                        >
+                          {slot.startTime}–{slot.endTime} {isMySlot ? t('dashboard.professor.me') : slot.professorName}
+                        </div>
+                      );
+                    })}
+                    {dayCourses.length === 0 && dayAvail.length === 0 ? (
+                      <p className="text-sm text-text/40 dark:text-[#f5f5f5]/40">{t('dashboard.professor.noClasses')}</p>
+                    ) : dayCourses.length > 0 ? (
+                      dayCourses.map((c) => {
+                        const status = getCourseStatus(c);
+                        const weekCardDarkBg = ['gradient', 'status'].includes(calendarStyle) || status === 'completed';
+                        const weekTextClass = weekCardDarkBg ? 'text-white' : 'text-text dark:text-[#f5f5f5]';
+                        const weekTimeClass = weekCardDarkBg ? 'text-white opacity-95' : 'text-text/90 dark:text-[#f5f5f5]/90';
+                        return (
+                          <div
+                            key={c.id}
+                            className={`${getWeekCourseCardClass(calendarStyle, status)} transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5 animate-fade-in`}
+                            style={{ animationDelay: `${dayCourses.indexOf(c) * 60}ms`, animationFillMode: 'both' }}
+                          >
+                            <div className="space-y-1.5">
+                              <StudentNameTooltip student={c.student} className={`font-semibold text-sm leading-snug break-words block cursor-default ${weekTextClass}`} locale={i18n.language}>{t('dashboard.admin.student')} {c.student?.name}</StudentNameTooltip>
+                              <div className="flex flex-col gap-1">
+                                <span className={`text-sm whitespace-nowrap font-mono font-bold tracking-tight ${weekTimeClass}`}>{getCourseTimeDisplay(c)}</span>
+                                <span className={`inline-block w-fit px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${
+                                  status === 'live' ? (weekCardDarkBg ? 'bg-white/25 text-white animate-pulse' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 animate-pulse') :
+                                  status === 'professor_absent' ? (weekCardDarkBg ? 'bg-orange-500/40 text-white' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400') :
+                                  status === 'upcoming' ? (weekCardDarkBg ? 'bg-amber-500/50 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400') :
+                                  weekCardDarkBg ? 'bg-slate-500/50 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                }`}>
+                                  {status === 'live' ? t('dashboard.professor.live') : status === 'professor_absent' ? t('dashboard.admin.endReasonProfessorAbsent') : status === 'upcoming' ? t('dashboard.professor.upcoming') : t('dashboard.professor.completed')}
+                                </span>
+                              </div>
+                            </div>
+                            {status !== 'professor_absent' && (
+                            <div className="flex flex-wrap gap-2 mt-2.5 justify-start items-center">
+                              {editingLink === c.id ? (
+                                <div className="flex gap-2 flex-1">
+                                  <input
+                                    type="url"
+                                    value={linkValue}
+                                    onChange={(e) => setLinkValue(e.target.value)}
+                                    className="flex-1 px-2 py-1 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
+                                    autoFocus
+                                  />
+                                  <button onClick={() => saveMeetingLink(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
+                                  <button onClick={() => setEditingLink(null)} className="text-text/50 text-sm">✕</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => openEditLink(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${weekTextClass}`}>
+                                  {c.meetingLink ? t('dashboard.professor.editLink') : t('dashboard.professor.addLink')}
+                                </button>
+                              )}
+                              {recordingFor === c.id ? (
+                                <div className="flex gap-2 flex-1">
+                                  <input
+                                    type="url"
+                                    placeholder={t('dashboard.professor.recordingUrl')}
+                                    value={recordingValue}
+                                    onChange={(e) => setRecordingValue(e.target.value)}
+                                    className="flex-1 px-2 py-1 border border-pink-soft dark:border-white/20 rounded-lg text-xs bg-transparent text-text dark:text-[#f5f5f5]"
+                                    autoFocus
+                                  />
+                                  <button onClick={() => saveRecording(c.id)} className="text-green-600 dark:text-green-400 text-sm">✓</button>
+                                  <button onClick={() => setRecordingFor(null)} className="text-text/50 text-sm">✕</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => openRecording(c)} className={`text-xs font-medium transition-all duration-200 hover:opacity-90 hover:underline py-1 px-2 rounded-md hover:bg-white/10 ${weekTextClass}`}>
+                                  {c.recordingLink ? t('dashboard.professor.editRecording') : t('dashboard.professor.addRecording')}
+                                </button>
+                              )}
+                              {status === 'live' && (() => {
+                                const countdown = getRemainingCountdown(c.sessionStartedAt, now);
+                                return countdown ? (
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-mono font-semibold ${weekCardDarkBg ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'}`} title={t('dashboard.professor.countdownTooltip')}>
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    {countdown}
+                                  </span>
+                                ) : null;
+                              })()}
+                              {(status === 'upcoming' || status === 'live') && (
+                                (status === 'live' || canStartCourse(c, now)) ? (
+                                  <Link
+                                    to={`/live?courseId=${c.id}`}
+                                    className={`inline-block px-2 py-1 rounded-lg text-xs font-medium transition ${weekCardDarkBg ? 'bg-black/40 text-white hover:bg-black/50' : 'bg-pink-primary dark:bg-pink-400 text-white hover:bg-pink-dark dark:hover:bg-pink-500'}`}
+                                  >
+                                    {status === 'live' ? t('dashboard.student.join') : t('dashboard.professor.startCourse')}
+                                  </Link>
+                                ) : (
+                                  <span
+                                    className={`inline-block px-2 py-1 rounded-lg text-xs font-medium cursor-not-allowed opacity-60 ${weekCardDarkBg ? 'bg-black/20 text-white/80' : 'bg-pink-soft/60 dark:bg-white/10 text-text/70 dark:text-[#f5f5f5]/70'}`}
+                                    title={t('dashboard.professor.startDisabledTooltip')}
+                                  >
+                                    {t('dashboard.professor.startCourse')}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4 animate-fade-in">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg p-4 flex flex-wrap gap-2 transition-colors duration-500">
+            <button onClick={() => setViewMode('mois')} className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition">
+              {t('dashboard.professor.month')}
+            </button>
+            <button onClick={() => setViewMode('semaine')} className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-soft/50 dark:bg-white/10 text-text dark:text-[#f5f5f5] hover:bg-pink-soft/70 dark:hover:bg-white/20 transition">
+              {t('dashboard.professor.week')}
+            </button>
+            <button className="px-4 py-2 rounded-xl text-sm font-medium bg-pink-primary dark:bg-pink-400 text-white">
+              {t('dashboard.professor.dayView')}
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-[#1a1a1a] border border-pink-soft/50 dark:border-white/10 mb-4">
+            <div className="flex items-center gap-2">
+              <button onClick={prevDay} className="p-2 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 rounded-xl transition font-medium">
+                ←
+              </button>
+              <span className="font-semibold text-text dark:text-[#f5f5f5] min-w-[200px] text-center capitalize">
+                {dayViewDateObj.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </span>
+              <button onClick={nextDay} className="p-2 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/50 dark:hover:bg-white/10 rounded-xl transition font-medium">
+                →
+              </button>
+            </div>
+            <button
+              onClick={goToTodayDayView}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                dayViewDate === today
+                  ? 'bg-pink-primary dark:bg-pink-400 text-white'
+                  : 'bg-pink-soft/50 dark:bg-white/10 text-pink-primary dark:text-pink-400 hover:bg-pink-soft/70 dark:hover:bg-white/20'
+              }`}
+            >
+              {t('calendar.today')}
+            </button>
+          </div>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg overflow-hidden transition-colors duration-500">
+            <div className="flex-1 min-w-0">
+                {dayTimelineItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
+                    <div className="w-16 h-16 rounded-2xl bg-pink-soft/40 dark:bg-pink-500/15 flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8 text-pink-primary dark:text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                    </div>
+                    <p className="text-text/60 dark:text-[#f5f5f5]/60 font-medium">{t('dashboard.professor.noClasses')}</p>
+                    <p className="text-sm text-text/40 dark:text-[#f5f5f5]/40 mt-1">{t('dashboard.professor.noClassesDay')}</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-pink-soft/30 dark:divide-white/10">
+                    {dayTimelineItems.map((item, i) => item.type === 'availability' ? (
+                      <div
+                        key={`av-${item.data.professorId}-${item.data.startTime}`}
+                        className={`flex items-center gap-4 p-4 transition-all duration-300 hover:bg-pink-soft/20 dark:hover:bg-white/5 animate-fade-in ${
+                          item.data.professorId === user?.id
+                            ? 'bg-emerald-500/10 dark:bg-emerald-500/10 border-l-4 border-l-emerald-500'
+                            : 'bg-slate-50/50 dark:bg-slate-800/30 border-l-4 border-l-slate-400 dark:border-l-slate-500'
+                        }`}
+                        style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
+                      >
+                        <div className="w-20 shrink-0 text-sm font-mono font-medium text-text/70 dark:text-[#f5f5f5]/70">
+                          {item.data.startTime} – {item.data.endTime}
+                        </div>
+                        <div className="flex-1">
+                          <span className="font-medium text-text dark:text-[#f5f5f5]">
+                            {item.data.professorId === user?.id ? t('dashboard.professor.myAvailabilityShort') : item.data.professorName}
+                          </span>
+                          {item.data.professorId === user?.id && <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">{t('dashboard.professor.me')}</span>}
+                        </div>
+                      </div>
+                    ) : renderCourseDayCard(item.data, i)
+                    )}
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
