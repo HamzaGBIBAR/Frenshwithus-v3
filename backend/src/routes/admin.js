@@ -39,80 +39,81 @@ router.get('/professors', async (req, res) => {
 
 // Professors' availability: stored in UTC; return professor local + reference (Morocco for admin grid).
 router.get('/professors/availability', async (req, res) => {
-  const REF_TZ = MOROCCO_TZ;
-  const professors = await prisma.user.findMany({
-    where: { role: 'PROFESSOR' },
-    select: {
-      id: true,
-      name: true,
-      avatarUrl: true,
-      age: true,
-      country: true,
-      timezone: true,
-      availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-    },
-  });
-  const profTz = (p) => getUserTz(p.timezone, p.country);
-  const inMorocco = professors.map((p) => {
-    const tz = profTz(p);
-    return {
-      ...p,
-      availability: (p.availability || []).map((s) => {
-        const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
-        const localZ = tz ? utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, tz) : null;
-        const refZ = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, REF_TZ);
-        return z
-          ? {
-              ...s,
-              dayOfWeek: z.dayOfWeek,
-              startTime: z.startTime,
-              endTime: z.endTime,
-              ...(localZ && { localDayOfWeek: localZ.dayOfWeek, localStartTime: localZ.startTime, localEndTime: localZ.endTime }),
-              ...(refZ && { refDayOfWeek: refZ.dayOfWeek, refStartTime: refZ.startTime, refEndTime: refZ.endTime, ...(refEndDay != null && { refEndDayOfWeek: refEndDay }) }),
-            }
-          : s;
-      }),
-    };
-  });
-  res.json(inMorocco);
-});
-
-// Unified availability: all professors and students in one call (for the admin weekly calendar).
-router.get('/unified-availability', async (req, res) => {
-  const REF_TZ = MOROCCO_TZ;
-
-  const [professorsData, studentsData] = await Promise.all([
-    prisma.user.findMany({
+  try {
+    const REF_TZ = MOROCCO_TZ;
+    const professors = await prisma.user.findMany({
       where: { role: 'PROFESSOR' },
       select: {
         id: true,
         name: true,
         avatarUrl: true,
+        age: true,
         country: true,
         timezone: true,
         availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
       },
-    }),
-    prisma.user.findMany({
-      where: { role: 'STUDENT' },
-      select: {
-        id: true,
-        name: true,
-        avatarUrl: true,
-        country: true,
-        timezone: true,
-        studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-      },
-    })
-  ]);
+    });
+    const profTz = (p) => getUserTz(p.timezone, p.country);
+    const inMorocco = professors.map((p) => {
+      const tz = profTz(p);
+      return {
+        ...p,
+        availability: (p.availability || []).map((s) => {
+          const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
+          const localZ = tz ? utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, tz) : null;
+          const refZ = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, REF_TZ);
+          return z
+            ? {
+                ...s,
+                dayOfWeek: z.dayOfWeek,
+                startTime: z.startTime,
+                endTime: z.endTime,
+                ...(localZ && { localDayOfWeek: localZ.dayOfWeek, localStartTime: localZ.startTime, localEndTime: localZ.endTime }),
+                ...(refZ && { refDayOfWeek: refZ.dayOfWeek, refStartTime: refZ.startTime, refEndTime: refZ.endTime }),
+              }
+            : s;
+        }),
+      };
+    });
+    res.json(inMorocco);
+  } catch (err) {
+    console.error('[GET /professors/availability]', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
-  const mapUserAvailability = (user, availabilityArray) => {
-    const tz = getUserTz(user.timezone, user.country);
-    return {
-      id: user.id,
-      name: user.name,
-      avatarUrl: user.avatarUrl,
-      availability: (availabilityArray || []).map((s) => {
+// Unified availability: all professors and students in one call (for the admin weekly calendar).
+router.get('/unified-availability', async (req, res) => {
+  try {
+    const REF_TZ = MOROCCO_TZ;
+
+    const [professorsData, studentsData] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: 'PROFESSOR' },
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          country: true,
+          timezone: true,
+          availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+        },
+      }),
+      prisma.user.findMany({
+        where: { role: 'STUDENT' },
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          country: true,
+          timezone: true,
+          studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+        },
+      })
+    ]);
+
+    const mapSlots = (slotsArray) =>
+      (slotsArray || []).map((s) => {
         const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
         const refZ = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, REF_TZ);
         return z
@@ -126,14 +127,31 @@ router.get('/unified-availability', async (req, res) => {
               refEndTime: refZ?.endTime,
             }
           : s;
-      })
-    };
-  };
+      });
 
-  const professors = professorsData.map(p => mapUserAvailability(p, p.availability));
-  const students = studentsData.map(s => mapUserAvailability(s, s.studentAvailability));
+    const professors = professorsData.map(p => ({
+      id: p.id,
+      name: p.name,
+      avatarUrl: p.avatarUrl,
+      country: p.country,
+      timezone: getUserTz(p.timezone, p.country),
+      availability: mapSlots(p.availability),
+    }));
 
-  res.json({ professors, students });
+    const students = studentsData.map(s => ({
+      id: s.id,
+      name: s.name,
+      avatarUrl: s.avatarUrl,
+      country: s.country,
+      timezone: getUserTz(s.timezone, s.country),
+      studentAvailability: mapSlots(s.studentAvailability),
+    }));
+
+    res.json({ professors, students });
+  } catch (err) {
+    console.error('[GET /unified-availability]', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
 });
 
 router.post('/professors', userCreateValidation, validate, async (req, res) => {
