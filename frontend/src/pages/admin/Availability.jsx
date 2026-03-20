@@ -473,6 +473,7 @@ export default function AdminAvailability() {
              filterProf={filterProf}
              filterStudent={filterStudent}
              onOverlapClick={handleUnifiedOverlapClick}
+             onQuickCreate={handleQuickCreateCourse}
           />
         </section>
       )}

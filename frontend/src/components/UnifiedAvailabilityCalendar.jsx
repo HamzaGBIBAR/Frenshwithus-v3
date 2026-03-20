@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const DAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1..Sun=7
 
@@ -70,16 +71,146 @@ function AvatarStack({ users, limit = 2 }) {
   );
 }
 
+function MatchModal({ match, onClose, onConfirm }) {
+  const [loading, setLoading] = useState(false);
+
+  // Esc key to close
+  useEffect(() => {
+    const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  if (!match) return null;
+
+  const prof = match.professors[0];
+  const stud = match.students[0];
+  if (!prof || !stud) return null;
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    await onConfirm({
+      professorId: prof.id,
+      studentId: stud.id,
+      dayOfWeek: match.dayOfWeek,
+      time: match.time,
+    });
+    setLoading(false);
+    onClose();
+  };
+
+  return createPortal(
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+      padding: 16, animation: 'fadeIn 0.2s ease-out'
+    }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      `}</style>
+      <div style={{
+        background: '#1a1a1a', border: '1px solid rgba(244,114,182,0.3)',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 40px rgba(244,114,182,0.15)',
+        borderRadius: 24, width: '100%', maxWidth: 420, overflow: 'hidden',
+        animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative'
+      }}>
+        {/* Header */}
+        <div style={{ background: 'linear-gradient(135deg, rgba(244,114,182,0.15) 0%, rgba(157,23,77,0.05) 100%)', padding: '24px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.1)', border: 'none', width: 28, height: 28, borderRadius: '50%', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            Match Parfait
+          </div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#f5f5f5' }}>
+            Créer un cours
+          </h2>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+            À <strong>{match.time}</strong> (Heure du Maroc)
+          </p>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: 24 }}>
+          {/* Prof Row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, padding: 12, borderRadius: 16, background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)' }}>
+            <Avatar user={prof} size={48} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Professeur</div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: '#f5f5f5' }}>{prof.name}</div>
+              {prof.timezone && prof.timezone !== 'Africa/Casablanca' && (
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Local: {prof.timezone}</div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '-10px 0', position: 'relative', zIndex: 10 }}>
+            <div style={{ background: '#1a1a1a', padding: '4px 8px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+          </div>
+
+          {/* Student Row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 20, padding: 12, borderRadius: 16, background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)' }}>
+            <Avatar user={stud} size={48} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+                Étudiant {stud.age ? `• ${stud.age} ans` : ''}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: '#f5f5f5' }}>{stud.name}</div>
+              {stud.timezone && stud.timezone !== 'Africa/Casablanca' && (
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Local: {stud.timezone}</div>
+              )}
+            </div>
+          </div>
+
+          {/* Action */}
+          <button
+            onClick={handleConfirm}
+            disabled={loading}
+            style={{
+              width: '100%', marginTop: 28, padding: '14px 20px', borderRadius: 14,
+              background: 'linear-gradient(135deg, #f472b6 0%, #db2777 100%)',
+              color: '#fff', fontSize: 15, fontWeight: 600, border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: '0 4px 14px 0 rgba(244,114,182,0.39)', transition: 'transform 0.2s, box-shadow 0.2s'
+            }}
+            onMouseOver={e=> {if(!loading) {e.currentTarget.style.transform='translateY(-1px)'; e.currentTarget.style.boxShadow='0 6px 20px rgba(244,114,182,0.5)'}}}
+            onMouseOut={e=> {if(!loading) {e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='0 4px 14px 0 rgba(244,114,182,0.39)'}}}
+          >
+            {loading ? (
+              <span style={{ display: 'inline-block', width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            ) : (
+              <>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                Valider le cours (1h)
+              </>
+            )}
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function UnifiedAvailabilityCalendar({
   professors = [],
   students = [],
   dayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
   timeSlots = [],
   onOverlapClick,
+  onQuickCreate,
   filterProf = 'ALL',
   filterStudent = 'ALL',
 }) {
   const [hoveredCell, setHoveredCell] = useState(null);
+  const [matchModal, setMatchModal] = useState(null);
 
   const profColorMap = useMemo(() => {
     const map = {};
@@ -255,8 +386,8 @@ export default function UnifiedAvailabilityCalendar({
                       onMouseEnter={() => setHoveredCell(cellKey)}
                       onMouseLeave={() => setHoveredCell(null)}
                       onClick={() => {
-                        if (isOverlap && onOverlapClick) {
-                          onOverlapClick({ dayOfWeek: d, time, professors: profs, students: studs });
+                        if (isOverlap) {
+                           setMatchModal({ dayOfWeek: d, time, professors: profs, students: studs });
                         }
                       }}
                     >
@@ -312,6 +443,21 @@ export default function UnifiedAvailabilityCalendar({
         <div style={{ textAlign: 'center', padding: '48px 16px', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>
           Aucun créneau disponible. Les professeurs et élèves doivent d'abord saisir leurs disponibilités.
         </div>
+      )}
+
+      {/* Match Modal */}
+      {matchModal && (
+        <MatchModal
+          match={matchModal}
+          onClose={() => setMatchModal(null)}
+          onConfirm={async (data) => {
+            if (onQuickCreate) {
+              await onQuickCreate(data);
+            } else if (onOverlapClick) {
+              onOverlapClick({ dayOfWeek: data.dayOfWeek, time: data.time, professors: matchModal.professors, students: matchModal.students });
+            }
+          }}
+        />
       )}
     </div>
   );

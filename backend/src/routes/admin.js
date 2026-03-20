@@ -96,6 +96,7 @@ router.get('/unified-availability', async (req, res) => {
           avatarUrl: true,
           country: true,
           timezone: true,
+          birthDate: true,
           availability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
         },
       }),
@@ -107,78 +108,65 @@ router.get('/unified-availability', async (req, res) => {
           avatarUrl: true,
           country: true,
           timezone: true,
+          birthDate: true,
           studentAvailability: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
         },
       })
     ]);
 
-    // Function to parse Date string precisely and safely
-    const toMoroccoParts = (dayOfWeek, timeStr) => {
-      // Pick a reference Monday (Jan 05, 2026 was a Monday)
-      const d = 4 + Number(dayOfWeek);
-      const refDate = `2026-01-${String(d).padStart(2, '0')}`;
-      const utcDate = new Date(`${refDate}T${timeStr.length === 5 ? timeStr + ':00' : timeStr}Z`);
-      if (isNaN(utcDate.getTime())) return null;
-
-      const formatter = new Intl.DateTimeFormat('en-CA', {
-        timeZone: MOROCCO_TZ, year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
-      });
-      const map = {};
-      for (const part of formatter.formatToParts(utcDate)) {
-        if (part.type !== 'literal') map[part.type] = part.value;
-      }
-      const jsDow = new Date(Date.UTC(Number(map.year), Number(map.month) - 1, Number(map.day))).getUTCDay();
-      return {
-        day: jsDow === 0 ? 7 : jsDow,
-        time: `${String(map.hour).padStart(2, '0')}:${String(map.minute).padStart(2, '0')}`
-      };
-    };
-
     const mapSlots = (slotsArray) => {
       const result = [];
       (slotsArray || []).forEach((s) => {
-        const startParts = toMoroccoParts(s.dayOfWeek, s.startTime);
-        const endParts = toMoroccoParts(s.dayOfWeek, s.endTime || s.startTime);
-        
-        if (!startParts || !endParts) {
+        const converted = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
+        if (!converted) {
           result.push(s);
           return;
         }
 
-        // Check if the slot crosses midnight in Morocco time
-        if (startParts.day !== endParts.day) {
-          // Split into two slots
+        // If 'startTime' > 'endTime' in the converted result, it crossed midnight. 
+        // Example: 23:00 to 02:00. This must be split so the frontend grid logic can render it across two string ranges.
+        if (converted.startTime > converted.endTime && converted.endTime !== '00:00') {
+          // 1. The part before midnight on the starting day
           result.push({
             ...s,
-            dayOfWeek: startParts.day,
-            startTime: startParts.time,
-            endTime: '24:00', // Exclusive boundary for frontend logic
+            dayOfWeek: converted.dayOfWeek,
+            startTime: converted.startTime,
+            endTime: '24:00', // Exclusive theoretical boundary for grid string <= constraint
           });
+          // 2. The part after midnight on the NEXT day
+          const nextDay = converted.dayOfWeek === 7 ? 1 : converted.dayOfWeek + 1;
           result.push({
             ...s,
-            dayOfWeek: endParts.day,
+            dayOfWeek: nextDay,
             startTime: '00:00',
-            endTime: endParts.time,
+            endTime: converted.endTime,
           });
         } else {
-          // Single normal slot bounds
+          // Standard slot within the same day
           result.push({
             ...s,
-            dayOfWeek: startParts.day,
-            startTime: startParts.time,
-            endTime: endParts.time,
+            dayOfWeek: converted.dayOfWeek,
+            startTime: converted.startTime,
+            endTime: converted.endTime,
           });
         }
       });
       return result;
     };
 
+    const getAge = (birthDate) => {
+      if (!birthDate) return null;
+      const ageDifMs = Date.now() - new Date(birthDate).getTime();
+      return Math.abs(new Date(ageDifMs).getUTCFullYear() - 1970);
+    };
+
+
     const professors = professorsData.map(p => ({
       id: p.id,
       name: p.name,
       avatarUrl: p.avatarUrl,
       country: p.country,
+      age: getAge(p.birthDate),
       timezone: getUserTz(p.timezone, p.country),
       availability: mapSlots(p.availability),
     }));
@@ -188,6 +176,7 @@ router.get('/unified-availability', async (req, res) => {
       name: s.name,
       avatarUrl: s.avatarUrl,
       country: s.country,
+      age: getAge(s.birthDate),
       timezone: getUserTz(s.timezone, s.country),
       studentAvailability: mapSlots(s.studentAvailability),
     }));
