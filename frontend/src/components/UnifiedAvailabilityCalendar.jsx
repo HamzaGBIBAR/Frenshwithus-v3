@@ -12,19 +12,22 @@ const PROF_PALETTE = [
 
 function Avatar({ user, size = 22 }) {
   const initials = (user.name || '?').charAt(0).toUpperCase();
+
+  const titleContent = `${user.name}${user.timezone && user.timezone !== 'Africa/Casablanca' ? ` (Heure locale: ${user.timezone})` : ''}`;
+
   if (user.avatarUrl) {
     return (
       <img
         src={user.avatarUrl}
         alt={user.name}
         style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(255,255,255,0.2)' }}
-        title={user.name}
+        title={titleContent}
       />
     );
   }
   return (
     <div
-      title={user.name}
+      title={titleContent}
       style={{
         width: size, height: size, borderRadius: '50%',
         background: 'rgba(244,114,182,0.25)',
@@ -97,9 +100,9 @@ export default function UnifiedAvailabilityCalendar({
     activeProfs.forEach((p) => {
       // professors use `availability` key
       (p.availability || []).forEach((slot) => {
-        const dayKey = slot.refDayOfWeek || slot.dayOfWeek;
-        const start = slot.refStartTime || slot.startTime;
-        const end = slot.refEndTime || slot.endTime;
+        const dayKey = slot.dayOfWeek;
+        const start = slot.startTime;
+        const end = slot.endTime;
         if (!dayKey || !start || !end) return;
         timeSlots.forEach(tStr => {
           if (tStr >= start && tStr < end) {
@@ -113,9 +116,9 @@ export default function UnifiedAvailabilityCalendar({
       // students use `studentAvailability` key
       const slots = s.studentAvailability || s.availability || [];
       slots.forEach((slot) => {
-        const dayKey = slot.refDayOfWeek || slot.dayOfWeek;
-        const start = slot.refStartTime || slot.startTime;
-        const end = slot.refEndTime || slot.endTime;
+        const dayKey = slot.dayOfWeek;
+        const start = slot.startTime;
+        const end = slot.endTime;
         if (!dayKey || !start || !end) return;
         timeSlots.forEach(tStr => {
           if (tStr >= start && tStr < end) {

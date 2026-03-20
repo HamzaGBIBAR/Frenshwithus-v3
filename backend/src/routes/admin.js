@@ -112,22 +112,67 @@ router.get('/unified-availability', async (req, res) => {
       })
     ]);
 
-    const mapSlots = (slotsArray) =>
-      (slotsArray || []).map((s) => {
-        const z = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, MOROCCO_TZ);
-        const refZ = utcSlotToZoned(s.dayOfWeek, s.startTime, s.endTime, REF_TZ);
-        return z
-          ? {
-              ...s,
-              dayOfWeek: z.dayOfWeek,
-              startTime: z.startTime,
-              endTime: z.endTime,
-              refDayOfWeek: refZ?.dayOfWeek,
-              refStartTime: refZ?.startTime,
-              refEndTime: refZ?.endTime,
-            }
-          : s;
+    // Function to parse Date string precisely and safely
+    const toMoroccoParts = (dayOfWeek, timeStr) => {
+      // Pick a reference Monday (Jan 05, 2026 was a Monday)
+      const d = 4 + Number(dayOfWeek);
+      const refDate = `2026-01-${String(d).padStart(2, '0')}`;
+      const utcDate = new Date(`${refDate}T${timeStr.length === 5 ? timeStr + ':00' : timeStr}Z`);
+      if (isNaN(utcDate.getTime())) return null;
+
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: MOROCCO_TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
       });
+      const map = {};
+      for (const part of formatter.formatToParts(utcDate)) {
+        if (part.type !== 'literal') map[part.type] = part.value;
+      }
+      const jsDow = new Date(Date.UTC(Number(map.year), Number(map.month) - 1, Number(map.day))).getUTCDay();
+      return {
+        day: jsDow === 0 ? 7 : jsDow,
+        time: `${String(map.hour).padStart(2, '0')}:${String(map.minute).padStart(2, '0')}`
+      };
+    };
+
+    const mapSlots = (slotsArray) => {
+      const result = [];
+      (slotsArray || []).forEach((s) => {
+        const startParts = toMoroccoParts(s.dayOfWeek, s.startTime);
+        const endParts = toMoroccoParts(s.dayOfWeek, s.endTime || s.startTime);
+        
+        if (!startParts || !endParts) {
+          result.push(s);
+          return;
+        }
+
+        // Check if the slot crosses midnight in Morocco time
+        if (startParts.day !== endParts.day) {
+          // Split into two slots
+          result.push({
+            ...s,
+            dayOfWeek: startParts.day,
+            startTime: startParts.time,
+            endTime: '24:00', // Exclusive boundary for frontend logic
+          });
+          result.push({
+            ...s,
+            dayOfWeek: endParts.day,
+            startTime: '00:00',
+            endTime: endParts.time,
+          });
+        } else {
+          // Single normal slot bounds
+          result.push({
+            ...s,
+            dayOfWeek: startParts.day,
+            startTime: startParts.time,
+            endTime: endParts.time,
+          });
+        }
+      });
+      return result;
+    };
 
     const professors = professorsData.map(p => ({
       id: p.id,
