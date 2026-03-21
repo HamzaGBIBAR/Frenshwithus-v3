@@ -2174,3 +2174,10 @@ img, video, svg, canvas, iframe {
 /* ============================================================
    END SAMSUNG / SMALL PHONE FIXES
    ============================================================ */
+
+/* Ensure Jitsi iframe always fills its container */
+.jitsi-iframe-container iframe {
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 100%;
+}

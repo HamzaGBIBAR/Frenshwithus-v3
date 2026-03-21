@@ -437,7 +437,7 @@ export default function Live() {
           </div>
         ) : (
           <>
-            <div ref={jitsiContainerRef} className="w-full h-full" />
+            <div ref={jitsiContainerRef} className="absolute inset-0 jitsi-iframe-container" />
             {!jitsiJoined && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
                 <div className="flex flex-col items-center gap-4 rounded-2xl bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md border border-pink-soft/40 dark:border-white/10 p-8 max-w-md shadow-2xl">
