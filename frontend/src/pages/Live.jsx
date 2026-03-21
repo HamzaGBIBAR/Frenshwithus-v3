@@ -6,7 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import api from '../api/axios';
 
-const JAAS_DOMAIN = '8x8.vc';
+const PRIMARY_JAAS_DOMAIN = '8x8.vc';
+const FALLBACK_JITSI_DOMAIN = 'meet.jit.si';
 
 export default function Live() {
   const { t } = useTranslation();
@@ -25,6 +26,8 @@ export default function Live() {
   const [jaasToken, setJaasToken] = useState(null);
   const [jaasAppId, setJaasAppId] = useState(null);
   const [jaasError, setJaasError] = useState(null);
+  const [jitsiDomain, setJitsiDomain] = useState(PRIMARY_JAAS_DOMAIN);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [jitsiJoined, setJitsiJoined] = useState(false);
   const sessionIdRef = useRef(null);
   const socketRef = useRef(null);
@@ -125,8 +128,13 @@ export default function Live() {
         setJaasToken(data.token);
         setJaasAppId(data.appId);
       })
-      .catch(() => {
-        setJaasError('Impossible de récupérer le token JaaS. Vérifiez la configuration serveur.');
+      .catch((err) => {
+        console.warn('JaaS token error, deploying fallback to public Jitsi:', err);
+        // Fallback to public Jitsi Meet immediately if token fetching fails
+        setIsUsingFallback(true);
+        setJitsiDomain(FALLBACK_JITSI_DOMAIN);
+        setJaasToken('public-fallback-token'); // Dummy token to trigger next useEffect
+        setJaasAppId('frenchwithus-public');
       });
   }, [showMeeting, access?.courseId, user?.role]);
 
@@ -137,7 +145,7 @@ export default function Live() {
     let joined = false;
     const jitsiFallbackTimer = setTimeout(() => {
       if (!joined) {
-        setJaasError("Connexion à la salle en cours a pris trop de temps. Réessayez.");
+        setJaasError("La connexion à la salle prend plus de temps que prévu. Réessayez ou vérifiez votre connexion.");
       }
     }, 30000);
 
@@ -147,12 +155,19 @@ export default function Live() {
         jitsiApiRef.current = null;
       }
 
-      const roomName = `${jaasAppId}/${access.roomName}`;
+      const roomName = isUsingFallback 
+        ? `FrenchWithUs-${access.roomName}-${courseId}`
+        : `${jaasAppId}/${access.roomName}`;
+        
       try {
         // eslint-disable-next-line no-undef
-        jitsiApiRef.current = new JitsiMeetExternalAPI(JAAS_DOMAIN, {
+        jitsiApiRef.current = new JitsiMeetExternalAPI(jitsiDomain, {
           roomName,
-          jwt: jaasToken,
+          ...(isUsingFallback ? {} : { jwt: jaasToken }),
+          userInfo: {
+            displayName: user?.name || 'Utilisateur',
+            email: user?.email || ''
+          },
           parentNode: jitsiContainerRef.current,
           width: '100%',
           height: '100%',
@@ -172,6 +187,7 @@ export default function Live() {
         jitsiApiRef.current.addListener('videoConferenceJoined', () => {
           joined = true;
           setJitsiJoined(true);
+          setJaasError(null);
         });
 
         jitsiApiRef.current.addListener('readyToClose', () => {
@@ -184,18 +200,44 @@ export default function Live() {
         });
       } catch (e) {
         joined = false;
-        setJaasError('Erreur lors de l\'initialisation de la salle vidéo.');
+        console.error('Jitsi init error:', e);
+        if (!isUsingFallback) {
+          triggerFallback();
+        } else {
+          setJaasError('Erreur lors de l\'initialisation de la salle vidéo publique.');
+        }
       }
+    }
+
+    function triggerFallback() {
+      console.warn('Triggering Jitsi Fallback script load...');
+      setIsUsingFallback(true);
+      setJitsiDomain(FALLBACK_JITSI_DOMAIN);
+      
+      const script = document.createElement('script');
+      script.src = `https://${FALLBACK_JITSI_DOMAIN}/external_api.js`;
+      script.async = true;
+      script.onload = initJitsi;
+      script.onerror = () => setJaasError('Impossible de charger le script Jitsi de secours.');
+      document.head.appendChild(script);
     }
 
     if (typeof JitsiMeetExternalAPI !== 'undefined') {
       initJitsi();
     } else {
       const script = document.createElement('script');
-      script.src = `https://${JAAS_DOMAIN}/libs/external_api.min.js`;
+      script.src = isUsingFallback 
+        ? `https://${FALLBACK_JITSI_DOMAIN}/external_api.js`
+        : `https://${PRIMARY_JAAS_DOMAIN}/libs/external_api.min.js`;
       script.async = true;
       script.onload = initJitsi;
-      script.onerror = () => setJaasError("Impossible de charger le script Jitsi.");
+      script.onerror = () => {
+        if (!isUsingFallback) {
+          triggerFallback();
+        } else {
+          setJaasError("Impossible de charger le script Jitsi (bloqué par le navigateur ou problème réseau).");
+        }
+      };
       document.head.appendChild(script);
     }
 
@@ -206,7 +248,7 @@ export default function Live() {
         jitsiApiRef.current = null;
       }
     };
-  }, [jaasToken, jaasAppId, access?.roomName, user?.role, navigate]);
+  }, [jaasToken, jaasAppId, access?.roomName, user, navigate, jitsiDomain, isUsingFallback, courseId]);
 
   if (authLoading || loading) {
     return (
@@ -354,17 +396,43 @@ export default function Live() {
 
       <div className="flex-1 relative" style={{ height: 'calc(100vh - 57px)' }}>
         {jaasError ? (
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-red-200 dark:border-red-800 text-center max-w-md">
-              <p className="text-red-600 dark:text-red-400 font-medium mb-2">Erreur JaaS</p>
-              <p className="text-sm text-text/70 dark:text-[#f5f5f5]/70">{jaasError}</p>
+          <div className="absolute inset-0 flex items-center justify-center p-4 rounded-xl bg-black/40 backdrop-blur-sm z-10 transition-all animate-fade-in">
+            <div className="p-8 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-red-200 dark:border-red-800/50 shadow-2xl text-center max-w-md w-full animate-fade-in">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-text dark:text-[#f5f5f5] mb-2">Erreur de connexion Jitsi</h3>
+              <p className="text-sm text-text/70 dark:text-[#f5f5f5]/70 mb-6">{jaasError}</p>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full px-6 py-3 rounded-xl bg-pink-primary dark:bg-pink-400 text-white font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition shadow-lg shadow-pink-primary/20"
+                >
+                  Rafraîchir la page
+                </button>
+                <button
+                  onClick={() => {
+                    if (user?.role === 'PROFESSOR') {
+                      setShowEndModal(true);
+                      setJaasError(null);
+                    } else {
+                      navigate('/student');
+                    }
+                  }}
+                  className="w-full px-6 py-3 rounded-xl bg-pink-soft/30 dark:bg-white/5 border border-pink-soft dark:border-white/10 text-text dark:text-[#f5f5f5] font-medium hover:bg-pink-soft/50 dark:hover:bg-white/10 transition"
+                >
+                  Quitter la salle
+                </button>
+              </div>
             </div>
           </div>
         ) : !jaasToken ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-10 h-10 border-2 border-pink-primary/30 border-t-pink-primary rounded-full animate-spin" />
-              <p className="text-sm text-text/60 dark:text-[#f5f5f5]/60">Connexion à la salle en cours…</p>
+            <div className="flex flex-col items-center gap-4 bg-white/50 dark:bg-[#1a1a1a]/50 p-6 rounded-2xl backdrop-blur-sm border border-pink-soft/30 dark:border-white/5">
+              <div className="w-12 h-12 border-[3px] border-pink-primary/20 dark:border-pink-400/20 border-t-pink-primary dark:border-t-pink-400 rounded-full animate-spin" />
+              <p className="text-sm font-medium text-text/80 dark:text-[#f5f5f5]/80">Initialisation de la salle…</p>
             </div>
           </div>
         ) : (
@@ -372,14 +440,16 @@ export default function Live() {
             <div ref={jitsiContainerRef} className="w-full h-full" />
             {!jitsiJoined && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
-                <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/60 dark:bg-[#1a1a1a]/60 backdrop-blur-sm border border-pink-soft/40 dark:border-white/10 p-6 max-w-md">
-                  <div className="w-10 h-10 border-2 border-pink-primary/30 border-t-pink-primary rounded-full animate-spin" />
-                  <p className="text-sm text-text/70 dark:text-[#f5f5f5]/70 text-center">
-                    {t('dashboard.livePage.loading') || 'Connexion à la salle en cours…'}
-                  </p>
-                  <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50 text-center">
-                    Si rien ne s’affiche, attendez quelques secondes ou rechargez.
-                  </p>
+                <div className="flex flex-col items-center gap-4 rounded-2xl bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md border border-pink-soft/40 dark:border-white/10 p-8 max-w-md shadow-2xl">
+                  <div className="w-12 h-12 border-[3px] border-pink-primary/20 border-t-pink-primary rounded-full animate-spin" />
+                  <div className="text-center">
+                    <p className="text-base font-semibold text-text dark:text-[#f5f5f5] mb-1">
+                      {t('dashboard.livePage.loading') || 'Connexion à la salle en cours…'}
+                    </p>
+                    <p className="text-xs text-text/60 dark:text-[#f5f5f5]/60">
+                      {isUsingFallback ? 'Utilisation du serveur de secours (meet.jit.si)...' : 'Préparation du flux vidéo sécurisé...'}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
