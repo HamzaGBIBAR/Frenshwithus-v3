@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { IconVideo, IconCheck, IconX, IconBolt, IconSearch, IconFilter, IconTeacher, IconStudent, IconUsers } from '../../components/Icons';
+import { IconVideo, IconCheck, IconX, IconBolt, IconSearch, IconFilter, IconTeacher, IconStudent, IconUsers } from './Icons';
 
 /* ─── Constants ─────────────────────────────────────────── */
 const DAYS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1..Sun=7
