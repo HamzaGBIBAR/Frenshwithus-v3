@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { IconVideo, IconCheck, IconX, IconBolt, IconSearch, IconFilter, IconTeacher, IconStudent, IconUsers } from '../../components/Icons';
 
 /* ─── Constants ─────────────────────────────────────────── */
 const DAYS = [1, 2, 3, 4, 5, 6, 7]; // Mon=1..Sun=7
@@ -344,13 +345,11 @@ export default function AvailabilityMatchBoard({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ── Filter Bar ── */}
+      {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -381,7 +380,7 @@ export default function AvailabilityMatchBoard({
             : 'border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:bg-white/8'
           }`}
         >
-          <span className={`w-2 h-2 rounded-full ${showOnlyOverlaps ? 'bg-amber-400 animate-pulse' : 'bg-white/20'}`} />
+          <IconBolt className={`w-4 h-4 ${showOnlyOverlaps ? 'text-amber-400' : 'text-white/20'}`} />
           {showOnlyOverlaps ? `${totalMatches} match${totalMatches > 1 ? 's' : ''} seulement` : 'Afficher matches uniquement'}
         </button>
 
@@ -516,7 +515,7 @@ export default function AvailabilityMatchBoard({
         <div className="rounded-2xl border border-indigo-400/20 bg-indigo-500/5 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-indigo-400/15">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-indigo-400" />
+              <IconTeacher className="w-4 h-4 text-indigo-400" />
               <span className="text-sm font-semibold text-indigo-300">Professeurs</span>
               <span className="text-xs text-indigo-400/60 bg-indigo-400/10 px-2 py-0.5 rounded-full">{professors.length}</span>
             </div>
@@ -541,7 +540,7 @@ export default function AvailabilityMatchBoard({
         <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/5 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-emerald-400/15">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <IconStudent className="w-4 h-4 text-emerald-400" />
               <span className="text-sm font-semibold text-emerald-300">Élèves</span>
               <span className="text-xs text-emerald-400/60 bg-emerald-400/10 px-2 py-0.5 rounded-full">{students.length}</span>
             </div>

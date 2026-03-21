@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { formatTimeAMPM, formatDateToAMPM, formatProfessorName, formatStudentName, shouldShowProfessorAbsent } from '../../utils/format';
 import ProfessorStatistics from '../../components/ProfessorStatistics';
+import { IconTeacher, IconStudent, IconBolt, IconMatch } from '../../components/Icons';
 
 const TIME_SLOTS_24 = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
 
@@ -63,7 +64,7 @@ function AvailabilityWidget({ professors = [], students = [] }) {
     <div className="mb-6 rounded-2xl border border-amber-200/60 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-900/15 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-amber-200/50 dark:border-amber-500/20">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          <IconMatch className="w-3.5 h-3.5 text-amber-500" />
           <h3 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">Disponibilités & Matches</h3>
           {topMatches.length > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px] font-bold">
@@ -95,14 +96,18 @@ function AvailabilityWidget({ professors = [], students = [] }) {
         {/* Mini rails */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <p className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2">👨‍🏫 Professeurs ({professors.length})</p>
+            <p className="flex items-center gap-1.5 text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2">
+              <IconTeacher className="w-3.5 h-3.5" /> Professeurs ({professors.length})
+            </p>
             <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {professors.slice(0, 8).map(p => <MiniAccountCard key={p.id} user={p} type="teacher" />)}
               {professors.length > 8 && <Link to="/admin/availability" className="flex-shrink-0 flex items-center justify-center w-10 h-[72px] rounded-xl border border-indigo-200/60 dark:border-indigo-500/25 bg-indigo-50 dark:bg-indigo-500/8 text-xs text-indigo-600 dark:text-indigo-400 font-semibold">+{professors.length - 8}</Link>}
             </div>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">🎓 Élèves ({students.length})</p>
+            <p className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">
+              <IconStudent className="w-3.5 h-3.5" /> Élèves ({students.length})
+            </p>
             <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {students.slice(0, 8).map(s => <MiniAccountCard key={s.id} user={s} type="student" />)}
               {students.length > 8 && <Link to="/admin/availability" className="flex-shrink-0 flex items-center justify-center w-10 h-[72px] rounded-xl border border-emerald-200/60 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/8 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">+{students.length - 8}</Link>}

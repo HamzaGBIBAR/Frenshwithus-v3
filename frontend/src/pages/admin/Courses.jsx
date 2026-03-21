@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatTimeAMPM, formatDateToAMPM, getEndTime, formatTimeRange, shouldShowProfessorAbsent } from '../../utils/format';
 import api from '../../api/axios';
+import { IconVideo, IconCheck, IconX, IconCopy, IconSearch, IconArrowRight, IconTrash, IconRefresh, IconCalendar, IconFilter, IconInfo, IconWarning, IconMatch, IconBolt, IconChevronDown, IconPlus } from '../../components/Icons';
 
 /* ─── Status helpers ─────────────────────────────────────── */
 function getCourseStatus(c) {
@@ -70,9 +71,7 @@ function CourseCard({ course, onDelete, onRelaunch, t }) {
             <p className="text-[10px] text-text/40 dark:text-[#f5f5f5]/40 truncate">Professeur</p>
           </div>
         </div>
-        <svg className="w-4 h-4 text-text/20 dark:text-[#f5f5f5]/20 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-        </svg>
+        <IconArrowRight className="w-4 h-4 text-text/20 dark:text-[#f5f5f5]/20 shrink-0" />
         <div className="flex items-center gap-2 min-w-0">
           <Avatar user={course.student} size={32} />
           <div className="min-w-0">
@@ -101,19 +100,19 @@ function CourseCard({ course, onDelete, onRelaunch, t }) {
       <div className="flex items-center gap-2 px-4 py-3 border-l border-pink-soft/20 dark:border-white/6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <a href={liveUrl} target="_blank" rel="noreferrer"
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/25 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-800/40 transition border border-blue-200/60 dark:border-blue-700/40">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M4 8h11a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
-          </svg>
+          <IconVideo className="w-3.5 h-3.5" />
           Rejoindre
         </a>
         {canRelaunch && (
           <button onClick={() => onRelaunch(course)}
-            className="px-2.5 py-1.5 rounded-xl bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-300 text-xs font-medium hover:bg-pink-soft dark:hover:bg-pink-500/30 transition">
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-pink-soft/60 dark:bg-pink-500/20 text-pink-dark dark:text-pink-300 text-xs font-medium hover:bg-pink-soft dark:hover:bg-pink-500/30 transition">
+            <IconRefresh className="w-3 h-3" />
             {t('dashboard.admin.relaunch')}
           </button>
         )}
         <button onClick={() => onDelete(course.id)}
-          className="px-2.5 py-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+          <IconTrash className="w-3 h-3" />
           {t('dashboard.adminCourses.delete')}
         </button>
       </div>
@@ -299,9 +298,7 @@ export default function Courses() {
         <h1 className="text-2xl font-semibold text-text dark:text-[#f5f5f5]">{t('dashboard.adminCourses.title')}</h1>
         <button type="button" onClick={() => { setFormOpen(o => !o); setCreatedCourse(null); setError(''); }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-primary dark:bg-pink-400 text-white text-sm font-medium hover:bg-pink-dark dark:hover:bg-pink-500 transition btn-glow">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={formOpen ? 'M6 18L18 6M6 6l12 12' : 'M12 4v16m8-8H4'} />
-          </svg>
+          {formOpen ? <IconX className="w-4 h-4" /> : <IconPlus className="w-4 h-4" />}
           {formOpen ? 'Fermer' : t('dashboard.adminCourses.createCourse')}
         </button>
       </div>
@@ -543,9 +540,7 @@ export default function Courses() {
 
                 {/* Jitsi info */}
                 <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-700/40">
-                  <svg className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <IconInfo className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                   <p className="text-[11px] text-blue-700 dark:text-blue-300">La salle vidéo est générée automatiquement via <strong>Jitsi JaaS (8x8)</strong>. Prof et élève la rejoignent depuis leur tableau de bord.</p>
                 </div>
 
@@ -567,16 +562,14 @@ export default function Courses() {
         {/* Search + filter */}
         <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-pink-soft/50 dark:border-white/10 shadow-pink-soft dark:shadow-lg p-4 flex flex-wrap items-center gap-3 mb-4">
           <div className="relative flex-1 min-w-[200px]">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text/40 dark:text-[#f5f5f5]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text/40 dark:text-[#f5f5f5]/40" />
             <input type="text" placeholder="Rechercher prof, élève, date…" value={search} onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl border border-pink-soft/50 dark:border-white/20 bg-transparent text-text dark:text-[#f5f5f5] text-sm placeholder-text/40 dark:placeholder-[#f5f5f5]/40 focus:outline-none focus:ring-2 focus:ring-pink-primary/40" />
           </div>
           {statusFilter !== 'all' && (
             <button type="button" onClick={() => setStatusFilter('all')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-pink-soft/40 dark:bg-white/10 text-text dark:text-[#f5f5f5] text-sm hover:bg-pink-soft/70 transition">
               <span>{STATUS_META[statusFilter]?.label}</span>
-              <svg className="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <IconX className="w-3.5 h-3.5 opacity-60" />
             </button>
           )}
           <span className="text-xs text-text/50 dark:text-[#f5f5f5]/50 ml-auto">{filtered.length} cours</span>

@@ -5,6 +5,7 @@ import api from '../../api/axios';
 import COUNTRIES, { convertTimeBetweenTimezones, getTimezoneByCountry } from '../../utils/countries';
 import { formatTimeAMPM, getEndTime } from '../../utils/format';
 import AvailabilityMatchBoard from '../../components/AvailabilityMatchBoard';
+import { IconTeacher, IconStudent, IconMatch, IconCalendarCheck, IconEdit, IconChevronDown, IconCheck, IconX, IconCopy, IconVideo } from '../../components/Icons';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MOROCCO_TZ = 'Africa/Casablanca';
@@ -38,10 +39,10 @@ function getWeekDates() {
   });
 }
 
-function StatChip({ label, value, color, icon, link }) {
+function StatChip({ label, value, colorClass, iconEl, link }) {
   const inner = (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200 hover:scale-[1.02] ${color}`}>
-      <div className="text-2xl">{icon}</div>
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200 hover:scale-[1.02] ${colorClass}`}>
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-current/10">{iconEl}</div>
       <div>
         <p className="text-2xl font-bold tabular-nums leading-none">{value}</p>
         <p className="text-xs font-medium opacity-70 mt-0.5">{label}</p>
@@ -221,29 +222,29 @@ export default function AdminAvailability() {
       {!loading && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatChip
-            icon="👨‍🏫"
+            iconEl={<IconTeacher className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
             label="Professeurs"
             value={professors.length}
-            color="border-indigo-200/60 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-200"
+            colorClass="border-indigo-200/60 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-200"
           />
           <StatChip
-            icon="🎓"
+            iconEl={<IconStudent className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
             label="Élèves"
             value={students.length}
-            color="border-emerald-200/60 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+            colorClass="border-emerald-200/60 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
           />
           <StatChip
-            icon="⚡"
+            iconEl={<IconMatch className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
             label="Créneaux communs"
             value={matchSlotsCount}
-            color="border-amber-200/60 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-200"
+            colorClass="border-amber-200/60 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-200"
           />
           <StatChip
-            icon="📅"
+            iconEl={<IconCalendarCheck className="w-5 h-5 text-pink-600 dark:text-pink-400" />}
             label="Cours aujourd'hui"
             value={todayCourses}
             link="/admin/courses"
-            color="border-pink-200/60 dark:border-pink-500/30 bg-pink-50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200"
+            colorClass="border-pink-200/60 dark:border-pink-500/30 bg-pink-50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200"
           />
         </div>
       )}
@@ -252,9 +253,7 @@ export default function AdminAvailability() {
       {createdCourse && (
         <div className="p-4 rounded-2xl border border-green-200 dark:border-green-500/40 bg-green-50 dark:bg-green-900/20 flex items-start gap-4 animate-fade-in">
           <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <IconCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-green-800 dark:text-green-300">Cours créé avec succès !</p>
@@ -263,15 +262,13 @@ export default function AdminAvailability() {
             </p>
             <div className="flex items-center gap-2 mt-2">
               <input readOnly value={`${window.location.origin}/live?courseId=${createdCourse.id}`} className="flex-1 min-w-0 px-2 py-1 rounded text-xs font-mono border border-green-200 dark:border-green-700 bg-white dark:bg-[#111] text-text dark:text-[#f5f5f5]" />
-              <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/live?courseId=${createdCourse.id}`)} className="px-2 py-1 rounded bg-green-100 dark:bg-green-800/50 text-green-700 dark:text-green-300 text-xs font-medium hover:bg-green-200 transition">
-                Copier
+              <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/live?courseId=${createdCourse.id}`)} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-green-100 dark:bg-green-800/50 text-green-700 dark:text-green-300 text-xs font-medium hover:bg-green-200 transition">
+                <IconCopy className="w-3 h-3" /> Copier
               </button>
             </div>
           </div>
           <button onClick={() => setCreatedCourse(null)} className="shrink-0 text-green-600/50 hover:text-green-600 transition">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <IconX className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -307,18 +304,14 @@ export default function AdminAvailability() {
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-pink-soft/40 dark:bg-pink-500/15 flex items-center justify-center">
-                <svg className="w-4 h-4 text-pink-primary dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+                <IconEdit className="w-4 h-4 text-pink-primary dark:text-pink-400" />
               </div>
               <div>
                 <p className="font-semibold text-text dark:text-[#f5f5f5] text-sm">Modifier les créneaux d'un élève</p>
                 <p className="text-xs text-text/50 dark:text-[#f5f5f5]/50">Ajouter ou supprimer des disponibilités par élève</p>
               </div>
             </div>
-            <svg className={`w-5 h-5 text-text/40 dark:text-[#f5f5f5]/40 transition-transform duration-200 ${editorOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <IconChevronDown className={`w-5 h-5 text-text/40 dark:text-[#f5f5f5]/40 transition-transform duration-200 ${editorOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {editorOpen && (
