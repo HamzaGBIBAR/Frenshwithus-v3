@@ -58,20 +58,34 @@ export default function CustomCursor() {
   return (
     <div
       ref={dotRef}
-      className="custom-cursor-dot fixed left-0 top-0 z-[9999] pointer-events-none will-change-transform"
+      className="custom-cursor-dot fixed left-0 top-0 pointer-events-none will-change-transform"
       style={{
-        width: 12,
-        height: 12,
-        marginLeft: -6,
-        marginTop: -6,
+        zIndex: 2147483647, /* max z-index — always on top of every modal/overlay */
+        width: 16,
+        height: 16,
+        marginLeft: -8,
+        marginTop: -8,
         transform: 'translate(-100px, -100px)',
       }}
       aria-hidden="true"
     >
+      {/* Outer white ring — stays visible on any background */}
       <span
-        className={`block w-full h-full rounded-full bg-pink-primary dark:bg-pink-400 border-2 border-white dark:border-[#1a1a1a] shadow-[0_0_12px_rgba(231,84,128,0.5)] dark:shadow-[0_0_14px_rgba(244,114,182,0.6)] transition-transform duration-200 origin-center ${
-          hover ? 'scale-[1.6] border-pink-dark dark:border-pink-300' : 'scale-100'
+        className="absolute inset-0 rounded-full"
+        style={{
+          boxShadow: '0 0 0 2px rgba(255,255,255,0.9), 0 0 0 3px rgba(231,84,128,0.6)',
+        }}
+      />
+      <span
+        className={`block w-full h-full rounded-full transition-transform duration-200 origin-center ${
+          hover ? 'scale-[1.5]' : 'scale-100'
         }`}
+        style={{
+          background: hover
+            ? 'radial-gradient(circle, #ff6fa8 0%, #e75480 60%)'
+            : 'radial-gradient(circle, #ff6fa8 0%, #c2185b 100%)',
+          boxShadow: '0 0 0 2px rgba(255,255,255,0.95), 0 0 10px rgba(231,84,128,0.7), 0 2px 6px rgba(0,0,0,0.4)',
+        }}
       />
     </div>
   );
