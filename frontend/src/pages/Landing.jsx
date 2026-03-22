@@ -14,6 +14,7 @@ import Testimonials3D from '../components/Testimonials3D';
 import Navbar from '../components/Navbar';
 import AboutBanner from '../components/AboutBanner';
 import AnimatedEye from '../components/AnimatedEye';
+import SEO from '../components/SEO';
 
 function getSampleEvents(t) {
   const today = new Date().toISOString().slice(0, 10);
@@ -44,6 +45,10 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-transparent transition-colors duration-500 relative overflow-x-hidden">
+      <SEO 
+        title={t('hero.title')} 
+        description={typeof t === 'function' && t('hero.subtitle') ? t('hero.subtitle') : 'Learn French Online'}
+      />
       <Navbar />
       <AboutBanner triggerRef={bottomRef} />
       <ScrollCharacter />

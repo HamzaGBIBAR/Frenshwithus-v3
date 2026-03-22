@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AnimatedEye from '../components/AnimatedEye';
+import SEO from '../components/SEO';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -35,6 +36,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-transparent px-4 sm:px-6 py-20 sm:py-0 transition-colors duration-500 relative">
+      <SEO 
+        title={t('login.title')} 
+        description="Connectez-vous à votre espace FrenchWithUs."
+      />
       <div className="absolute top-4 sm:top-6 end-4 sm:end-6 flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
